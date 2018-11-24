@@ -43,12 +43,43 @@ def main():
     a_41_dimensioned.ito(ureg.m * ureg.s**-2)
     a_41 = a_41_dimensioned.magnitude
 
-    # Create system model for vane aoa --> translation
+
+    # Create state space model matricies
+    A = np.zeros((4, 4))
+    A[0, 2] = 1
+    A[1, 3] = 1
+    A[3, 0] = a_41
+    print('System dynamics matrix A:')
+    print(A)
+
+    B = np.zeros(4)
+    B[2] = b_3
+    B[3] = b_4
+    print('System input matrix B:')
+    print(B)
+
+    # Compute the eigenvalues of the system
+    evals, evecs = np.linalg.eig(A)
+    print('Dynamics matrix eigenvalues:')
+    print(evals)
+
+    # Create TF system model for vane aoa --> translation
     sys_trans = signal.TransferFunction([b_4, 0, a_41 * b_3], [1, 0, 0, 0, 0])
 
     # Plot bode plot
     plot_bode(sys_trans)
     plt.suptitle('Bode plot for vane $\\alpha$ --> Lateral Translation')
+    # For comparison, plot the gain at which a 1 deg aoa sine
+    # will drive a 0.05 meter position oscillation
+    ref_x = 0.05
+    ref_a = 1
+    ref_gain = ref_x / np.deg2rad(ref_a)
+    plt.subplot(2, 1, 1)
+    plt.axhline(y=20*np.log10(ref_gain),
+        label='{:.2f} m / {:.1f} deg'.format(ref_x, ref_a),
+        color='red', linestyle='--')
+    plt.legend()
+
     plt.show()
 
 
