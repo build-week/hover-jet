@@ -26,7 +26,7 @@ def main():
     m = 10. * ureg.kg    # Vehicle mass.
     I = 2 / 5. * m * (0.2 * ureg.m)**2    # Vehicle moment of inertia about com in lateral plane.
     r_v = 0.2 * ureg.m    # Vane distance from vehicle center of mass.
-    S_v = (20 * ureg.mm) * (15 * ureg.mm)    # Jet vane area.
+    S_v = 2 * (20 * ureg.mm) * (15 * ureg.mm)    # Jet vane area (2 vanes per lateral plane).
     A_j = np.pi * (54 * ureg.mm / 2)**2    # Jet exit area.
     C_D0 = 0.05    # Jet vane drag coefficient minimum.
 
