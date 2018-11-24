@@ -44,7 +44,7 @@ def main():
     a_41 = a_41_dimensioned.magnitude
 
 
-    # Create state space model matricies
+    # Create state space model matrices
     A = np.zeros((4, 4))
     A[0, 2] = 1
     A[1, 3] = 1
@@ -63,12 +63,15 @@ def main():
     print('Dynamics matrix eigenvalues:')
     print(evals)
 
+    # Create TF system model for vane aoa --> pitch-over
+    sys_ang = signal.TransferFunction([b_3], [1, 0, 0])
+
     # Create TF system model for vane aoa --> translation
     sys_trans = signal.TransferFunction([b_4, 0, a_41 * b_3], [1, 0, 0, 0, 0])
 
     # Plot bode plot
     plot_bode(sys_trans)
-    plt.suptitle('Bode plot for vane $\\alpha$ --> Lateral Translation')
+    plt.suptitle('Bode plot for vane $\\alpha$ --> Lateral Translation $x$')
     # For comparison, plot the gain at which a 1 deg aoa sine
     # will drive a 0.05 meter position oscillation
     ref_x = 0.05
@@ -79,6 +82,38 @@ def main():
         label='{:.2f} m / {:.1f} deg'.format(ref_x, ref_a),
         color='red', linestyle='--')
     plt.legend()
+
+    plot_bode(sys_ang)
+    plt.suptitle('Bode plot for vane $\\alpha$ --> Pitch-over $\\theta$')
+
+    # Plot "finesse" vs. frequency
+    plt.figure()
+
+    w, mag, phase = signal.bode(sys_trans, w=np.logspace(0.5, 2))
+    gain = 10**(mag / 20)
+    x_finess = gain * ref_a
+    plt.loglog(w, x_finess, label='Position [m]')
+
+    w, mag, phase = signal.bode(sys_ang, w=np.logspace(0.5, 2))
+    gain = 10**(mag / 20)
+    theta_finess = gain * ref_a
+    plt.loglog(w, theta_finess, label='Pitch-over [rad]')
+    plt.axhline(y=0.85, label='limit of linear model \n(10% error in $sin(x)=x$)', color='C1', linestyle=':')
+
+    # Plot servo max speed for reference
+    servo = 'MKS DS75K (4.8 V)'
+    servo_speed = np.deg2rad(60) / 0.16    # Servo speed [units: radian second**-1].
+    gear_ratio = 64 / 12.
+    actuator_speed = servo_speed / gear_ratio
+    plt.axvline(x=actuator_speed, label=('Actuator speed\n'
+        + '{:s} servo, {:.1f} gear ratio'.format(servo, gear_ratio)), color='black')
+    plt.axvline(x=servo_speed, label=('Servo speed\n'
+        + '{:s} servo'.format(servo)), color='black', linestyle='--')
+    
+    plt.legend()
+    plt.xlabel('$\\omega$ [rad/s]')
+    plt.ylabel('Oscillation from {:.1f} deg $\\alpha$ sine'.format(ref_a))
+    plt.grid(True)
 
     plt.show()
 
