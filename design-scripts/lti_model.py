@@ -75,11 +75,11 @@ def main():
     # For comparison, plot the gain at which a 1 deg aoa sine
     # will drive a 0.05 meter position oscillation
     ref_x = 0.05
-    ref_a = 1
-    ref_gain = ref_x / np.deg2rad(ref_a)
+    ref_a = np.deg2rad(1)
+    ref_gain = ref_x / ref_a
     plt.subplot(2, 1, 1)
     plt.axhline(y=20*np.log10(ref_gain),
-        label='{:.2f} m / {:.1f} deg'.format(ref_x, ref_a),
+        label='{:.2f} m / {:.1f} deg'.format(ref_x, np.rad2deg(ref_a)),
         color='red', linestyle='--')
     plt.legend()
 
@@ -89,12 +89,12 @@ def main():
     # Plot "finesse" vs. frequency
     plt.figure()
 
-    w, mag, phase = signal.bode(sys_trans, w=np.logspace(0.5, 2))
+    w, mag, phase = signal.bode(sys_trans, w=np.logspace(0, 2))
     gain = 10**(mag / 20)
     x_finess = gain * ref_a
     plt.loglog(w, x_finess, label='Position [m]')
 
-    w, mag, phase = signal.bode(sys_ang, w=np.logspace(0.5, 2))
+    w, mag, phase = signal.bode(sys_ang, w=np.logspace(0, 2))
     gain = 10**(mag / 20)
     theta_finess = gain * ref_a
     plt.loglog(w, theta_finess, label='Pitch-over [rad]')
@@ -105,14 +105,13 @@ def main():
     servo_speed = np.deg2rad(60) / 0.16    # Servo speed [units: radian second**-1].
     gear_ratio = 64 / 12.
     actuator_speed = servo_speed / gear_ratio
-    plt.axvline(x=actuator_speed, label=('Actuator speed\n'
+    w_max_act = actuator_speed / ref_a
+    plt.axvline(x=w_max_act, label=('Actuator max $\\omega$\n'
         + '{:s} servo, {:.1f} gear ratio'.format(servo, gear_ratio)), color='black')
-    plt.axvline(x=servo_speed, label=('Servo speed\n'
-        + '{:s} servo'.format(servo)), color='black', linestyle='--')
     
     plt.legend()
     plt.xlabel('$\\omega$ [rad/s]')
-    plt.ylabel('Oscillation from {:.1f} deg $\\alpha$ sine'.format(ref_a))
+    plt.ylabel('Oscillation from {:.1f} deg $\\alpha$ sine'.format(np.rad2deg(ref_a)))
     plt.grid(True)
 
     plt.show()
