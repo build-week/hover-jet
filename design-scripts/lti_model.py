@@ -5,6 +5,21 @@ import matplotlib.pyplot as plt
 import pint
 ureg = pint.UnitRegistry()
 
+
+def plot_bode(sys):
+    w, mag, phase = signal.bode(sys)
+    plt.figure()
+    ax1 = plt.subplot(2, 1, 1)
+    plt.semilogx(w, mag)    # Bode magnitude plot
+    plt.ylabel('Magnitude [dB]')
+    plt.grid(True)
+    ax2 = plt.subplot(2, 1, 2, sharex=ax1)
+    plt.semilogx(w, phase)  # Bode phase plot
+    plt.xlabel('$\\omega$ [rad/s]')
+    plt.ylabel('Phase [deg]')
+    plt.grid(True)
+
+
 def main():
     # Physical properties of vehicle.
     F_j = 160 * ureg.N   # Jet thrust.
@@ -32,17 +47,7 @@ def main():
     sys_trans = signal.TransferFunction([b_4, 0, a_41 * b_3], [1, 0, 0, 0, 0])
 
     # Plot bode plot
-    w, mag, phase = signal.bode(sys_trans)
-    plt.figure()
-    ax1 = plt.subplot(2, 1, 1)
-    plt.semilogx(w, mag)    # Bode magnitude plot
-    plt.ylabel('Magnitude [dB]')
-    plt.grid(True)
-    ax2 = plt.subplot(2, 1, 2, sharex=ax1)
-    plt.semilogx(w, phase)  # Bode phase plot
-    plt.xlabel('$\\omega$ [rad/s]')
-    plt.ylabel('Phase [deg]')
-    plt.grid(True)
+    plot_bode(sys_trans)
     plt.suptitle('Bode plot for vane $\\alpha$ --> Lateral Translation')
     plt.show()
 
