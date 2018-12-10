@@ -7,6 +7,13 @@ ureg = pint.UnitRegistry()
 material_data = {
     'polycarbonate': {
         'Young Modulus' : 2.38 * ureg.GPa,
+        'Density': 1200 * ureg.kg * ureg.m**-3,
+    },
+    'Ti grade 2': {
+        # Source: MatWeb, Titanium Grade 2, Annealed 
+        # http://www.matweb.com/search/datasheet.aspx?matguid=49a4b764217b44ee953205822af5fbc9
+        'Young Modulus' : 102 * ureg.GPa,
+        'Density': 4510 * ureg.kg * ureg.m**-3,
     },
 }
 
@@ -18,11 +25,11 @@ def main():
     leg_angle = np.deg2rad(45)   # Leg angle from horizontal
     leg_len = 0.3 * ureg.meter    # Leg length
     # Leg material Young's Modulus
-    material = 'polycarbonate'
+    material = 'Ti grade 2'
     E = material_data[material]['Young Modulus']
     # Tube dimensions
-    d_o = 25 * ureg.mm    # tube outer diameter
-    d_i = 0 * ureg.mm    # tube inner diameter
+    d_o = 0.50 * ureg.inch    # tube outer diameter
+    d_i = 0.43 * ureg.inch    # tube inner diameter
     # Tube's second moment of area in bending
     I = np.pi  / 64 * (d_o**4 - d_i**4)
     # Single leg beam bending stiffness
@@ -39,8 +46,14 @@ def main():
     print('Inputs:')
     print('\tLeg material = {:s}'.format(material))
     print('\tLeg length = {:~P}'.format(leg_len))
-    print('\tLeg diameters = {:~P}, OD, {:~P} ID'.format(d_o.to(ureg.mm), d_i.to(ureg.mm)))
+    print('\tLeg diameters = {:~.3P} OD, {:~.3P} ID'.format(d_o.to(ureg.mm), d_i.to(ureg.mm)))
     print('\tCrash velocity = {:~P}'.format(v_crash))
+    print('\n')
+
+    # Leg mass
+    m_leg = (leg_len * np.pi / 4 * (d_o**2 - d_i**2)
+        * material_data[material]['Density'])
+    print('\tLeg mass, each = {:~.4P}'.format(m_leg.to(ureg.gram)))
     print('\n')
 
     #### Analytic solution #####
