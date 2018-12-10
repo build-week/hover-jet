@@ -29,9 +29,9 @@ def main():
     #### Model Parameters ####
     # Leg properties
     leg_angle = np.deg2rad(45)   # Leg angle from horizontal
-    leg_len = 0.3 * ureg.meter    # Leg length
+    leg_len = 0.45 * ureg.meter    # Leg length
     # Leg material Young's Modulus
-    material = 'Al 6061-T6'
+    material = 'Ti grade 2'
     E = material_data[material]['Young Modulus']
     # Tube dimensions
     d_o = 0.50 * ureg.inch    # tube outer diameter
@@ -112,6 +112,12 @@ def main():
     # maximum acceleration
     accel_max = v_crash * omega_legs
 
+    # Compute the moment at the landing leg root/clamp
+    y_max = z_max / np.cos(leg_angle)
+    F_max_bend = k_bend * y_max
+    moment_leg_clamp_max = F_max_bend * leg_len
+    moment_leg_clamp_max.ito(ureg.N * ureg.m)
+
     # Print results:
     print('Simple Harmonic Oscillator Results:')
     print('\tFundamental frequency = {:~.3P}'.format(
@@ -120,6 +126,7 @@ def main():
         z_max, z_bottom))
     print('\tMax. acceleration = {:.4~P} ({:.2f} g_0)'.format(
         accel_max, (accel_max / ureg.g_0).to('dimensionless').magnitude))
+    print('\tMax. moment at leg clamp = {:~.4P}'.format(moment_leg_clamp_max))
     print('\n')
 
 if __name__ == '__main__':
