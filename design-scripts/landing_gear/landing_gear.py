@@ -15,6 +15,12 @@ material_data = {
         'Young Modulus' : 102 * ureg.GPa,
         'Density': 4510 * ureg.kg * ureg.m**-3,
     },
+    'Al 6061-T6': {
+        # Source: MatWeb/ASM, Aluminum 6061-T6
+        # http://asm.matweb.com/search/SpecificMaterial.asp?bassnum=ma6061t6
+        'Young Modulus' : 68.9 * ureg.GPa,
+        'Density': 2700 * ureg.kg * ureg.m**-3,
+    },
 }
 
 
@@ -25,7 +31,7 @@ def main():
     leg_angle = np.deg2rad(45)   # Leg angle from horizontal
     leg_len = 0.3 * ureg.meter    # Leg length
     # Leg material Young's Modulus
-    material = 'Ti grade 2'
+    material = 'Al 6061-T6'
     E = material_data[material]['Young Modulus']
     # Tube dimensions
     d_o = 0.50 * ureg.inch    # tube outer diameter
