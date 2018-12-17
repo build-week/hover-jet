@@ -10,15 +10,39 @@ Other help:
 
 #include "servo_driver.hh"
 
+// This is for the PCA9685
+#define PCA9685_I2C_ADDR 0x40
+#define I2C_SLAVE 0x0703
+#define I2C_SLAVE_FORCE 0x0706
+
+// These constants are straight from Adafruit's Library
+#define PCA9685_SUBADR1 0x2
+#define PCA9685_SUBADR2 0x3
+#define PCA9685_SUBADR3 0x4
+
+#define PCA9685_MODE1 0x0
+#define PCA9685_PRESCALE 0xFE
+
+#define LED0_ON_L 0x6
+#define LED0_ON_H 0x7
+#define LED0_OFF_L 0x8
+#define LED0_OFF_H 0x9
+
+#define ALLLED_ON_L 0xFA
+#define ALLLED_ON_H 0xFB
+#define ALLLED_OFF_L 0xFC
+#define ALLLED_OFF_H 0xFD
+
+
 ServoDriver::ServoDriver(char* dev) {
-	deviceName = dev;
+	device_name = dev;
 }
 
 uint8_t ServoDriver::init() {
-	int i2cbus = i2c_open(deviceName);
+	int i2cbus = i2c_open(device_name);
 	if (i2cbus == -1) {
 		// we could not open the interface
-		std::cout << "could not open interface " << deviceName << ", error: " << std::strerror(errno) << std::endl;
+		std::cout << "could not open interface " << device_name << ", error: " << std::strerror(errno) << std::endl;
 		return 1;
 	}
 	// allocate memory for the device struct
@@ -32,17 +56,17 @@ uint8_t ServoDriver::init() {
 	// first we want to reset the device
 	reset();
 	// then set a default frequency
-	setPWMFreq(100);
+	set_pwm_freq(100);
 	return 0;
 }
 
 void ServoDriver::reset() {
-	setRegisterBit(PCA9685_MODE1, 7);
+	set_register_bit(PCA9685_MODE1, 7);
 	usleep(10000);
 }
 
 // @brief Sets the PWM frequency for the chip - max ~1.6kHz
-void ServoDriver::setPWMFreq(float freq) {
+void ServoDriver::set_pwm_freq(float freq) {
 	std::cout << "setting PWM frequency to " << freq << std::endl;
 	freq *= 0.95; // this is necessary according to the Adafruit lib
 	// this formula is on page 25 of the PCA9685 datasheet
@@ -53,15 +77,15 @@ void ServoDriver::setPWMFreq(float freq) {
 	uint8_t prescale = floor(prescaleval + 0.5);
 
 	// We need to go into sleep mode before setting the prescaler
-	setRegisterBit(PCA9685_MODE1, 4);					//go to sleep
-	writeToRegister(PCA9685_PRESCALE, prescale);		//write prescale to register
-	clearRegisterBit(PCA9685_MODE1, 4);				    //bring it out of sleep mode
+	set_register_bit(PCA9685_MODE1, 4);					//go to sleep
+	write_to_register(PCA9685_PRESCALE, prescale);		//write prescale to register
+	clear_register_bit(PCA9685_MODE1, 4);				    //bring it out of sleep mode
 	usleep(5000);
-	enableAutoIncrement(true);							//set the mode to auto increment
+	enable_auto_increment(true);							//set the mode to auto increment
 }
 
 //@brief Sets the PWM output of one of the PCA9685 pins
-void ServoDriver::setPWM(uint8_t servo_num, uint16_t start, uint16_t stop) {
+void ServoDriver::set_pwm(uint8_t servo_num, uint16_t start, uint16_t stop) {
 	std::cout << "setting PWM from " << start << "-" << stop << std::endl;
 	//first we want to clamp the values between 0-4095
 	start = std::min(start, (uint16_t)4095);
@@ -71,31 +95,22 @@ void ServoDriver::setPWM(uint8_t servo_num, uint16_t start, uint16_t stop) {
 	uint8_t base_reg = LED0_ON_L + 4*servo_num;
 
 	// fill in the registers
-	writeToRegister(base_reg, start);
-	writeToRegister(base_reg+1, start >> 8);
-	writeToRegister(base_reg+2, stop);
-	writeToRegister(base_reg+3, stop >> 8);
-
-	// write(i2cbus, &addr, 1);
-	// // send the start and stop values to the appropriate registers
-	// write(i2cbus, &start, 1);
-	// start = start >> 8;
-	// write(i2cbus, &start, 1);
-	// write(i2cbus, &stop, 1);
-	// stop = stop >> 8;
-	// write(i2cbus, &stop, 1);
+	write_to_register(base_reg, start);
+	write_to_register(base_reg+1, start >> 8);
+	write_to_register(base_reg+2, stop);
+	write_to_register(base_reg+3, stop >> 8);
 }
 
-void ServoDriver::enableAutoIncrement(bool enable) {
+void ServoDriver::enable_auto_increment(bool enable) {
 	if (enable) {
-		setRegisterBit(PCA9685_MODE1, 5);
+		set_register_bit(PCA9685_MODE1, 5);
 	}
 	else {
-		clearRegisterBit(PCA9685_MODE1, 5);
+		clear_register_bit(PCA9685_MODE1, 5);
 	}
 }
 
-void ServoDriver::setRegisterBit(uint8_t reg, uint8_t idx) {
+void ServoDriver::set_register_bit(uint8_t reg, uint8_t idx) {
 	std::cout << "setting reg " << unsigned(reg) << " bit " << unsigned(idx) << " to 1" << std::endl;
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
@@ -110,7 +125,7 @@ void ServoDriver::setRegisterBit(uint8_t reg, uint8_t idx) {
 	}
 }
 
-void ServoDriver::clearRegisterBit(uint8_t reg, uint8_t idx) {
+void ServoDriver::clear_register_bit(uint8_t reg, uint8_t idx) {
 	std::cout << "setting reg " << unsigned(reg) << " bit " << unsigned(idx) << " to 0" << std::endl;
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
@@ -125,7 +140,7 @@ void ServoDriver::clearRegisterBit(uint8_t reg, uint8_t idx) {
 	}
 }
 
-void ServoDriver::writeToRegister(uint8_t reg, uint8_t value) {
+void ServoDriver::write_to_register(uint8_t reg, uint8_t value) {
 	std::cout << "writing value " << unsigned(value) << " to reg " << unsigned(reg) << std::endl;
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
