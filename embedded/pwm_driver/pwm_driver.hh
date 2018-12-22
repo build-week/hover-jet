@@ -1,7 +1,8 @@
 #pragma once
+//%deps(i2c)
 
 #include <stdint.h> // uint8_t etc
-#include "third-party/i2c/i2c.h"
+#include "third_party/i2c/i2c.h"
 
 class PwmDriver {
 public:

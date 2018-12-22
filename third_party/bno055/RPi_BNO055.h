@@ -17,6 +17,8 @@
   MIT license, all text above must be included in any redistribution
  ***************************************************************************/
 
+#pragma once
+
 #ifndef __ADAFRUIT_BNO055_H__
 #define __ADAFRUIT_BNO055_H__
 

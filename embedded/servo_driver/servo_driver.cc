@@ -1,6 +1,3 @@
-/***
-***/
-
 #include "embedded/servo_driver/servo_driver.hh" // driver library
 #include <unistd.h> // usleep
 #include <algorithm> // min
