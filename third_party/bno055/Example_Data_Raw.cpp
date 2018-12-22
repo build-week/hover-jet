@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <unistd.h>
 
 #include "third_party/bno055/RPi_Sensor.h"
@@ -42,11 +43,13 @@ int main(void) {
 	    // - VECTOR_EULER                 - degrees
 	    // - VECTOR_LINEARACCEL     - m/s^2
 	    // - VECTOR_GRAVITY             - m/s^2
-	    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+	    imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+	    imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+
 
 	    /* Display the floating point data */
-	    std::cout << "X: " << euler.x() <<    " Y: " << euler.y() << " Z: "
-		<< euler.z() << "\t\t\n\r";
+	    std::cout << std::setw(5) << std::fixed << "Accel X: " << accel.x() <<    "\tY: " << accel.y() << "\tZ: "
+		<< accel.z() << "\tGyro X: " << gyro.x() << "\tY: " << gyro.y() << "\tZ: " << gyro.z() << "\n\r";
 
         usleep(1000*BNO055_SAMPLERATE_DELAY_MS);
 	}
