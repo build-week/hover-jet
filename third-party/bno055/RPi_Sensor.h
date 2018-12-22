@@ -36,8 +36,7 @@
 #define SENSORS_GAUSS_TO_MICROTESLA       (100)                   /**< Gauss to micro-Tesla multiplier */
 
 /** Sensor types */
-typedef enum
-{
+typedef enum {
   SENSOR_TYPE_ACCELEROMETER         = (1),   /**< Gravity + linear acceleration */
   SENSOR_TYPE_MAGNETIC_FIELD        = (2),
   SENSOR_TYPE_ORIENTATION           = (3),
@@ -91,8 +90,7 @@ typedef struct {
 
 /* Sensor event (36 bytes) */
 /** struct sensor_event_s is used to provide a single sensor event in a common format. */
-typedef struct
-{
+typedef struct {
     int32_t version;                          /**< must be sizeof(struct sensors_event_t) */
     int32_t sensor_id;                        /**< unique sensor identifier */
     int32_t type;                             /**< sensor type */
@@ -118,8 +116,7 @@ typedef struct
 
 /* Sensor details (40 bytes) */
 /** struct sensor_s is used to describe basic information about a specific sensor. */
-typedef struct
-{
+typedef struct {
     char     name[12];                        /**< sensor name */
     int32_t  version;                         /**< version of the hardware + driver */
     int32_t  sensor_id;                       /**< unique sensor identifier */

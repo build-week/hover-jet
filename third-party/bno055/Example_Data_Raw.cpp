@@ -29,11 +29,9 @@ Adafruit_BNO055 bno = Adafruit_BNO055();
     Arduino setup function (automatically called at startup)
 */
 /**************************************************************************/
-int main(void)
-{
+int main(void) {
 	
-    if (gpioInitialise() <0)
-	{
+    if (gpioInitialise() <0) {
 		std::cout <<"Initialisation error of the GPIO \n Closing program..."<< std::endl;
 		return -1;
 	}
@@ -43,8 +41,7 @@ int main(void)
   std::cout << "Orientation Sensor Raw Data Test" << std::endl;
 
   /* Initialise the sensor */
-  if(!bno.begin())
-  {
+  if(!bno.begin()) {
     /* There was a problem detecting the BNO055 ... check your connections */
     std::cout << "Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!" << std::endl;
     while(1);
@@ -61,8 +58,7 @@ int main(void)
 
   std::cout << "Calibration status values: 0=uncalibrated, 3=fully calibrated"<<std::endl;
 
-	while (1)
-	{
+	while (1) {
 	  // Possible vector values can be:
 	  // - VECTOR_ACCELEROMETER - m/s^2
 	  // - VECTOR_MAGNETOMETER  - uT
