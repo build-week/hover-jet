@@ -23,7 +23,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "third-party/bno055/RPi_BNO055.h"
+#include "third_party/bno055/RPi_BNO055.h"
 
 /***************************************************************************
  CONSTRUCTOR

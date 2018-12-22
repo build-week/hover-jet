@@ -21,8 +21,8 @@
 #define __ADAFRUIT_BNO055_H__
 
 #include "RPi_Sensor.h"
-#include "third-party/i2c/i2c.h"
-#include "third-party/bno055/utility/imumaths.h"
+#include "third_party/i2c/i2c.h"
+#include "third_party/bno055/utility/imumaths.h"
 
 #define BNO055_ADDRESS_A (0x28)
 #define BNO055_ADDRESS_B (0x29)

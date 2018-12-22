@@ -2,7 +2,7 @@
 #include <iostream>
 #include <unistd.h> // usleep
 
-int main(void) {
+int main() {
 	ServoDriver driver = ServoDriver("/dev/i2c-1");
 	driver.init();
         const uint8_t channel = 1;

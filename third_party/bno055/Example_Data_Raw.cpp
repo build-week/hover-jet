@@ -1,10 +1,10 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "third-party/bno055/RPi_Sensor.h"
-#include "third-party/bno055/RPi_BNO055.h"
-#include "third-party/bno055/utility/imumaths.h"
-#include "third-party/i2c/i2c.h"
+#include "third_party/bno055/RPi_Sensor.h"
+#include "third_party/bno055/RPi_BNO055.h"
+#include "third_party/bno055/utility/imumaths.h"
+#include "third_party/i2c/i2c.h"
 
 /* Set the delay between fresh samples */
 #define BNO055_SAMPLERATE_DELAY_MS (100)
