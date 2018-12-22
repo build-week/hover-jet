@@ -1,5 +1,5 @@
 // Build with gcc -o gpio_test gpio_test.c -lwiringPi -lwiringPiDev -lpthread -lcrypt -lm -lrt
-#include <wiringPi.h>
+#include "third_party/wiringpi/wiringPi.h"
  
 int main(void)
 {
