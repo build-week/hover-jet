@@ -21,7 +21,8 @@
 #define __ADAFRUIT_BNO055_H__
 
 #include "RPi_Sensor.h"
-#include </utility/imumaths.h>
+#include "third-party/i2c/i2c.h"
+#include "third-party/bno055/utility/imumaths.h"
 
 #define BNO055_ADDRESS_A (0x28)
 #define BNO055_ADDRESS_B (0x29)
@@ -257,7 +258,7 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
       VECTOR_GRAVITY       = BNO055_GRAVITY_DATA_X_LSB_ADDR
     } adafruit_vector_type_t;
 
-    Adafruit_BNO055 ( int32_t sensorID = -1, uint8_t address = BNO055_ADDRESS_A );
+    Adafruit_BNO055 (char* i2cBus, int32_t sensorID = -1, uint8_t address = BNO055_ADDRESS_A );
 
     bool  begin               ( adafruit_bno055_opmode_t mode = OPERATION_MODE_NDOF );
     void  setMode             ( adafruit_bno055_opmode_t mode );
@@ -296,6 +297,10 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
     uint8_t _address;
     int32_t _sensorID;
     adafruit_bno055_opmode_t _mode;
+
+    char* _i2cBus;
+
+    i2c_device _i2cDevice;
 };
 
 #endif
