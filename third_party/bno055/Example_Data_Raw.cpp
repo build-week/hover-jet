@@ -7,7 +7,7 @@
 #include "third_party/i2c/i2c.h"
 
 /* Set the delay between fresh samples */
-#define BNO055_SAMPLERATE_DELAY_MS (100)
+#define BNO055_SAMPLERATE_DELAY_MS (20)
 
 Adafruit_BNO055 bno = Adafruit_BNO055("/dev/i2c-1");
 
@@ -33,8 +33,6 @@ int main(void) {
 
 
     bno.setExtCrystalUse(true);
-
-    std::cout << "Calibration status values: 0=uncalibrated, 3=fully calibrated"<<std::endl;
 
 	while (1) {
 	    // Possible vector values can be:
