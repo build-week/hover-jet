@@ -7,7 +7,7 @@ Adafruit PCA9685 library: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-
 
 ***/
 
-#include "embedded/servo_driver/servo_driver.hh" // driver library
+#include "embedded/pwm_driver/pwm_driver.hh" // driver library
 #include <unistd.h> // usleep
 #include <algorithm> // min
 #include <cmath> // floor
@@ -37,11 +37,11 @@ Adafruit PCA9685 library: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-
 #define ALLLED_OFF_H 0xFD
 
 
-ServoDriver::ServoDriver(char* dev) {
+PwmDriver::PwmDriver(char* dev) {
 	device_name = dev;
 }
 
-uint8_t ServoDriver::init() {
+uint8_t PwmDriver::init() {
 	int i2cbus = i2c_open(device_name);
 	if (i2cbus == -1) {
 		// we could not open the interface
@@ -62,13 +62,13 @@ uint8_t ServoDriver::init() {
 	return 0;
 }
 
-void ServoDriver::reset() {
+void PwmDriver::reset() {
 	set_register_bit(PCA9685_MODE1, 7);
 	usleep(10000);
 }
 
 // @brief Sets the PWM frequency for the chip - max ~1.6kHz
-void ServoDriver::set_pwm_freq(float freq) {
+void PwmDriver::set_pwm_freq(float freq) {
 	freq *= 0.95; // this is necessary according to the Adafruit lib
 	// this formula is on page 25 of the PCA9685 datasheet
 	const float osc_clock = 25000000; // 25Mhz oscillator clock freq
@@ -86,13 +86,13 @@ void ServoDriver::set_pwm_freq(float freq) {
 }
 
 //@brief Sets the PWM output of one of the PCA9685 pins
-void ServoDriver::set_pwm(uint8_t servo_num, uint16_t start, uint16_t stop) {
+void PwmDriver::set_pwm(uint8_t pwm_num, uint16_t start, uint16_t stop) {
 	//first we want to clamp the values between 0-4095
 	start = std::min(start, (uint16_t)4095);
 	stop = std::min(stop, (uint16_t)4095);
 	// base address is LED0_ON_L, each servo has a 4 byte register size
 	// calculate the address based on the servo number
-	uint8_t base_reg = LED0_ON_L + 4*servo_num;
+	uint8_t base_reg = LED0_ON_L + 4*pwm_num;
 
 	// fill in the registers
 	write_to_register(base_reg, start);
@@ -101,7 +101,7 @@ void ServoDriver::set_pwm(uint8_t servo_num, uint16_t start, uint16_t stop) {
 	write_to_register(base_reg+3, stop >> 8);
 }
 
-void ServoDriver::enable_auto_increment(bool enable) {
+void PwmDriver::enable_auto_increment(bool enable) {
 	if (enable) {
 		set_register_bit(PCA9685_MODE1, 5);
 	}
@@ -110,7 +110,7 @@ void ServoDriver::enable_auto_increment(bool enable) {
 	}
 }
 
-void ServoDriver::set_register_bit(uint8_t reg, uint8_t idx) {
+void PwmDriver::set_register_bit(uint8_t reg, uint8_t idx) {
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
 	memset(buffer, 0, sizeof(buffer));
@@ -120,7 +120,7 @@ void ServoDriver::set_register_bit(uint8_t reg, uint8_t idx) {
 	i2c_write(&device, reg, buffer, size);
 }
 
-void ServoDriver::clear_register_bit(uint8_t reg, uint8_t idx) {
+void PwmDriver::clear_register_bit(uint8_t reg, uint8_t idx) {
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
 	memset(buffer, 0, sizeof(buffer));
@@ -130,7 +130,7 @@ void ServoDriver::clear_register_bit(uint8_t reg, uint8_t idx) {
 	i2c_write(&device, reg, buffer, size);
 }
 
-void ServoDriver::write_to_register(uint8_t reg, uint8_t value) {
+void PwmDriver::write_to_register(uint8_t reg, uint8_t value) {
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
 	memset(buffer, 0, sizeof(buffer));
