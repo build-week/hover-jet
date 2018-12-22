@@ -1,7 +1,7 @@
 #include "servo_driver.hh"
+#include <unistd.h> // usleep
 
 int main(void) {
-	std::cout << "starting..." << std::endl;
 	ServoDriver driver = ServoDriver("/dev/i2c-1");
 	driver.init();
 	driver.set_pwm_freq(50.0);

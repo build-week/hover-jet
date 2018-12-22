@@ -1,15 +1,7 @@
 #pragma once
 
 #include <stdint.h> // uint8_t etc
-#include <unistd.h> // usleep
-#include <fcntl.h> // open device
-#include <math.h> // floor
-#include <algorithm> // min
-#include <sys/ioctl.h> // ioctl
-#include <iostream> // printing
-#include <errno.h> //errors
-#include <cstring> //strerror
-#include "i2c.h"
+#include "third-party/i2c/i2c.h"
 
 class ServoDriver {
 public:

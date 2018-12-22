@@ -4,11 +4,14 @@ Servo driver library for Jet hover project
 
 Borrows from:
 Adafruit PCA9685 library: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/
-Other help:
 
 ***/
 
-#include "servo_driver.hh"
+#include "embedded/servo_driver/servo_driver.hh" // driver library
+#include <unistd.h> // usleep
+#include <algorithm> // min
+#include <cmath> // floor
+#include <string.h> // memset
 
 // This is for the PCA9685
 #define PCA9685_I2C_ADDR 0x40
@@ -42,7 +45,6 @@ uint8_t ServoDriver::init() {
 	int i2cbus = i2c_open(device_name);
 	if (i2cbus == -1) {
 		// we could not open the interface
-		std::cout << "could not open interface " << device_name << ", error: " << std::strerror(errno) << std::endl;
 		return 1;
 	}
 	// allocate memory for the device struct
@@ -67,14 +69,13 @@ void ServoDriver::reset() {
 
 // @brief Sets the PWM frequency for the chip - max ~1.6kHz
 void ServoDriver::set_pwm_freq(float freq) {
-	std::cout << "setting PWM frequency to " << freq << std::endl;
 	freq *= 0.95; // this is necessary according to the Adafruit lib
 	// this formula is on page 25 of the PCA9685 datasheet
-	float prescaleval = 25000000; // 25Mhz oscillator clock freq
-	prescaleval /= 4096;
-	prescaleval /= freq;
-	prescaleval -= 1;
-	uint8_t prescale = floor(prescaleval + 0.5);
+	const float osc_clock = 25000000; // 25Mhz oscillator clock freq
+	const float prescaleval_scaled_by_max = osc_clock/4096;
+	const float prescaleval_scaled_by_freq = prescaleval_scaled_by_max/freq;
+	const float prescaleval = prescaleval_scaled_by_freq - 1;
+	uint8_t prescale = std::floor(prescaleval + 0.5);
 
 	// We need to go into sleep mode before setting the prescaler
 	set_register_bit(PCA9685_MODE1, 4);					//go to sleep
@@ -86,7 +87,6 @@ void ServoDriver::set_pwm_freq(float freq) {
 
 //@brief Sets the PWM output of one of the PCA9685 pins
 void ServoDriver::set_pwm(uint8_t servo_num, uint16_t start, uint16_t stop) {
-	std::cout << "setting PWM from " << start << "-" << stop << std::endl;
 	//first we want to clamp the values between 0-4095
 	start = std::min(start, (uint16_t)4095);
 	stop = std::min(stop, (uint16_t)4095);
@@ -111,43 +111,30 @@ void ServoDriver::enable_auto_increment(bool enable) {
 }
 
 void ServoDriver::set_register_bit(uint8_t reg, uint8_t idx) {
-	std::cout << "setting reg " << unsigned(reg) << " bit " << unsigned(idx) << " to 1" << std::endl;
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
 	memset(buffer, 0, sizeof(buffer));
 
-	if(i2c_read(&device, reg, buffer, size) != size) {
-		std::cout << "error reading from " << reg << " register" << std::endl;
-	}
+	i2c_read(&device, reg, buffer, size);
 	buffer[0] = (1 << idx) | buffer[0];
-	if (i2c_write(&device, reg, buffer, size) != size) {
-		std::cout << "error writing to " << reg << " register" << std::endl;
-	}
+	i2c_write(&device, reg, buffer, size);
 }
 
 void ServoDriver::clear_register_bit(uint8_t reg, uint8_t idx) {
-	std::cout << "setting reg " << unsigned(reg) << " bit " << unsigned(idx) << " to 0" << std::endl;
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
 	memset(buffer, 0, sizeof(buffer));
 
-	if(i2c_read(&device, reg, buffer, size) != size) {
-		std::cout << "error reading from " << reg << " register" << std::endl;
-	}
+	i2c_read(&device, reg, buffer, size);
 	buffer[0] = ~(1 << idx) & buffer[0];
-	if (i2c_write(&device, reg, buffer, size) != size) {
-		std::cout << "error writing to " << reg << " register" << std::endl;
-	}
+	i2c_write(&device, reg, buffer, size);
 }
 
 void ServoDriver::write_to_register(uint8_t reg, uint8_t value) {
-	std::cout << "writing value " << unsigned(value) << " to reg " << unsigned(reg) << std::endl;
 	unsigned char buffer[1];
 	ssize_t size = sizeof(buffer);
 	memset(buffer, 0, sizeof(buffer));
 	buffer[0] = value;
 
-	if (i2c_write(&device, reg, buffer, size) != size) {
-		std::cout << "error writing to " << reg << " register" << std::endl;
-	}
+	i2c_write(&device, reg, buffer, size);
 }
