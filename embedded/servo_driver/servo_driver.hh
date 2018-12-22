@@ -1,4 +1,7 @@
 #pragma once
+/**
+ * Driver for the DS75K servo (http://www.mksservosusa.com/product.php?productid=187)
+*/
 
 #include <stdint.h> // uint8_t etc
 #include "embedded/pwm_driver/pwm_driver.hh"

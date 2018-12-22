@@ -1,5 +1,5 @@
 /***
-Servo driver library for Jet hover project
+Pwm driver library for Jet hover project
 @author Jasbir Harnal jaz.jlh@gmail.com
 
 Borrows from:
