@@ -3,7 +3,7 @@ project(servo_test)
 
 # set up our paths
 set(SOURCE_DIR .)
-set(LIB_I2C /home/odroid/repos/third-party/libi2c/src)
+set(LIB_I2C ../../third-party)
 
 # we want to build the driver
 include_directories(${SOURCE_DIR})
@@ -11,7 +11,7 @@ include_directories(${LIB_I2C})
 
 # the driver is a library
 add_library(servo_driver SHARED servo_driver.cc)
-add_library(libi2c SHARED i2c.c)
+add_library(i2c SHARED ${LIB_I2C}/i2c.c)
 
 # we need the i2c lib
 #find_package(libi2c COMPONENTS REQUIRED)
@@ -19,8 +19,8 @@ add_library(libi2c SHARED i2c.c)
 
 # make our executable, and link libi2c
 add_executable(servo_test servo_test.cc)
-target_link_libraries(servo_test libi2c servo_driver)
-target_link_libraries(servo_driver libi2c)
+target_link_libraries(servo_test i2c servo_driver)
+target_link_libraries(servo_driver i2c)
 
-install(TARGETS libi2c DESTINATION bin)
-install(FILES i2c.h DESTINATION include)
+#install(TARGETS i2c DESTINATION bin)
+#install(FILES i2c.h DESTINATION include)
