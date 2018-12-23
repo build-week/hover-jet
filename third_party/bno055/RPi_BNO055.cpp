@@ -21,7 +21,7 @@
 #include <math.h>
 #include <limits.h>
 #include <iostream>
-#include <unistd.h>
+#include <unistd.h> // usleep
 
 #include "third_party/bno055/RPi_BNO055.h"
 

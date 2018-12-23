@@ -22,14 +22,9 @@
 #ifndef __BMP3XX_H__
 #define __BMP3XX_H__
 
-#if (ARDUINO >= 100)
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
-#include <Wire.h>
-#include <SPI.h>
-#include "bmp3.h"
+#include <string>
+#include "third_party/i2c/i2c.h"
+#include "third_party/bmp388/bmp3.h"
 
 
 /*=========================================================================
@@ -39,8 +34,6 @@
 /*=========================================================================*/
 #define BMP3XX_DEFAULT_SPIFREQ       (1000000)  ///< The default SPI Clock speed
 
-
-
 /** Adafruit_BMP3XX Class for both I2C and SPI usage.
  *  Wraps the Bosch library for Arduino usage
  */
@@ -48,10 +41,9 @@
 class Adafruit_BMP3XX
 {
   public:
-    Adafruit_BMP3XX(int8_t cspin = -1);
-    Adafruit_BMP3XX(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
+    Adafruit_BMP3XX(std::string i2cBus);
 
-    bool  begin(uint8_t addr = BMP3XX_DEFAULT_ADDRESS, TwoWire *theWire=&Wire);
+    bool  begin(uint8_t addr = BMP3XX_DEFAULT_ADDRESS);
     float readTemperature(void);
     float readPressure(void);
     float readAltitude(float seaLevel);
@@ -69,6 +61,8 @@ class Adafruit_BMP3XX
     /// Pressure (Pascals) assigned after calling performReading()
     double pressure;
 
+    int8_t i2c_read_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
+    int8_t i2c_write_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
   private:
     bool _filterEnabled, _tempOSEnabled, _presOSEnabled, _ODREnabled;
     uint8_t _i2caddr;
@@ -76,9 +70,11 @@ class Adafruit_BMP3XX
     int8_t _cs;
     unsigned long _meas_end;
 
-    uint8_t spixfer(uint8_t x);
 
     struct bmp3_dev the_sensor;
+    const std::string _i2cBus;
+
+    I2CDevice _i2cDevice;
 };
 
 #endif

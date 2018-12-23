@@ -25,23 +25,12 @@
  *
  */
 
-#include "Arduino.h"
-#include "Adafruit_BMP3XX.h"
-
-//#define BMP3XX_DEBUG
-
-///! These SPI pins must be global in order to work with underlying library
-int8_t _BMP3_SoftwareSPI_MOSI; ///< Global SPI MOSI pin
-int8_t _BMP3_SoftwareSPI_MISO; ///< Global SPI MISO pin
-int8_t _BMP3_SoftwareSPI_SCK;  ///< Global SPI Clock pin
-TwoWire *_BMP3_i2c;            ///< Global I2C interface pointer
+#include "Adafruit_BMP3XX.hh"
+#include <iostream>
+#include <math.h>
+#include <unistd.h> // usleep
 
 // Our hardware interface functions
-static int8_t i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
-static int8_t i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
-static int8_t spi_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
-static int8_t spi_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
-static uint8_t spi_transfer(uint8_t x);
 static void delay_msec(uint32_t ms);
 
 /***************************************************************************
@@ -54,36 +43,11 @@ static void delay_msec(uint32_t ms);
     @param  cspin SPI chip select. If not passed in, I2C will be used
 */
 /**************************************************************************/
-Adafruit_BMP3XX::Adafruit_BMP3XX(int8_t cspin)
-  : _cs(cspin)
-  , _meas_end(0)
-{
-  _BMP3_SoftwareSPI_MOSI = -1;
-  _BMP3_SoftwareSPI_MISO = -1;
-  _BMP3_SoftwareSPI_SCK = -1;
+Adafruit_BMP3XX::Adafruit_BMP3XX(std::string i2cBus)
+  : _meas_end(0),
+    _i2cBus(i2cBus) {
   _filterEnabled = _tempOSEnabled = _presOSEnabled = false;
 }
-
-
-/**************************************************************************/
-/*!
-    @brief  Instantiates sensor with Software (bit-bang) SPI.
-    @param  cspin SPI chip select
-    @param  mosipin SPI MOSI (Data from microcontroller to sensor)
-    @param  misopin SPI MISO (Data to microcontroller from sensor)
-    @param  sckpin SPI Clock
-*/
-/**************************************************************************/
-Adafruit_BMP3XX::Adafruit_BMP3XX(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin)
-  : _cs(cspin)
-{
-  _BMP3_SoftwareSPI_MOSI = mosipin;
-  _BMP3_SoftwareSPI_MISO = misopin;
-  _BMP3_SoftwareSPI_SCK = sckpin;
-  _filterEnabled = _tempOSEnabled = _presOSEnabled = false;
-}
-
-
 
 /**************************************************************************/
 /*!
@@ -97,65 +61,50 @@ Adafruit_BMP3XX::Adafruit_BMP3XX(int8_t cspin, int8_t mosipin, int8_t misopin, i
     @return True on sensor initialization success. False on failure.
 */
 /**************************************************************************/
-bool Adafruit_BMP3XX::begin(uint8_t addr, TwoWire *theWire) {
+bool Adafruit_BMP3XX::begin(uint8_t addr) {
   _i2caddr = addr;
 
-  if (_cs == -1) {
-    // i2c
-    _BMP3_i2c = theWire;
-    _BMP3_i2c->begin();
+  _i2cDevice = {};
 
-    the_sensor.dev_id = addr;
-    the_sensor.intf = BMP3_I2C_INTF;
-    the_sensor.read = &i2c_read;
-    the_sensor.write = &i2c_write;
-  } else {
-    digitalWrite(_cs, HIGH);
-    pinMode(_cs, OUTPUT);
-
-    if (_BMP3_SoftwareSPI_SCK == -1) {
-      // hardware SPI
-      SPI.begin();
-    } else {
-      // software SPI
-      pinMode(_BMP3_SoftwareSPI_SCK, OUTPUT);
-      pinMode(_BMP3_SoftwareSPI_MOSI, OUTPUT);
-      pinMode(_BMP3_SoftwareSPI_MISO, INPUT);
-    }
-
-    the_sensor.dev_id = _cs;
-    the_sensor.intf = BMP3_SPI_INTF;
-    the_sensor.read = &spi_read;
-    the_sensor.write = &spi_write;
+  _i2cDevice.bus = i2c_open(static_cast<const char*>(_i2cBus.c_str()));
+  if (_i2cDevice.bus == -1) {
+    return false;
   }
 
+  _i2cDevice.addr = addr;
+  _i2cDevice.iaddr_bytes = 1;
+  _i2cDevice.page_bytes = 16;
+
+  the_sensor.dev_id = addr;
+  the_sensor.intf = BMP3_I2C_INTF;
+  the_sensor.read = &i2c_read_wrapper;
+  the_sensor.write = &i2c_write_wrapper;
   the_sensor.delay_ms = delay_msec;
 
   int8_t rslt = BMP3_OK;
   rslt = bmp3_init(&the_sensor);
 #ifdef BMP3XX_DEBUG
-  Serial.print("Result: "); Serial.println(rslt);
+  std::cout << "Result: " << rslt << std::endl;
 #endif
 
   if (rslt != BMP3_OK)
     return false;
 
 #ifdef BMP3XX_DEBUG
-  Serial.print("T1 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_t1);
-  Serial.print("T2 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_t2);
-  Serial.print("T3 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_t3);
-  Serial.print("P1 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p1);
-  Serial.print("P2 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p2);
-  Serial.print("P3 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p3);
-  Serial.print("P4 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p4);
-  Serial.print("P5 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p5);
-  Serial.print("P6 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p6);
-  Serial.print("P7 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p7);
-  Serial.print("P8 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p8);
-  Serial.print("P9 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p9);
-  Serial.print("P10 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p10);
-  Serial.print("P11 = "); Serial.println(the_sensor.calib_data.reg_calib_data.par_p11);
-  //Serial.print("T lin = "); Serial.println(the_sensor.calib_data.reg_calib_data.t_lin);
+  std::cout << "T1 = " << the_sensor.calib_data.reg_calib_data.par_t1 << std::endl;
+  std::cout << "T2 = " << the_sensor.calib_data.reg_calib_data.par_t2 << std::endl;
+  std::cout << "T3 = " << the_sensor.calib_data.reg_calib_data.par_t3 << std::endl;
+  std::cout << "P1 = " << the_sensor.calib_data.reg_calib_data.par_p1 << std::endl;
+  std::cout << "P2 = " << the_sensor.calib_data.reg_calib_data.par_p2 << std::endl;
+  std::cout << "P3 = " << the_sensor.calib_data.reg_calib_data.par_p3 << std::endl;
+  std::cout << "P4 = " << the_sensor.calib_data.reg_calib_data.par_p4 << std::endl;
+  std::cout << "P5 = " << the_sensor.calib_data.reg_calib_data.par_p5 << std::endl;
+  std::cout << "P6 = " << the_sensor.calib_data.reg_calib_data.par_p6 << std::endl;
+  std::cout << "P7 = " << the_sensor.calib_data.reg_calib_data.par_p7 << std::endl;
+  std::cout << "P8 = " << the_sensor.calib_data.reg_calib_data.par_p8 << std::endl;
+  std::cout << "P9 = " << the_sensor.calib_data.reg_calib_data.par_p9 << std::endl;
+  std::cout << "P10 = " << the_sensor.calib_data.reg_calib_data.par_p10 << std::endl;
+  std::cout << "P11 = " << the_sensor.calib_data.reg_calib_data.par_p11 << std::endl;
 #endif
 
   setTemperatureOversampling(BMP3_NO_OVERSAMPLING);
@@ -262,7 +211,7 @@ bool Adafruit_BMP3XX::performReading(void) {
 
   /* Set the desired sensor configuration */
 #ifdef BMP3XX_DEBUG
-  Serial.println("Setting sensor settings");
+  std::cout << "Setting sensor settings" << std::endl;
 #endif
   rslt = bmp3_set_sensor_settings(settings_sel, &the_sensor);
   if (rslt != BMP3_OK)
@@ -271,7 +220,7 @@ bool Adafruit_BMP3XX::performReading(void) {
   /* Set the power mode */
   the_sensor.settings.op_mode = BMP3_FORCED_MODE;
 #ifdef BMP3XX_DEBUG
-  Serial.println("Setting power mode");
+  std::cout << "Setting power mode" << std::endl;
 #endif
   rslt = bmp3_set_op_mode(&the_sensor);
   if (rslt != BMP3_OK)
@@ -374,162 +323,14 @@ bool Adafruit_BMP3XX::setOutputDataRate(uint8_t odr) {
   return true;
 }
 
-/**************************************************************************/
-/*!
-    @brief  Reads 8 bit values over I2C
-*/
-/**************************************************************************/
-int8_t i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
-#ifdef BMP3XX_DEBUG
-  Serial.print("\tI2C $"); Serial.print(reg_addr, HEX); Serial.print(" => ");
-#endif
-
-  _BMP3_i2c->beginTransmission((uint8_t)dev_id);
-  _BMP3_i2c->write((uint8_t)reg_addr);
-  _BMP3_i2c->endTransmission();
-  if (len != _BMP3_i2c->requestFrom((uint8_t)dev_id, (byte)len)) {
-#ifdef BMP3XX_DEBUG
-    Serial.print("Failed to read "); Serial.print(len); Serial.print(" bytes from "); Serial.println(dev_id, HEX);
-#endif
-    return 1;
-  }
-  while (len--) {
-    *reg_data = (uint8_t)_BMP3_i2c->read();
-#ifdef BMP3XX_DEBUG
-    Serial.print("0x"); Serial.print(*reg_data, HEX); Serial.print(", ");
-#endif
-    reg_data++;
-  }
-#ifdef BMP3XX_DEBUG
-  Serial.println("");
-#endif
-  return 0;
+int8_t Adafruit_BMP3XX::i2c_write_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
+  return i2c_write(&_i2cDevice, reg_addr, reg_data, len);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Writes 8 bit values over I2C
-*/
-/**************************************************************************/
-int8_t i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
-#ifdef BMP3XX_DEBUG
-  Serial.print("\tI2C $"); Serial.print(reg_addr, HEX); Serial.print(" <= ");
-#endif
-  _BMP3_i2c->beginTransmission((uint8_t)dev_id);
-  _BMP3_i2c->write((uint8_t)reg_addr);
-  while (len--) {
-    _BMP3_i2c->write(*reg_data);
-#ifdef BMP3XX_DEBUG
-    Serial.print("0x"); Serial.print(*reg_data, HEX); Serial.print(", ");
-#endif
-    reg_data++;
-  }
-  _BMP3_i2c->endTransmission();
-#ifdef BMP3XX_DEBUG
-  Serial.println("");
-#endif
-  return 0;
+int8_t Adafruit_BMP3XX::i2c_read_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
+  return i2c_read(&_i2cDevice, reg_addr, reg_data, len);
 }
 
-
-
-/**************************************************************************/
-/*!
-    @brief  Reads 8 bit values over SPI
-*/
-/**************************************************************************/
-static int8_t spi_read(uint8_t cspin, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
-#ifdef BMP3XX_DEBUG
-  Serial.print("\tSPI $"); Serial.print(reg_addr, HEX); Serial.print(" => ");
-#endif
-
-  // If hardware SPI we should use transactions!
-  if (_BMP3_SoftwareSPI_SCK == -1) {
-    SPI.beginTransaction(SPISettings(BMP3XX_DEFAULT_SPIFREQ, MSBFIRST, SPI_MODE0));
-  }
-
-  digitalWrite(cspin, LOW);
-
-  spi_transfer(reg_addr | 0x80);
-
-  while (len--) {
-    *reg_data = spi_transfer(0x00);
-#ifdef BMP3XX_DEBUG
-    Serial.print("0x"); Serial.print(*reg_data, HEX); Serial.print(", ");
-#endif
-    reg_data++;
-  }
-
-  digitalWrite(cspin, HIGH);
-
-  if (_BMP3_SoftwareSPI_SCK == -1) {
-    SPI.endTransaction();
-  }
-
-#ifdef BMP3XX_DEBUG
-  Serial.println("");
-#endif
-  return 0;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Writes 8 bit values over SPI
-*/
-/**************************************************************************/
-static int8_t spi_write(uint8_t cspin, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
-#ifdef BMP3XX_DEBUG
-  Serial.print("\tSPI $"); Serial.print(reg_addr, HEX); Serial.print(" <= ");
-#endif
-
-  // If hardware SPI we should use transactions!
-  if (_BMP3_SoftwareSPI_SCK == -1) {
-    SPI.beginTransaction(SPISettings(BMP3XX_DEFAULT_SPIFREQ, MSBFIRST, SPI_MODE0));
-  }
-
-  digitalWrite(cspin, LOW);
-
-  spi_transfer(reg_addr);
-  while (len--) {
-    spi_transfer(*reg_data);
-#ifdef BMP3XX_DEBUG
-    Serial.print("0x"); Serial.print(*reg_data, HEX); Serial.print(", ");
-#endif
-    reg_data++;
-  }
-
-  digitalWrite(cspin, HIGH);
-
-  if (_BMP3_SoftwareSPI_SCK == -1) {
-    SPI.endTransaction();
-  }
-
-#ifdef BMP3XX_DEBUG
-  Serial.println("");
-#endif
-  return 0;
-}
-
-
-static uint8_t spi_transfer(uint8_t x) {
-  if (_BMP3_SoftwareSPI_SCK == -1)
-    return SPI.transfer(x);
-
-  // software spi
-  //Serial.println("Software SPI");
-  uint8_t reply = 0;
-  for (int i=7; i>=0; i--) {
-    reply <<= 1;
-    digitalWrite(_BMP3_SoftwareSPI_SCK, LOW);
-    digitalWrite(_BMP3_SoftwareSPI_MOSI, x & (1<<i));
-    digitalWrite(_BMP3_SoftwareSPI_SCK, HIGH);
-    if (digitalRead(_BMP3_SoftwareSPI_MISO))
-      reply |= 1;
-  }
-  return reply;
-}
-
-
-static void delay_msec(uint32_t ms){
-  delay(ms);
+static void delay_msec(uint32_t ms) {
+  usleep(1000*ms);
 }
