@@ -1,3 +1,10 @@
+cd ..
+git clone https://github.com/jpanikulam/experiments.git
+cd experiments/pymake
+sudo python setup.py install
+
+cd ../../hover-jet
+
 mkdir -p bin
 cd bin
 cmake ..
