@@ -1,0 +1,16 @@
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt update
+sudo apt install g++-7 -y
+
+BASE=$PWD
+cd ..
+git clone https://github.com/jpanikulam/experiments.git
+cd experiments/pymake
+sudo python setup.py develop
+
+cd $BASE
+mkdir -p bin
+cd bin
+ls -lFA
+cmake ..
+make -j4
