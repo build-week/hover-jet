@@ -9,3 +9,4 @@ mkdir -p bin
 cd bin
 ls -lFA
 cmake ..
+make -j4
