@@ -4,7 +4,7 @@ git clone https://github.com/jpanikulam/experiments.git
 cd experiments/pymake
 sudo python setup.py develop
 
-cd $BASE/hover-jet
+cd $BASE
 
 mkdir -p bin
 cd bin
