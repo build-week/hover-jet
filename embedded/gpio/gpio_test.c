@@ -6,8 +6,7 @@ int main(void)
     wiringPiSetup();
     pinMode(0, OUTPUT);
  
-    for (;;)
-    {
+    while(1) {
         digitalWrite(0, HIGH); 
         delay(1000);
         digitalWrite(0, LOW); 
