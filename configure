@@ -1,9 +1,10 @@
+BASE=$PWD
 cd ..
 git clone https://github.com/jpanikulam/experiments.git
 cd experiments/pymake
 sudo python setup.py develop
 
-cd ../../hover-jet
+cd $BASE/hover-jet
 
 mkdir -p bin
 cd bin
