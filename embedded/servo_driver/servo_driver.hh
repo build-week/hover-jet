@@ -3,9 +3,13 @@
  * Driver for the DS75K servo (http://www.mksservosusa.com/product.php?productid=187)
 */
 
+//%deps(i2c)
+
 #include <stdint.h> // uint8_t etc
+
 #include "embedded/pwm_driver/pwm_driver.hh"
-#include "third-party/i2c/i2c.h"
+#include "third_party/i2c/i2c.h"
+
 
 class ServoDriver {
 public:

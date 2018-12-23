@@ -1,6 +1,3 @@
-/***
-***/
-
 #include "embedded/servo_driver/servo_driver.hh" // driver library
 #include <unistd.h> // usleep
 #include <algorithm> // min
@@ -19,6 +16,7 @@ int ServoDriver::init() {
   pwm_driver_.init();
   pwm_driver_.set_pwm_freq(PWM_FREQUENCY);
   pwm_driver_.enable_auto_increment(true);
+  return 0;
 }
 
 void ServoDriver::set_percentage(int channel, int percentage) {
