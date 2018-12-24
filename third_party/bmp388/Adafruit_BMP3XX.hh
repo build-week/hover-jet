@@ -61,6 +61,7 @@ class Adafruit_BMP3XX
     /// Pressure (Pascals) assigned after calling performReading()
     double pressure;
 
+    static constexpr float SEALEVELPRESSURE_HPA = 1013.25;
   private:
     bool _filterEnabled, _tempOSEnabled, _presOSEnabled, _ODREnabled;
     uint8_t _i2caddr;

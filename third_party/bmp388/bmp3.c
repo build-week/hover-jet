@@ -720,6 +720,7 @@ int8_t bmp3_init(struct bmp3_dev *dev)
 		}
 		/* Read the chip-id of bmp3 sensor */
 		rslt = bmp3_get_regs(BMP3_CHIP_ID_ADDR, &chip_id, 1, dev);
+
 		/* Proceed if everything is fine until now */
 		if (rslt == BMP3_OK) {
 			/* Check for chip id validity */
@@ -764,11 +765,14 @@ int8_t bmp3_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, const st
 				reg_data[i] = temp_buff[i + dev->dummy_byte];
 		} else {
 			/* Read the data using I2C */
-			rslt = i2c_read(&dev->i2c_device, reg_addr, reg_data, len);
+			rslt = i2c_read(&(dev->i2c_device), reg_addr, reg_data, len);
 		}
 		/* Check for communication error */
-		if (rslt != len)
+		if (rslt != len) {
 			rslt = BMP3_E_COMM_FAIL;
+		} else {
+			rslt = BMP3_OK;
+		}
 	}
 
 	return rslt;
@@ -805,10 +809,13 @@ int8_t bmp3_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, co
 			} else {
 				temp_len = len;
 			}
-			rslt = i2c_write(&dev->i2c_device, reg_addr[0], temp_buff, temp_len);
+			rslt = i2c_write(&(dev->i2c_device), reg_addr[0], temp_buff, temp_len);
 			/* Check for communication error */
-			if (rslt != temp_len)
+			if (rslt != temp_len) {
 				rslt = BMP3_E_COMM_FAIL;
+			} else {
+				rslt = BMP3_OK;
+			}
 		} else {
 			rslt = BMP3_E_INVALID_LEN;
 		}

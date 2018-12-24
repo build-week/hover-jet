@@ -65,9 +65,9 @@ bool Adafruit_BMP3XX::begin(uint8_t addr) {
   _i2caddr = addr;
 
   _i2cDevice = {};
-
   _i2cDevice.bus = i2c_open(static_cast<const char*>(_i2cBus.c_str()));
   if (_i2cDevice.bus == -1) {
+    std::cout << "Bus unable to open" << std::endl;
     return false;
   }
 
@@ -82,12 +82,14 @@ bool Adafruit_BMP3XX::begin(uint8_t addr) {
 
   int8_t rslt = BMP3_OK;
   rslt = bmp3_init(&the_sensor);
+
 #ifdef BMP3XX_DEBUG
   std::cout << "Result: " << rslt << std::endl;
 #endif
 
-  if (rslt != BMP3_OK)
+  if (rslt != BMP3_OK) {
     return false;
+  }
 
 #ifdef BMP3XX_DEBUG
   std::cout << "T1 = " << the_sensor.calib_data.reg_calib_data.par_t1 << std::endl;
