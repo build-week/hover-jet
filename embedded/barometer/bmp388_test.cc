@@ -1,3 +1,6 @@
+//%deps(bmp388)
+
+
 #include "third_party/bmp388/Adafruit_BMP3XX.hh"
 #include <iostream>
 #include <unistd.h> // usleep
