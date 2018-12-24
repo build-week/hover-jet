@@ -37,8 +37,9 @@ Adafruit PCA9685 library: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-
 #define ALLLED_OFF_H 0xFD
 
 
-PwmDriver::PwmDriver(char* dev) {
-	device_name = dev;
+PwmDriver::PwmDriver(const std::string &dev) {
+	device_name = dev.c_str();
+        init();
 }
 
 uint8_t PwmDriver::init() {

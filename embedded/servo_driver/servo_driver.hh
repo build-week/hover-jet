@@ -6,6 +6,7 @@
 //%deps(i2c)
 
 #include <stdint.h> // uint8_t etc
+#include <string>
 
 #include "embedded/pwm_driver/pwm_driver.hh"
 #include "third_party/i2c/i2c.h"
@@ -13,10 +14,20 @@
 
 class ServoDriver {
 public:
-	ServoDriver(char* dev);
+	ServoDriver(const int channel, PwmDriver &driver, const std::string &config_path);
 	int init();
-	void set_percentage(int channel, int percentage);
+	void set_percentage(int percentage);
+	int get_percentage() const;
+	void set_angle(float angle);
 
 private:
-        PwmDriver pwm_driver_;
+	int channel_;
+        PwmDriver &pwm_driver_;
+        std::string config_path_;
+	// The percentage corresponding to max angle.
+	int calibrated_max_;
+	// The percentage corresponding to zero angle.
+	int calibrated_center_;
+	int max_angle_;
+	int percentage_;
 };
