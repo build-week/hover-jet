@@ -71,6 +71,9 @@ extern "C"
 #include <stddef.h>
 #endif
 
+//%deps(i2c)
+#include "third_party/i2c/i2c.h"
+
 /*************************** Common macros   *****************************/
 
 #if !defined(UINT8_C) && !defined(INT8_C)
@@ -737,6 +740,8 @@ struct bmp3_dev {
 	struct bmp3_status status;
 	/*! FIFO data and settings structure */
 	struct bmp3_fifo *fifo;
+
+	I2CDevice i2c_device;
 };
 
 #ifdef __cplusplus

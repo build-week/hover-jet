@@ -77,9 +77,8 @@ bool Adafruit_BMP3XX::begin(uint8_t addr) {
 
   the_sensor.dev_id = addr;
   the_sensor.intf = BMP3_I2C_INTF;
-  the_sensor.read = &i2c_read_wrapper;
-  the_sensor.write = &i2c_write_wrapper;
   the_sensor.delay_ms = delay_msec;
+  the_sensor.i2c_device = _i2cDevice;
 
   int8_t rslt = BMP3_OK;
   rslt = bmp3_init(&the_sensor);
@@ -321,14 +320,6 @@ bool Adafruit_BMP3XX::setOutputDataRate(uint8_t odr) {
   _ODREnabled = true;
 
   return true;
-}
-
-int8_t Adafruit_BMP3XX::i2c_write_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
-  return i2c_write(&_i2cDevice, reg_addr, reg_data, len);
-}
-
-int8_t Adafruit_BMP3XX::i2c_read_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
-  return i2c_read(&_i2cDevice, reg_addr, reg_data, len);
 }
 
 static void delay_msec(uint32_t ms) {

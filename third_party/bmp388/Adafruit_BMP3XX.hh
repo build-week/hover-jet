@@ -61,15 +61,12 @@ class Adafruit_BMP3XX
     /// Pressure (Pascals) assigned after calling performReading()
     double pressure;
 
-    int8_t i2c_read_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
-    int8_t i2c_write_wrapper(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
   private:
     bool _filterEnabled, _tempOSEnabled, _presOSEnabled, _ODREnabled;
     uint8_t _i2caddr;
     int32_t _sensorID;
     int8_t _cs;
     unsigned long _meas_end;
-
 
     struct bmp3_dev the_sensor;
     const std::string _i2cBus;

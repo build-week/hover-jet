@@ -47,7 +47,7 @@
 
 /*! @file bmp3.c
     @brief Sensor driver for BMP3 sensor */
-#include "bmp3.h"
+#include "third_party/bmp388/bmp3.h"
 
 /***************** Internal macros ******************************/
 
@@ -764,10 +764,10 @@ int8_t bmp3_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, const st
 				reg_data[i] = temp_buff[i + dev->dummy_byte];
 		} else {
 			/* Read the data using I2C */
-			rslt = dev->read(dev->dev_id, reg_addr, reg_data, len);
+			rslt = i2c_read(&dev->i2c_device, reg_addr, reg_data, len);
 		}
 		/* Check for communication error */
-		if (rslt != BMP3_OK)
+		if (rslt != len)
 			rslt = BMP3_E_COMM_FAIL;
 	}
 
@@ -805,9 +805,9 @@ int8_t bmp3_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, co
 			} else {
 				temp_len = len;
 			}
-			rslt = dev->write(dev->dev_id, reg_addr[0], temp_buff, temp_len);
+			rslt = i2c_write(&dev->i2c_device, reg_addr[0], temp_buff, temp_len);
 			/* Check for communication error */
-			if (rslt != BMP3_OK)
+			if (rslt != temp_len)
 				rslt = BMP3_E_COMM_FAIL;
 		} else {
 			rslt = BMP3_E_INVALID_LEN;
@@ -2280,7 +2280,7 @@ static int8_t null_ptr_check(const struct bmp3_dev *dev)
 {
 	int8_t rslt;
 
-	if ((dev == NULL) || (dev->read == NULL) || (dev->write == NULL) || (dev->delay_ms == NULL)) {
+	if ((dev == NULL) || (dev->delay_ms == NULL)) {
 		/* Device structure pointer is not valid */
 		rslt = BMP3_E_NULL_PTR;
 	} else {
