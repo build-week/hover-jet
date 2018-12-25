@@ -1,0 +1,19 @@
+#!/bin/bash
+
+case "$1" in
+"run")
+    jet_run.sh "${@:2}"
+    ;;
+"build")
+    jet_build.sh "${@:2}"
+    ;;
+"image")
+	jet_image.sh "${@:2}"
+	;;
+"deploy")
+	jet_deploy.sh "${@:2}"
+	;;
+*)
+    echo "Unknown option '$1': jet modes are [run|build|image]"
+    ;;
+esac
