@@ -27,7 +27,7 @@ RUN apt install libyaml-cpp-dev -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
 RUN apt install libopencv-dev python-opencv -y
 RUN apt install libssl-dev -y
-
+RUN apt install libreadline6-dev -y
 
 #
 # Python
@@ -35,6 +35,7 @@ RUN apt install libssl-dev -y
 
 RUN apt install python-pip ipython -y
 RUN pip install --upgrade pip
+RUN apt install libfreetype6-dev -y
 RUN pip install matplotlib
 RUN pip install colorama
 RUN pip install generate-cmake 

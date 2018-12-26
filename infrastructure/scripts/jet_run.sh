@@ -6,9 +6,18 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+CPU_INFO=$(lscpu)
+if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "x86_64" ]]; then
+    IMAGE_NAME="jet"
+fi
+if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
+    IMAGE_NAME="jet-arm"
+fi
+FULL_IMAGE_NAME=hoverjet/$IMAGE_NAME
+
 xhost +
 
-CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NO_AT_BRIDGE=1 --privileged hoverjet/jet bash)
+CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NO_AT_BRIDGE=1 --net=host --privileged $FULL_IMAGE_NAME bash)
 if [ $? -ne 0 ]; then
     exit $?
 fi
