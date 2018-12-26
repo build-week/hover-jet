@@ -6,7 +6,17 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+CPU_INFO=$(lscpu)
+if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "x86_64" ]]; then
+    IMAGE_NAME="jet"
+fi
+if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
+    IMAGE_NAME="jet-arm"
+fi
+
 DATE=`date +%Y.%m.%d-%H.%M.%S`
 
-echo Building image: hoverjet/jet:$DATE
-docker build $JET_REPO_PATH/infrastructure/scripts/docker/ -t hoverjet/jet:$DATE
+FULL_IMAGE_NAME_TAG="hoverjet/$IMAGE_NAME:$DATE"
+
+echo Building image: $FULL_IMAGE_NAME_TAG
+docker build $JET_REPO_PATH/infrastructure/scripts/docker/ -t $FULL_IMAGE_NAME_TAG
