@@ -7,12 +7,12 @@
 namespace jet {
 
 std::unique_ptr<Publisher> MqttCommsFactory::make_publisher(
-    const std::string& channel_name) {
+    const std::string& channel_name) const {
   return std::make_unique<MqttPublisher>(channel_name);
 }
 
 std::unique_ptr<Subscriber> MqttCommsFactory::make_subscriber(
-    const std::string& channel_name) {
+    const std::string& channel_name) const {
   return std::make_unique<MqttSubscriber>(channel_name);
 }
 

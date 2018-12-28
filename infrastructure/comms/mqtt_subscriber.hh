@@ -1,7 +1,7 @@
 #pragma once
 
-#include <infrastructure/time/duration.hh>
 #include "infrastructure/comms/subscriber.hh"
+#include "infrastructure/time/duration.hh"
 
 #include <mqtt/async_client.h>
 

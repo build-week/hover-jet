@@ -8,8 +8,8 @@ namespace jet {
 class Message {
  public:
   Message() = default;
-  std::string serialize();
-  void deserialize(const std::string& data);
+  std::string serialize() const;
+  void deserialize(const std::string& data) const;
 };
 
 }  // namespace jet
