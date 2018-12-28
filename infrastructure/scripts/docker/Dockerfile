@@ -15,6 +15,7 @@ RUN apt install cmake gcc-7 g++-7 -y
 
 RUN apt install libgtest-dev -y
 RUN cd /usr/src/gtest; cmake CMakeLists.txt; make; cp *.a /usr/lib
+RUN apt install i2c-tools -y
 
 
 #
@@ -86,6 +87,13 @@ RUN rm -r paho.mqtt.c
 RUN git clone https://github.com/eclipse/paho.mqtt.cpp; cd paho.mqtt.cpp; cmake -Bbuild -H. -DPAHO_BUILD_DOCUMENTATION=TRUE -DPAHO_BUILD_SAMPLES=TRUE; cmake --build build/ --target install
 RUN rm -r paho.mqtt.cpp
 
+
+#
+# GUID library
+#
+RUN apt install uuid-dev -y
+RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; mkdir build; cd build; cmake ..; make install
+RUN rm -r crossguid
 
 #
 # X tests (xeyes, glxgears, etc.)

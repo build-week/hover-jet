@@ -3,6 +3,8 @@ project(hover_jet)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
+FIND_PACKAGE(crossguid REQUIRED)
+
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 
 # TODO: Make this run whenever make is run
