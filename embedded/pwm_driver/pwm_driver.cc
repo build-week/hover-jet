@@ -12,6 +12,7 @@ Adafruit PCA9685 library: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-
 #include <algorithm> // min
 #include <cmath> // floor
 #include <string.h> // memset
+#include <iostream>
 
 // This is for the PCA9685
 #define PCA9685_I2C_ADDR 0x40
@@ -38,15 +39,11 @@ Adafruit PCA9685 library: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-
 
 
 PwmDriver::PwmDriver(const std::string &dev) {
-	device_name = dev.c_str();
-        init();
-}
-
-uint8_t PwmDriver::init() {
+	const char* device_name = dev.c_str();
 	int i2cbus = i2c_open(device_name);
 	if (i2cbus == -1) {
-		// we could not open the interface
-		return 1;
+              throw std::runtime_error(std::string("Could not open i2c"));
+              return;
 	}
 	// allocate memory for the device struct
 	memset(&device, 0, sizeof(device));
@@ -56,11 +53,11 @@ uint8_t PwmDriver::init() {
 	device.iaddr_bytes = 1;			// size of internal addresses = 1 byte
 	device.page_bytes = 16; 		// device is capapble of 16 bytes per page
 
+        // TODO check if pwm driver can be found
 	// first we want to reset the device
 	reset();
 	// then set a default frequency
 	set_pwm_freq(100);
-	return 0;
 }
 
 void PwmDriver::reset() {
