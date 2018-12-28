@@ -1,2 +1,9 @@
 language: cpp
-script: ./configure
+script: ./run_docker.sh
+# 18.04 not supported by travis yet; todo: docker
+dist: xenial
+services:
+  - docker
+
+before_install:
+- docker pull hoverjet/jet
