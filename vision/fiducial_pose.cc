@@ -1,4 +1,4 @@
-#include "estimation/vision/fiducial_pose.hh"
+#include "vision/fiducial_pose.hh"
 #include "eigen.hh"
 //%deps(opencv)
 

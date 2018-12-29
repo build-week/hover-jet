@@ -1,4 +1,4 @@
-
+#include "vision/fiducial_pose.hh"
 #include "camera/camera_balsaq.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
@@ -29,6 +29,7 @@ void CameraBq::loop() {
   cv::Mat cameraFrame;
   stream1.read(cameraFrame);
   cv::imshow("cam", cameraFrame);
+  vision::detect_markers(cameraFrame);
   publisher_->publish_raw("looping!");
 }
 void CameraBq::shutdown() {

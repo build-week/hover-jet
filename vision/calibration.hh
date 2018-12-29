@@ -8,7 +8,6 @@
 
 #include "sophus.hh"
 
-namespace estimation {
 namespace vision {
 
 
@@ -30,4 +29,3 @@ class CalibrationManager {
 };
 
 }  // namespace vision
-}  // namespace estimation
