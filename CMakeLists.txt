@@ -12,6 +12,11 @@ find_package(yaml-cpp REQUIRED)
 
 # TODO: Make this run whenever make is run
 execute_process(
+    COMMAND pip install -U generate-cmake
+    RESULT_VARIABLE ret
+)
+
+execute_process(
     COMMAND pymake -v success -p ${CMAKE_SOURCE_DIR}
     RESULT_VARIABLE ret
 )
