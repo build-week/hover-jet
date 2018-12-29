@@ -1,10 +1,7 @@
-#include "estimation/vision/fiducial_pose.hh"
+#include "vision/fiducial_pose.hh"
 #include <cassert>
 #include <cstdlib>
-#include "eigen.hh"
-//%deps(opencv)
 
-namespace estimation {
 namespace vision {
 
 std::pair<std::vector<cv::Vec<double, 3>>, std::vector<cv::Vec<double, 3>>> rvecs_tvecs(
@@ -17,7 +14,7 @@ std::pair<std::vector<cv::Vec<double, 3>>, std::vector<cv::Vec<double, 3>>> rvec
   return std::make_pair(rvecs, tvecs);
 }
 
-std::vector<MarkerDetection> detect_markers(cv::Mat inputImage) {
+std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
   cv::Ptr<cv::aruco::Dictionary> dictionary =
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
   std::vector<int> ids;
@@ -53,7 +50,7 @@ std::vector<MarkerDetection> detect_markers(cv::Mat inputImage) {
 std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image,
                                                          const SE3& world_from_camera) {
   const std::vector<MarkerDetection> marker_detections =
-      estimation::vision::detect_markers(camera_image);
+      vision::detect_markers(camera_image);
   std::vector<MarkerInWorld> result;
   for (auto const& image_detection : marker_detections) {
     const auto marker_center_from_opencv_camera =
@@ -70,4 +67,3 @@ std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_i
 }
 
 }  // namespace vision
-}  // namespace estimation

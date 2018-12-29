@@ -2,11 +2,13 @@
 #include <cassert>
 #include <vector>
 
+
 //%deps(opencv)
 #include <opencv2/aruco.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "sophus.hh"
+#include "third_party/experiments/eigen.hh"
+#include "third_party/experiments/sophus.hh"
 
 namespace vision {
 
