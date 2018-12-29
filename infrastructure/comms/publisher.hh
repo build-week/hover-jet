@@ -1,6 +1,6 @@
 #pragma once
 
-#include "message.hh"
+#include "schemas/message.hh"
 
 #include <memory>
 #include <string>
@@ -16,6 +16,7 @@ class Publisher {
 
  protected:
   const std::string channel_name_;
+  uint64_t sequence_number_{0};
 };
 
 using PublisherPtr = std::unique_ptr<Publisher>;

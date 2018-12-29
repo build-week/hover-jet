@@ -5,6 +5,13 @@
 #include <chrono>
 #include <cstdlib>
 
+
+#include "third_party/nop/serializer.h"
+#include "third_party/nop/utility/stream_writer.h"
+
+#include <iostream>
+#include <sstream>
+
 //%deps(paho-mqttpp3)
 //%deps(crossguid)
 
@@ -53,18 +60,26 @@ void MqttPublisher::reconnect() {
 }
 
 void MqttPublisher::publish(Message& message) {
+  ++sequence_number_;
+
   if (!mqtt_client_->is_connected()) {
     std::cerr << "Not connected. Skipping publish." << std::endl;
     reconnect();
     return;
   }
 
-  mqtt::message_ptr pubmsg = mqtt::make_message(channel_name_, message.serialize());
+  message.header.sequence_number = sequence_number_;
+
+  std::string data;
+  message.serialize(data);
+  mqtt::message_ptr pubmsg = mqtt::make_message(channel_name_, data);
   pubmsg->set_qos(QOS);
   mqtt_client_->publish(pubmsg)->wait();
 }
 
 void MqttPublisher::publish_raw(const std::string& data) {
+  ++sequence_number_;
+
   if (!mqtt_client_->is_connected()) {
     std::cerr << "Not connected. Skipping publish." << std::endl;
     reconnect();

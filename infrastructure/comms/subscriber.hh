@@ -1,7 +1,7 @@
 #pragma once
 
 #include <infrastructure/time/duration.hh>
-#include "infrastructure/comms/message.hh"
+#include "infrastructure/comms/schemas/message.hh"
 
 #include <memory>
 #include <string>
