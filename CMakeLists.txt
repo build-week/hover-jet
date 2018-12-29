@@ -7,6 +7,9 @@ FIND_PACKAGE(crossguid REQUIRED)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 
+# Get yaml-cpp configured
+find_package(yaml-cpp REQUIRED)
+
 # TODO: Make this run whenever make is run
 execute_process(
     COMMAND pymake -v success -p ${CMAKE_SOURCE_DIR}
