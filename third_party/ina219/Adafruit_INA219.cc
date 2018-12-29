@@ -329,7 +329,7 @@ void Adafruit_INA219::setCalibration_16V_400mA(void) {
     @param addr the I2C address the device can be found on. Default is 0x40
 */
 /**************************************************************************/
-Adafruit_INA219::Adafruit_INA219(char* i2cBus, uint8_t address) {
+Adafruit_INA219::Adafruit_INA219(const char* i2cBus, uint8_t address) {
     _address = address;
     _i2cChannel = 1;
     _i2cBus = i2cBus;

@@ -205,7 +205,7 @@ enum {
 /**************************************************************************/
 class Adafruit_INA219{
  public:
-  Adafruit_INA219(char* i2cBus, uint8_t address);
+  Adafruit_INA219(const char* i2cBus, uint8_t address);
   void begin(void);
   void setCalibration_32V_2A(void);
   void setCalibration_32V_1A(void);
@@ -230,7 +230,7 @@ class Adafruit_INA219{
   int16_t getShuntVoltage_raw(void);
   int16_t getCurrent_raw(void);
   int16_t getPower_raw(void);
-  char *_i2cBus;
+  const char *_i2cBus;
 uint8_t _address;
     int _i2cChannel;
     uint16_t _i2cHandle;
