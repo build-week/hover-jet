@@ -44,11 +44,6 @@ std::vector<MarkerDetection> detect_markers(cv::Mat inputImage) {
         SE3(SO3::exp(jcc::Vec3(rvecs[i][0], rvecs[i][1], rvecs[i][2])),
             jcc::Vec3(tvecs[i][0], tvecs[i][1], tvecs[i][2]));
     detection.marker_center_from_camera = camera_from_marker_center.inverse();
-    if (abs(tvecs[i][0]) > 10e10) {
-      while (1) {
-      }
-    }
-    assert(abs(tvecs[i][0]) < 10e10);
     detections.push_back(detection);
   }
 
