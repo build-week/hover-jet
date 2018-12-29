@@ -40,9 +40,9 @@ int keypress(int count, int key) {
 
 int main() {
 	clear_screen();
-	PwmDriver pwm_driver = PwmDriver("/dev/i2c-1");
-	pwm_driver.set_pwm_freq(PWM_FREQUENCY);
-	pwm_driver.enable_auto_increment(true);
+	std::shared_ptr<PwmDriver> pwm_driver = std::make_shared<PwmDriver>("/dev/i2c-1");
+	pwm_driver->set_pwm_freq(PWM_FREQUENCY);
+	pwm_driver->enable_auto_increment(true);
 
 	ServoDriver servo1 = ServoDriver(0, pwm_driver, "../embedded/servo_driver/cfg/servo_cfg0.yaml");
 	ServoDriver servo2 = ServoDriver(1, pwm_driver, "../embedded/servo_driver/cfg/servo_cfg1.yaml");

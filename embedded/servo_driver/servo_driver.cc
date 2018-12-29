@@ -16,7 +16,7 @@ namespace {
   constexpr int MAX_COUNTS = 2935;
 }
 
-ServoDriver::ServoDriver(const int channel, PwmDriver &pwm_driver, const std::string &config_path) : channel_(channel), pwm_driver_(pwm_driver), config_path_(config_path) {
+ServoDriver::ServoDriver(const int channel, const std::shared_ptr<PwmDriver> &pwm_driver, const std::string &config_path) : channel_(channel), pwm_driver_(pwm_driver), config_path_(config_path) {
   init();
 }
 
@@ -42,7 +42,7 @@ void ServoDriver::set_percentage(int percentage) {
   percentage_ = percentage;
   const int counts_range = MAX_COUNTS - MIN_COUNTS;
   int counts = counts_range * static_cast<float>(percentage) / 100 + MIN_COUNTS;
-  pwm_driver_.set_pwm(channel_, 0, counts);
+  pwm_driver_->set_pwm(channel_, 0, counts);
 }
 
 int ServoDriver::get_percentage() const {

@@ -7,9 +7,9 @@
 constexpr int PWM_FREQUENCY = 330;
 
 int main() {
-	PwmDriver pwm_driver = PwmDriver("/dev/i2c-1");
-	pwm_driver.set_pwm_freq(PWM_FREQUENCY);
-	pwm_driver.enable_auto_increment(true);
+	std::shared_ptr<PwmDriver> pwm_driver = std::make_shared<PwmDriver>("/dev/i2c-1");
+	pwm_driver->set_pwm_freq(PWM_FREQUENCY);
+	pwm_driver->enable_auto_increment(true);
 
 	ServoDriver servo1(0, pwm_driver, "cfg/servo_cfg1.yaml");
 	ServoDriver servo2(1, pwm_driver, "cfg/servo_cfg2.yaml");
@@ -36,3 +36,4 @@ int main() {
         }
 	return 0;
 }
+
