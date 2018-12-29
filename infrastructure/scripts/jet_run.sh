@@ -17,7 +17,7 @@ FULL_IMAGE_NAME=hoverjet/$IMAGE_NAME
 
 xhost +
 
-CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NO_AT_BRIDGE=1 --net=host --privileged --device=/dev/video0:/dev/video0 $FULL_IMAGE_NAME bash)
+CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NO_AT_BRIDGE=1 --net=host --privileged $FULL_IMAGE_NAME bash)
 if [ $? -ne 0 ]; then
     exit $?
 fi
