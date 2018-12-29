@@ -4,7 +4,11 @@ project(hover_jet)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 
+# Crossguid
 FIND_PACKAGE(crossguid REQUIRED)
+
+# CMakeLists
+find_package(OpenCV REQUIRED)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 
