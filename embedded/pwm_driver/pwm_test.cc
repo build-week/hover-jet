@@ -4,7 +4,6 @@
 
 int main(void) {
   PwmDriver driver = PwmDriver("/dev/i2c-1");
-  driver.init();
   driver.set_pwm_freq(50.0);
   driver.enable_auto_increment(true);
   const uint8_t channel = 1;
