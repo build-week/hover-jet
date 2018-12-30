@@ -1,6 +1,9 @@
 Hover-Jet
 =========
 
+# Look at the wiki for learning how to get started
+Most of the commands in this file are copied from there.
+https://github.com/build-week/hover-jet/wiki
 
 # How to get the docker image
 ```shell
@@ -23,6 +26,9 @@ docker pull hoverjet/jet
 
 
 # How to Build
+
+All compiling and running should be done *inside the docker*. There should be no exception to this.
+It's typically that managing git and editing files is done outside of the docker, on the host machine
 
 ### How to build *nominally*
 ```shell
