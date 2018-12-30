@@ -29,6 +29,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
 RUN apt install libopencv-dev python-opencv -y
 RUN apt install libssl-dev -y
 RUN apt install libreadline6-dev -y
+RUN apt install libserial-dev -y
+
 
 #
 # Python
@@ -64,15 +66,6 @@ CMD (service xvfb start; export DISPLAY=:10;)
 
 
 #
-# Capnproto
-#
-
-RUN apt install autoconf libtool -y
-RUN git clone https://github.com/sandstorm-io/capnproto.git; cd capnproto/c++; autoreconf -i; ./configure; make -j6 check; make install
-RUN rm -r capnproto
-
-
-#
 # Mosquitto
 #
 RUN apt install mosquitto mosquitto-clients -y
@@ -81,6 +74,7 @@ RUN apt install mosquitto mosquitto-clients -y
 #
 # paho.mqtt.cpp
 #
+
 RUN apt install doxygen graphviz -y
 RUN git clone https://github.com/eclipse/paho.mqtt.c.git; cd paho.mqtt.c; git checkout v1.2.1; cmake -Bbuild -H. -DPAHO_WITH_SSL=ON; cmake --build build/ --target install; ldconfig
 RUN rm -r paho.mqtt.c
@@ -91,9 +85,11 @@ RUN rm -r paho.mqtt.cpp
 #
 # GUID library
 #
+
 RUN apt install uuid-dev -y
 RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; mkdir build; cd build; cmake ..; make install
 RUN rm -r crossguid
+
 
 #
 # X tests (xeyes, glxgears, etc.)
