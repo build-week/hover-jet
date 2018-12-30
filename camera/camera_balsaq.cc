@@ -1,4 +1,4 @@
-#include "vision/fiducial_pose.hh"
+#include "vision/fiducial_detection_and_pose.hh"
 #include "camera/camera_balsaq.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
