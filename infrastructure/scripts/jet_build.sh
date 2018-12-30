@@ -1,5 +1,27 @@
 #!/bin/bash
 
+function help () {
+cat <<-END
+Usage: jet build
+
+Builds the jet project.
+
+-h| --help           Show this message
+END
+}
+
+while [ -n "$1" ]; do
+    case "$1" in
+        -h | --help)
+            help
+            exit
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 JET_REPO_PATH=$(git rev-parse --show-toplevel)
 
 if [ $? -ne 0 ]; then

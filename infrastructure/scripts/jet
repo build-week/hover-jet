@@ -1,5 +1,33 @@
 #!/bin/bash
 
+function help () {
+cat <<-END
+Usage: jet COMMAND
+
+Builds a new jet docker image for your host's architecture.
+
+-h| --help           Show this message
+
+commands:
+build                Build the jet code
+image                Build a new jet docker image
+run                  Run an executable inside of a docker container
+deploy               Run jet software on a vehicle or bench
+END
+}
+
+while [ -n "$1" ]; do
+    case "$1" in
+        -h | --help)
+            help
+            exit
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 case "$1" in
 "run")
     jet_run.sh "${@:2}"
@@ -14,6 +42,7 @@ case "$1" in
 	jet_deploy.sh "${@:2}"
 	;;
 *)
-    echo "Unknown option '$1': jet modes are [run|build|image]"
+    echo "Unknown option '$1': jet modes are [run|build|image|deploy]"
+    help
     ;;
 esac

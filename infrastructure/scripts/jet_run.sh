@@ -1,5 +1,27 @@
 #!/bin/bash
 
+function help () {
+cat <<-END
+Usage: jet run COMMAND
+
+Starts a docker container from the jet image, then executes the specified command inside of it. If no command is specified, bash will be run.
+
+-h| --help           Show this message
+END
+}
+
+while [ -n "$1" ]; do
+    case "$1" in
+        -h | --help)
+            help
+            exit
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 JET_REPO_PATH=$(git rev-parse --show-toplevel)
 
 if [ $? -ne 0 ]; then
@@ -26,6 +48,13 @@ xauth list | while read line; do docker exec -it $CONTAINER_ID xauth add $line; 
     echo '"^ Not actually an error" - Ben'
 fi; done
 
-docker exec -it $CONTAINER_ID bash
+if [ -z "${@:1}" ]
+then
+    docker exec -it $CONTAINER_ID bash
+else
+    COMMAND="${@:1}"
+    echo "Running command \"$COMMAND\" in container."
+    docker exec -it $CONTAINER_ID bash -c "$COMMAND"
+fi
 
 docker stop $CONTAINER_ID
