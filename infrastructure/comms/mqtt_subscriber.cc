@@ -6,6 +6,12 @@
 #include <chrono>
 #include <cstdlib>
 
+#include "third_party/nop/serializer.h"
+#include "third_party/nop/utility/stream_reader.h"
+
+#include <iostream>
+#include <sstream>
+
 //%deps(crossguid)
 //%deps(paho-mqttpp3)
 //%deps(message)
@@ -38,7 +44,7 @@ void MqttSubscriber::connect() {
     mqtt::connect_options connection_options;
     connection_options.set_keep_alive_interval(20);
     connection_options.set_clean_session(true);
-    mqtt_client_->connect(connection_options);
+    mqtt_client_->connect(connection_options)->wait();
     mqtt_client_->start_consuming();
     mqtt_client_->subscribe(channel_name_, QOS);
   } catch (const mqtt::exception& exc) {
