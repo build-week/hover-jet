@@ -1,20 +1,20 @@
 //%deps(yaml-cpp)
 
-#include "embedded/servo_driver/servo_driver.hh" // driver library
-#include <algorithm>                             // min
-#include <cmath>                                 // floor
+#include "embedded/servo_driver/servo_driver.hh"  // driver library
+#include <string.h>                               // memset
+#include <unistd.h>                               // usleep
+#include <yaml-cpp/yaml.h>
+#include <algorithm>  // min
+#include <cmath>      // floor
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string.h> // memset
-#include <unistd.h> // usleep
-#include <yaml-cpp/yaml.h>
 
 namespace {
 // 850 to 2150 microseconds for the PWM width, specified by the servo
 constexpr int MIN_COUNTS = 1160;
 constexpr int MAX_COUNTS = 2935;
-} // namespace
+}  // namespace
 
 ServoDriver::ServoDriver(const int channel,
                          const std::shared_ptr<PwmDriver> &pwm_driver,
@@ -49,7 +49,9 @@ void ServoDriver::set_percentage(int percentage) {
   pwm_driver_->set_pwm(channel_, 0, counts);
 }
 
-int ServoDriver::get_percentage() const { return percentage_; }
+int ServoDriver::get_percentage() const {
+  return percentage_;
+}
 
 void ServoDriver::set_angle(float angle) {
   float angleFraction = static_cast<float>(angle) / max_angle_;

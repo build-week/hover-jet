@@ -1,14 +1,13 @@
-#include "servo_driver.hh"
-#include <iostream>
 #include <readline/readline.h>
-#include <unistd.h> // usleep
+#include <unistd.h>  // usleep
+#include <iostream>
 #include <vector>
+#include "servo_driver.hh"
 
 constexpr int PWM_FREQUENCY = 330;
 
 int main() {
-  std::shared_ptr<PwmDriver> pwm_driver =
-      std::make_shared<PwmDriver>("/dev/i2c-1");
+  std::shared_ptr<PwmDriver> pwm_driver = std::make_shared<PwmDriver>("/dev/i2c-1");
   pwm_driver->set_pwm_freq(PWM_FREQUENCY);
   pwm_driver->enable_auto_increment(true);
 
