@@ -5,6 +5,11 @@
 #include <chrono>
 #include <cstdlib>
 
+<<<<<<< HEAD
+=======
+#include <iostream>
+
+>>>>>>> Removing extra includes
 //%deps(paho-mqttpp3)
 //%deps(crossguid)
 
