@@ -17,13 +17,10 @@ SubscriberDemoBq::SubscriberDemoBq() {
 }
 
 void SubscriberDemoBq::init() {
-  std::cout << "INIT!" << std::endl;
   subscriber_ = make_subscriber("demo_channel_name");
 }
 
 void SubscriberDemoBq::loop() {
-  std::cout << "LOOPING!" << std::endl;
-
   DemoMessage message;
   if (subscriber_->read(message, 1)) {
     std::cout << "At " << message.header.timestamp_ns

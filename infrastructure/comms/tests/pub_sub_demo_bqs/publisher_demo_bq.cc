@@ -17,13 +17,10 @@ PublisherDemoBq::PublisherDemoBq() {
 }
 
 void PublisherDemoBq::init() {
-  std::cout << "INIT!" << std::endl;
   publisher_ = make_publisher("demo_channel_name");
 }
 
 void PublisherDemoBq::loop() {
-  std::cout << "LOOPING!" << std::endl;
-
   DemoMessage message;
   message.content = "hello";
   publisher_->publish(message);
