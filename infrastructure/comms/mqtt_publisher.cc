@@ -5,13 +5,6 @@
 #include <chrono>
 #include <cstdlib>
 
-
-#include "third_party/nop/serializer.h"
-#include "third_party/nop/utility/stream_writer.h"
-
-#include <iostream>
-#include <sstream>
-
 //%deps(paho-mqttpp3)
 //%deps(crossguid)
 

@@ -1,10 +1,9 @@
 #include "publisher_demo_bq.hh"
 
 #include <signal.h>
+#include <unistd.h>
 
 //%deps(paho-mqttpp3)
-
-#include <unistd.h>
 
 static bool shutdown = false;
 

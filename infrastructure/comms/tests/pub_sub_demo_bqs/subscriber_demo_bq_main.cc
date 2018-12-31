@@ -3,8 +3,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <iostream>
-
 //%deps(paho-mqttpp3)
 
 static bool shutdown = false;

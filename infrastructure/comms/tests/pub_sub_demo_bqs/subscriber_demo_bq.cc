@@ -8,7 +8,6 @@
 #include "infrastructure/comms/schemas/demo_message.hh"
 
 #include <iostream>
-#include <sstream>
 
 namespace jet {
 

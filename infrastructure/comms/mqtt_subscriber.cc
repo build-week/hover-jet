@@ -1,16 +1,9 @@
-
 #include "mqtt_subscriber.hh"
 
 #include <crossguid/guid.hpp>
 
 #include <chrono>
 #include <cstdlib>
-
-#include "third_party/nop/serializer.h"
-#include "third_party/nop/utility/stream_reader.h"
-
-#include <iostream>
-#include <sstream>
 
 //%deps(crossguid)
 //%deps(paho-mqttpp3)
