@@ -7,7 +7,7 @@
 
 class PwmDriver {
 public:
-  PwmDriver(const std::string &dev);
+  PwmDriver(int i2cHandle);
   void reset(void);
   void set_pwm_freq(float freq);
   void set_pwm(uint8_t pwm_num, uint16_t start, uint16_t stop);

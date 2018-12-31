@@ -38,17 +38,11 @@ https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/
 #define ALLLED_OFF_L 0xFC
 #define ALLLED_OFF_H 0xFD
 
-PwmDriver::PwmDriver(const std::string &dev) {
-  const char *device_name = dev.c_str();
-  int i2cbus = i2c_open(device_name);
-  if (i2cbus == -1) {
-    throw std::runtime_error(std::string("Could not open i2c"));
-    return;
-  }
+PwmDriver::PwmDriver(int i2cHandle) {
   // allocate memory for the device struct
   memset(&device, 0, sizeof(device));
 
-  device.bus = i2cbus;
+  device.bus = i2cHandle;
   device.addr = PCA9685_I2C_ADDR;
   device.iaddr_bytes = 1; // size of internal addresses = 1 byte
   device.page_bytes = 16; // device is capapble of 16 bytes per page

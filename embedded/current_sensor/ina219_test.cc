@@ -6,8 +6,13 @@
 
 int main() {
   constexpr int i2c_addr = 0x40;
-  Adafruit_INA219 ina219 = Adafruit_INA219("/dev/i2c-1", i2c_addr);
-  ina219.begin();
+  int i2cHandle = i2c_open("/dev/i2c-1");
+  if (i2cHandle == -1) {
+    std::cout << "Failed to open i2c" << std::endl;
+    return -1;
+  }
+
+  Adafruit_INA219 ina219 = Adafruit_INA219(i2cHandle, i2c_addr);
   std::cout << "Current Sensor Test" << std::endl;
   while (true) {
     usleep(100 * 1000);

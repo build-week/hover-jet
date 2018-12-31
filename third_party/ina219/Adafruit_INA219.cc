@@ -320,38 +320,23 @@ void Adafruit_INA219::setCalibration_16V_400mA(void) {
 /**************************************************************************/
 /*!
     @brief  Instantiates a new INA219 class
+    @param i2cHandle the file descriptor of the i2c file
     @param addr the I2C address the device can be found on. Default is 0x40
 */
 /**************************************************************************/
-Adafruit_INA219::Adafruit_INA219(const char* i2cBus, uint8_t address) {
-  _address = address;
-  _i2cChannel = 1;
-  _i2cBus = i2cBus;
-  _i2cDevice = {};
-  ina219_currentDivider_mA = 0;
-  ina219_powerMultiplier_mW = 0.0f;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Setups the HW using the default Wire object
-*/
-/**************************************************************************/
-void Adafruit_INA219::begin(void) {
-  _i2cHandle = i2c_open(_i2cBus);
-  if (_i2cHandle == -1) {
-    return;
-  }
-
+Adafruit_INA219::Adafruit_INA219(int i2cHandle, uint8_t address) {
   memset(&_i2cDevice, 0, sizeof(_i2cDevice));
-  _i2cDevice.bus = _i2cHandle;
-  _i2cDevice.addr = _address;
+  _i2cDevice.bus = i2cHandle;
+  _i2cDevice.addr = address;
+
   // TODO these work, although I'm not too sure what they do..
   _i2cDevice.iaddr_bytes = 1;
   _i2cDevice.page_bytes = 16;
-  // TODO read something from the chip to confirm that we're talking to the right chip?
+  ina219_currentDivider_mA = 0;
+  ina219_powerMultiplier_mW = 0.0f;
 
   setCalibration_32V_2A();
+  // TODO read something from the chip to confirm that we're talking to the right chip?
 }
 
 /**************************************************************************/

@@ -1,14 +1,17 @@
 //%deps(readline)
+//%deps(ina219)
 #include <readline/readline.h>
 #include <unistd.h>  // usleep
 #include <iostream>
 #include <vector>
 #include "servo_driver.hh"
+#include "third_party/ina219/Adafruit_INA219.hh"
 
 constexpr int PWM_FREQUENCY = 330;
 
-// Make this a global variable for rl_bind_key to work.
+// Make these global variables for rl_bind_key to work.
 std::vector<ServoDriver> servos;
+Adafruit_INA219 *ina219;
 
 enum Direction { UP, DOWN };
 
@@ -26,6 +29,10 @@ void print_help(const std::vector<ServoDriver> &servos) {
             << servos[2].get_percentage() << std::endl;
   std::cout << "Servo 3: Press '7' for up, '8' for down -- current percentage is "
             << servos[3].get_percentage() << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "Press Enter to start reading currents from the current sensor"
+            << std::endl;
 }
 
 int keypress(int count, int key) {
@@ -43,8 +50,13 @@ int keypress(int count, int key) {
 }
 
 int main() {
+  int i2cHandle = i2c_open("/dev/i2c-1");
+  if (i2cHandle == -1) {
+    std::cout << "Failed to open i2c" << std::endl;
+    return -1;
+  }
   clear_screen();
-  std::shared_ptr<PwmDriver> pwm_driver = std::make_shared<PwmDriver>("/dev/i2c-1");
+  std::shared_ptr<PwmDriver> pwm_driver = std::make_shared<PwmDriver>(i2cHandle);
   pwm_driver->set_pwm_freq(PWM_FREQUENCY);
   pwm_driver->enable_auto_increment(true);
 
@@ -62,13 +74,20 @@ int main() {
   servos.push_back(servo3);
   servos.push_back(servo4);
 
+  constexpr int CURRENT_SENSOR_I2C_ADDR = 0x40;
+  Adafruit_INA219 ina219Local = Adafruit_INA219(i2cHandle, CURRENT_SENSOR_I2C_ADDR);
+  ina219 = &ina219Local;
+
   for (int i = 0; i < 10; i++) {
     rl_bind_key('0' + i, keypress);
   }
 
   print_help(servos);
+  readline("");
   while (true) {
-    readline("");
+    float current_mA = ina219->getCurrent_mA();
+    std::cout << "Current reading: " << (int)current_mA << std::endl;
+    usleep(10 * 100);
   }
   return 0;
 }

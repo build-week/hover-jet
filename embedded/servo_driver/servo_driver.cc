@@ -20,10 +20,6 @@ ServoDriver::ServoDriver(const int channel,
                          const std::shared_ptr<PwmDriver> &pwm_driver,
                          const std::string &config_path)
     : channel_(channel), pwm_driver_(pwm_driver), config_path_(config_path) {
-  init();
-}
-
-int ServoDriver::init() {
   try {
     YAML::Node config = YAML::LoadFile(config_path_);
     max_angle_ = config["max_angle"].as<int>();
@@ -35,7 +31,6 @@ int ServoDriver::init() {
   }
   percentage_ = calibrated_center_;
   set_percentage(percentage_);
-  return 0;
 }
 
 void ServoDriver::set_percentage(int percentage) {

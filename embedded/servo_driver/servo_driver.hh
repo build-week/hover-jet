@@ -18,7 +18,6 @@ class ServoDriver {
   ServoDriver(const int channel,
               const std::shared_ptr<PwmDriver> &driver,
               const std::string &config_path);
-  int init();
   void set_percentage(int percentage);
   int get_percentage() const;
   void set_angle(float angle);
