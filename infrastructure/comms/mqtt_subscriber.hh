@@ -5,6 +5,7 @@
 
 #include <mqtt/async_client.h>
 
+#include <atomic>
 #include <memory>
 
 namespace jet {
@@ -20,9 +21,11 @@ class MqttSubscriber : public Subscriber {
   std::string mqtt_server_address_;
   std::string mqtt_client_id_;
   std::unique_ptr<mqtt::async_client> mqtt_client_;
+  std::unique_ptr<std::thread> connect_thread_;
+  std::atomic<bool> connecting_;
 
+  void async_connect();
   void connect();
-  void reconnect();
 };
 
 }  // namespace jet

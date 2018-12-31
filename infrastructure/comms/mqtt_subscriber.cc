@@ -2,12 +2,14 @@
 
 #include <crossguid/guid.hpp>
 
+#include <unistd.h>
 #include <chrono>
-#include <cstdlib>
+#include <thread>
 
 //%deps(crossguid)
 //%deps(paho-mqttpp3)
 //%deps(message)
+//%deps(pthread)
 
 namespace jet {
 
@@ -22,16 +24,32 @@ MqttSubscriber::MqttSubscriber(const std::string& channel_name)
   mqtt_client_id_ = xg::newGuid().str();
   mqtt_client_ =
       std::make_unique<mqtt::async_client>(mqtt_server_address_, mqtt_client_id_);
-  connect();
+
+  async_connect();
 }
 
 MqttSubscriber::~MqttSubscriber() {
   mqtt_client_->unsubscribe(channel_name_)->wait();
   mqtt_client_->stop_consuming();
   mqtt_client_->disconnect()->wait();
+  if (connect_thread_ && connect_thread_->joinable()) {
+    connect_thread_->join();
+  }
+}
+
+void MqttSubscriber::async_connect() {
+  if (connecting_) {
+    return;
+  }
+  if (connect_thread_) {
+    connect_thread_->join();
+  }
+  connect_thread_ = std::make_unique<std::thread>([this]() { connect(); });
+  connect_thread_->detach();
 }
 
 void MqttSubscriber::connect() {
+  connecting_ = true;
   const int QOS = 1;
   try {
     mqtt::connect_options connection_options;
@@ -43,20 +61,13 @@ void MqttSubscriber::connect() {
   } catch (const mqtt::exception& exc) {
     std::cerr << exc.what() << std::endl;
   }
-}
-
-void MqttSubscriber::reconnect() {
-  try {
-    mqtt_client_->reconnect();
-  } catch (const mqtt::exception& exc) {
-    std::cerr << exc.what() << std::endl;
-  }
+  connecting_ = false;
 }
 
 bool MqttSubscriber::read(Message& message, const Duration& timeout) {
-  if (!mqtt_client_->is_connected()) {
+  if (!mqtt_client_->is_connected() || connecting_) {
     std::cerr << "Not connected. Skipping read." << std::endl;
-    reconnect();
+    connect();
     return false;
   }
 
@@ -65,6 +76,8 @@ bool MqttSubscriber::read(Message& message, const Duration& timeout) {
       &mqtt_message_ptr, std::chrono::nanoseconds(timeout));
   if (!error_code) {
     return error_code;
+  } else if (!mqtt_message_ptr) {
+    return false;
   } else {
     message.deserialize(mqtt_message_ptr->get_payload_str());
   }
@@ -74,7 +87,7 @@ bool MqttSubscriber::read(Message& message, const Duration& timeout) {
 bool MqttSubscriber::read_raw(std::string& message_data, const Duration& timeout) {
   if (!mqtt_client_->is_connected()) {
     std::cerr << "Not connected. Skipping read." << std::endl;
-    reconnect();
+    connect();
     return false;
   }
 
