@@ -23,6 +23,7 @@ while [ -n "$1" ]; do
 done
 
 JET_REPO_PATH=$(git rev-parse --show-toplevel)
+MQTT_ADDRESS=tcp://localhost:1883
 
 if [ $? -ne 0 ]; then
     exit $?
@@ -37,9 +38,15 @@ if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
 fi
 FULL_IMAGE_NAME=hoverjet/$IMAGE_NAME
 
+WEBCAM_DEFAULT_DEV_PATH=/dev/video0
+if [ -d "$WEBCAM_DEFAULT_DEV_PATH" ]; then
+  ATTACH_WEBCAM_DEVICE=--device=/dev/video0:/dev/video0
+fi
+
 xhost +
 
-CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NO_AT_BRIDGE=1 -e MQTT_ADDRESS=tcp://localhost:1883 --net=host --privileged $FULL_IMAGE_NAME bash)
+CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NO_AT_BRIDGE=1 -e MQTT_ADDRESS=$MQTT_ADDRESS $ATTACH_WEBCAM_DEVICE --net=host --privileged $FULL_IMAGE_NAME bash)
+
 if [ $? -ne 0 ]; then
     exit $?
 fi

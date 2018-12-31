@@ -1,4 +1,3 @@
-
 #include "mqtt_subscriber.hh"
 
 #include <crossguid/guid.hpp>
@@ -38,7 +37,7 @@ void MqttSubscriber::connect() {
     mqtt::connect_options connection_options;
     connection_options.set_keep_alive_interval(20);
     connection_options.set_clean_session(true);
-    mqtt_client_->connect(connection_options);
+    mqtt_client_->connect(connection_options)->wait();
     mqtt_client_->start_consuming();
     mqtt_client_->subscribe(channel_name_, QOS);
   } catch (const mqtt::exception& exc) {
