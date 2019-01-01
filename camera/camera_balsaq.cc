@@ -36,8 +36,9 @@ void CameraBq::loop() {
     message.height = cameraFrame.size().height;
     message.width = cameraFrame.size().width;
     publisher_->publish(message);
+    std::cout << "CAMERA TASK: publishes a camera frame" << std::endl;
   } else {
-    std::cout << "camera grab failed" << std::endl;
+    
   }
 }
 void CameraBq::shutdown() { std::cout << "Camera process shutting down." << std::endl; }

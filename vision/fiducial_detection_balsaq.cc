@@ -23,7 +23,6 @@ void FidicualDetectionBq::init() {
 }
 
 void FidicualDetectionBq::loop() {
-  std::cout << "before read attempt" << std::endl;
   CameraImageMessage message;
   if (subscriber_->read(message, 1)) {
     std::cout << "At " << message.header.timestamp_ns
@@ -38,7 +37,6 @@ void FidicualDetectionBq::loop() {
         std::cout << "detected artag #" << detection.id << std::endl;
       }    
   }
-  std::cout << "after read attempt" << std::endl;
 }
 
 void FidicualDetectionBq::shutdown() {
