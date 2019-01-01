@@ -1,11 +1,12 @@
 #pragma once
 
-#include <stdint.h>  // uint8_t etc
+#include "infrastructure/comms/serialization/serialization_macros.hh"
 
 namespace jet {
 
 class Timestamp {
  public:
+  Timestamp() = default;
   Timestamp(const uint64_t time) {
     timestamp_ = time;
   };
@@ -14,7 +15,10 @@ class Timestamp {
   }
 
  private:
-  uint64_t timestamp_;
+  uint64_t timestamp_{0};
+
+ public:
+  SERIALIZABLE_STRUCTURE(Timestamp, timestamp_);
 };
 
 }  // namespace jet

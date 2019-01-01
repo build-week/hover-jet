@@ -1,0 +1,12 @@
+# Set "style": "File" in your local sublime clang-format config
+# This will make sublime look in the current repo
+
+BasedOnStyle: Google
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AllowShortFunctionsOnASingleLine: None
+BinPackParameters: false
+ColumnLimit: 90
+ExperimentalAutoDetectBinPacking: true
+PenaltyReturnTypeOnItsOwnLine: 10000
