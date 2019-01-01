@@ -3,6 +3,7 @@
 //%deps(message)
 
 #include "infrastructure/comms/tests/pub_sub_demo_bqs/publisher_demo_bq.hh"
+#include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "infrastructure/comms/schemas/demo_message.hh"
@@ -30,3 +31,4 @@ void PublisherDemoBq::shutdown() {
 }
 
 }  // namespace jet
+BALSA_QUEUE_MAIN_FUNCTION(jet::PublisherDemoBq)
