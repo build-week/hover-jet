@@ -5,9 +5,6 @@
 //%deps(opencv)
 #include <opencv2/opencv.hpp>
 
-#include <string>
-#include <cstddef>
-
 namespace jet {
 
 struct CameraImageMessage : Message {
@@ -20,4 +17,4 @@ struct CameraImageMessage : Message {
 
 cv::Mat getImageMat(CameraImageMessage message);
 
-} //  namespace jet
+}  //  namespace jet
