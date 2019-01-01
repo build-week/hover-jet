@@ -20,6 +20,7 @@ void FidicualDetectionBq::init() {
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 
+
 }
 
 void FidicualDetectionBq::loop() {
@@ -33,8 +34,12 @@ void FidicualDetectionBq::loop() {
           detect_markers(cameraFrame);
       std::cout << "number of detections " << marker_detections.size()
                 << std::endl;
+      cv::imshow( "window", cameraFrame ); 
+      cv::waitKey(1);
       for (auto const& detection : marker_detections) {
         std::cout << "detected artag #" << detection.id << std::endl;
+        std::cout << detection.marker_center_from_camera.translation().transpose() << std::endl;
+
       }    
   }
 }
