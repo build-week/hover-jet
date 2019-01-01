@@ -23,7 +23,18 @@ sudo usermod -aG docker $USER
 docker pull hoverjet/jet
 ```
 
+# How to pull
+### Pulling the first time
+```
+git clone https://github.com/build-week/hover-jet.git
+cd hover-jet
+git submodule init
+git submodule update
+```
 
+```
+git pull --rebase origin master
+```
 
 # How to Build
 
@@ -36,6 +47,8 @@ jet build <target>
 
 jet run <bash command>
 ```
+
+If this fails, you may have to do the submodule init steps.
 
 ### Using the shell inside the docker image (Sometimes useful for debugging)
 Note: You should be using jet build or jet run, instead of these bash scripts
@@ -128,3 +141,6 @@ make -j7  # Where the 7 is the number of cores to use when building
             * If ldconfig has the lib, but you still see the error, you must add `find_package(lib-name)` in the top-level CMake
         * If it's internal, try `git grep -rni "add_library(lib_name_I_expect_to_exist"` (With the closing parenthesis excluded)
         * If these are not the case, go find Jake, this is a bug
+
+* third_party/experiments does not contain a CMakeLists.txt file
+    * do `git submodule init; git submodule update`
