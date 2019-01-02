@@ -1,21 +1,21 @@
 #pragma once
 
 #include "infrastructure/balsa_queue/balsa_queue.hh"
-#include "infrastructure/logging/log_writer.hh"
+#include "infrastructure/logging/log_reader.hh"
 
 namespace jet {
 
-class MessageLoggerBQ : public BalsaQ {
+class LoggedMessagePlayerBQ : public BalsaQ {
  public:
-  MessageLoggerBQ();
+  LoggedMessagePlayerBQ();
   void init();
   void loop();
   void shutdown();
 
  private:
   SubscriberPtr subscriber_;
-  std::unique_ptr<LogWriter> log_writer_ptr_;
-  std::vector<std::pair<std::string, SubscriberPtr>> subscribers_;
+  std::unique_ptr<LogReader> log_reader_ptr_;
+  std::vector<std::pair<std::string, PublisherPtr>> publishers_;
   std::vector<std::string> channels_;
 };
 
