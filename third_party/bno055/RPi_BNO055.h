@@ -287,7 +287,9 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
     void  setSensorOffsets(const uint8_t* calibData);
     void  setSensorOffsets(const adafruit_bno055_offsets_t &offsets_type);
     bool  isFullyCalibrated(void);
-    
+
+    void configure_page_1(int address, uint8_t value);
+
     int16_t _HandleBNO;
     int _i2cChannel;
 
@@ -295,6 +297,7 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
     uint8_t  read8   ( adafruit_bno055_reg_t );
     bool  readLen ( adafruit_bno055_reg_t, uint8_t* buffer, uint8_t len );
     bool  write8  ( adafruit_bno055_reg_t, uint8_t value );
+    bool write8_unprotected(int reg, uint8_t value);
 
     uint8_t _address;
     int32_t _sensorID;
