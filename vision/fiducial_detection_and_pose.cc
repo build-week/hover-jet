@@ -2,7 +2,10 @@
 #include <cassert>
 #include <cstdlib>
 
+
 namespace jet {
+
+namespace {
 
 MarkerRvecsTvecs rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Point2f>>& corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
@@ -15,6 +18,8 @@ MarkerRvecsTvecs rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Poin
   result.rvecs = rvecs;
   result.tvecs = tvecs;
   return result;
+}
+
 }
 
 std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
