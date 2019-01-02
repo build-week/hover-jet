@@ -8,7 +8,6 @@
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 
-
 namespace jet {
 
 class FidicualDetectionBq : public BalsaQ {
@@ -21,7 +20,6 @@ class FidicualDetectionBq : public BalsaQ {
  private:
   PublisherPtr publisher_;
   SubscriberPtr subscriber_;
-  
 };
 
 }  // namespace jet

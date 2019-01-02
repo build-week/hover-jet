@@ -15,4 +15,4 @@ struct FiducialDetectionMessage : Message {
   MESSAGE(FiducialDetectionMessage, markerID);
 };
 
-} //  namespace jet
+}  //  namespace jet

@@ -4,11 +4,12 @@
 
 namespace jet {
 
-std::pair<std::vector<cv::Vec<double, 3>>, std::vector<cv::Vec<double, 3>>> rvecs_tvecs(
-    std::vector<std::vector<cv::Point2f>> corners) {
+std::pair<std::vector<cv::Vec<double, 3>>, std::vector<cv::Vec<double, 3>>>
+rvecs_tvecs(std::vector<std::vector<cv::Point2f>> corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
   cv::Mat cameraMatrix = (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
-  const cv::Mat distortionCoefficients = (cv::Mat1d(1, 8) << 0,0,0,0,0,0,0,0);
+  const cv::Mat distortionCoefficients =
+      (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
   cv::aruco::estimatePoseSingleMarkers(corners, 0.49375, cameraMatrix,
                                        distortionCoefficients, rvecs, tvecs);
   return std::make_pair(rvecs, tvecs);
@@ -27,10 +28,10 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
       cv::circle(inputImage, center, 10, cv::Scalar(255, 0, 0));
     }
   }
-  // The returned transformation is the one that transforms points from each marker
-  // coordinate system to the camera coordinate system. The marker corrdinate system is
-  // centered on the middle of the marker, with the Z axis perpendicular to the marker
-  // plane.
+  // The returned transformation is the one that transforms points from each
+  // marker coordinate system to the camera coordinate system. The marker
+  // corrdinate system is centered on the middle of the marker, with the Z axis
+  // perpendicular to the marker plane.
   std::vector<MarkerDetection> detections;
   // draw axis for each marker
   for (int i = 0; i < ids.size(); i++) {
@@ -47,8 +48,8 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
   return detections;
 }
 
-std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image,
-                                                         const SE3& world_from_camera) {
+std::vector<MarkerInWorld> get_world_from_marker_centers(
+    const cv::Mat& camera_image, const SE3& world_from_camera) {
   const std::vector<MarkerDetection> marker_detections =
       detect_markers(camera_image);
   std::vector<MarkerInWorld> result;

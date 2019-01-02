@@ -1,4 +1,5 @@
 #include "camera/camera_balsaq.hh"
+#include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 #include <chrono>
 #include <cstddef>
@@ -32,15 +33,17 @@ void CameraBq::loop() {
       std::memcpy(message.image_data.data(), cameraFrame.data,
                   SIZE_OF_UCHAR * n_elements);
     }
-    message.timestamp_ns = 0; // TODO isaac: populate
+    message.timestamp_ns = 0;  // TODO isaac: populate
     message.height = cameraFrame.size().height;
     message.width = cameraFrame.size().width;
     publisher_->publish(message);
     std::cout << "CAMERA TASK: publishes a camera frame" << std::endl;
   } else {
-    
   }
 }
-void CameraBq::shutdown() { std::cout << "Camera process shutting down." << std::endl; }
+void CameraBq::shutdown() {
+  std::cout << "Camera process shutting down." << std::endl;
+}
 
 }  // namespace jet
+BALSA_QUEUE_MAIN_FUNCTION(jet::CameraBq)
