@@ -4,15 +4,17 @@
 
 namespace jet {
 
-std::pair<std::vector<cv::Vec<double, 3>>, std::vector<cv::Vec<double, 3>>>
-rvecs_tvecs(std::vector<std::vector<cv::Point2f>> corners) {
+MarkerRvecsTvecs rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Point2f>>& corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
-  cv::Mat cameraMatrix = (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
-  const cv::Mat distortionCoefficients =
+  const cv::Mat camera_matrix = (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
+  const cv::Mat distortion_coefficients =
       (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
-  cv::aruco::estimatePoseSingleMarkers(corners, 0.49375, cameraMatrix,
-                                       distortionCoefficients, rvecs, tvecs);
-  return std::make_pair(rvecs, tvecs);
+  cv::aruco::estimatePoseSingleMarkers(corners, 0.49375, camera_matrix,
+                                       distortion_coefficients, rvecs, tvecs);
+  MarkerRvecsTvecs result;
+  result.rvecs = rvecs;
+  result.tvecs = tvecs;
+  return result;
 }
 
 std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
@@ -21,7 +23,7 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   cv::aruco::detectMarkers(inputImage, dictionary, corners, ids);
-  auto [rvecs, tvecs] = rvecs_tvecs(corners);
+  MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
 
   for (auto const& quad : corners) {
     for (auto const& center : quad) {
@@ -34,13 +36,17 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
   // perpendicular to the marker plane.
   std::vector<MarkerDetection> detections;
   // draw axis for each marker
-  for (int i = 0; i < ids.size(); i++) {
+  for (int i = 0; i < static_cast<int>(ids.size()); i++) {
     MarkerDetection detection;
-    detection.id = ids[i];
+    detection.id = ids.at(i);
 
     const auto camera_from_marker_center =
-        SE3(SO3::exp(jcc::Vec3(rvecs[i][0], rvecs[i][1], rvecs[i][2])),
-            jcc::Vec3(tvecs[i][0], tvecs[i][1], tvecs[i][2]));
+        SE3(SO3::exp(jcc::Vec3(rvecs_tvecs.rvecs.at(i)[0],
+                               rvecs_tvecs.rvecs.at(i)[1],
+                               rvecs_tvecs.rvecs.at(i)[2])),
+                      jcc::Vec3(rvecs_tvecs.tvecs.at(i)[0],
+                                rvecs_tvecs.tvecs.at(i)[1],
+                                rvecs_tvecs.tvecs.at(i)[2]));
     detection.marker_center_from_camera = camera_from_marker_center.inverse();
     detections.push_back(detection);
   }

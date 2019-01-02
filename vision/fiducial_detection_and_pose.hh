@@ -11,6 +11,11 @@
 
 namespace jet {
 
+struct MarkerRvecsTvecs {
+  std::vector<cv::Vec<double, 3>> rvecs;
+  std::vector<cv::Vec<double, 3>> tvecs;
+};
+
 struct MarkerDetection {
   SE3 marker_center_from_camera;
   int id;
@@ -24,6 +29,6 @@ struct MarkerInWorld {
 std::vector<MarkerDetection> detect_markers(const cv::Mat& mat);
 
 std::vector<MarkerInWorld> get_world_from_marker_centers(
-    const cv::Mat& camera_image, const SE3& world_from_opengl_camera);
+    const cv::Mat& camera_image, const SE3& world_from_camera);
 
 }  // namespace jet

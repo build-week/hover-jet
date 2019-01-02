@@ -11,8 +11,8 @@
 namespace jet {
 
 struct FiducialDetectionMessage : Message {
-  int markerID;
-  MESSAGE(FiducialDetectionMessage, markerID);
+  int marker_id;
+  MESSAGE(FiducialDetectionMessage, marker_id);
 };
 
 }  //  namespace jet

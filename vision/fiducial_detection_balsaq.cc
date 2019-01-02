@@ -6,7 +6,6 @@
 #include "camera/camera_image_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
-#include "infrastructure/comms/schemas/demo_message.hh"
 
 #include <iostream>
 
@@ -26,14 +25,14 @@ void FidicualDetectionBq::loop() {
   if (subscriber_->read(message, 1)) {
     std::cout << "At " << message.header.timestamp_ns
               << " FidicualDetectionBq received message #: " << std::endl;
-    cv::Mat cameraFrame = getImageMat(message);
-    std::vector<MarkerDetection> marker_detections =
-        detect_markers(cameraFrame);
+    const cv::Mat camera_frame = get_image_mat(message);
+    const std::vector<MarkerDetection> marker_detections =
+        detect_markers(camera_frame);
     std::cout << "number of detections " << marker_detections.size()
               << std::endl;
-    cv::imshow("window", cameraFrame);
-    cv::waitKey(1);
-    for (auto const& detection : marker_detections) {
+    cv::imshow("window", camera_frame);
+    cv::waitKey(1); // to get window to persist
+    for (const auto & detection : marker_detections) {
       std::cout << "detected artag #" << detection.id << std::endl;
       std::cout << detection.marker_center_from_camera.translation().transpose()
                 << std::endl;

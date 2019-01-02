@@ -13,9 +13,9 @@ namespace jet {
 class FidicualDetectionBq : public BalsaQ {
  public:
   FidicualDetectionBq();
-  void init();
-  void loop();
-  void shutdown();
+  void init() override;
+  void loop() override;
+  void shutdown() override;
 
  private:
   PublisherPtr publisher_;
