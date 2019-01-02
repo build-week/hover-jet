@@ -4,10 +4,16 @@
 
 #include "camera/camera_intrinsics_calibration_bq.hh"
 #include "camera/camera_image_message.hh"
-#include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 
 #include <iostream>
+
+// example calibration for jet webcam
+// K {478.3144890679868, 0, 304.2041448926379,
+//  0, 475.2175251527751, 227.3620593931237,
+//  0, 0, 1}
+// D {0.02974586621002822, 0.1612454133920962,
+// -0.002942193056296339, -0.002500908320032973, -0.4533623241004859}
 
 namespace jet {
 
@@ -79,13 +85,14 @@ void CameraIntrincicsCalibrationBq::init() {
 void CameraIntrincicsCalibrationBq::loop() {
   CameraImageMessage message;
   if (subscriber_->read(message, 1)) {
-    const cv::Mat camera_frame = get_image_mat(message);
+    const cv::Mat camera_frame = getImageMat(message);
     add_camera_image(camera_frame);
+    std::cout << "collected image" << std::endl;
   }
-  if(num_images_collected()>20){
+  if(num_images_collected()>40){
     CameraIntrinsics intrinsics = calibrate();
     std::cout << intrinsics.K <<std::endl;
-    std::cout << intrinsics.K <<std::endl;
+    std::cout << intrinsics.D <<std::endl;
   }
 }
 
@@ -94,4 +101,3 @@ void CameraIntrincicsCalibrationBq::shutdown() {
 }
 
 }  // namespace jet
-BALSA_QUEUE_MAIN_FUNCTION(jet::CameraIntrincicsCalibrationBq)
