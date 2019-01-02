@@ -11,6 +11,8 @@
 
 namespace jet {
 
+constexpr bool DRAW_FIDUCIAL_CORNER_DETECTIONS = true;
+
 struct MarkerRvecsTvecs {
   std::vector<cv::Vec<double, 3>> rvecs;
   std::vector<cv::Vec<double, 3>> tvecs;

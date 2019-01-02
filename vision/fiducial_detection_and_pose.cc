@@ -2,14 +2,15 @@
 #include <cassert>
 #include <cstdlib>
 
-
 namespace jet {
 
 namespace {
 
-MarkerRvecsTvecs rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Point2f>>& corners) {
+MarkerRvecsTvecs rvecs_tvecs_from_corners(
+    const std::vector<std::vector<cv::Point2f>>& corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
-  const cv::Mat camera_matrix = (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
+  const cv::Mat camera_matrix =
+      (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
   const cv::Mat distortion_coefficients =
       (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
   cv::aruco::estimatePoseSingleMarkers(corners, 0.49375, camera_matrix,
@@ -20,19 +21,21 @@ MarkerRvecsTvecs rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Poin
   return result;
 }
 
-}
+}  // namespace
 
-std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
-  cv::Ptr<cv::aruco::Dictionary> dictionary =
+std::vector<MarkerDetection> detect_markers(cv::Mat& input_image) {
+  const cv::Ptr<cv::aruco::Dictionary> dictionary =
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
-  cv::aruco::detectMarkers(inputImage, dictionary, corners, ids);
+  cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
   MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
 
-  for (auto const& quad : corners) {
-    for (auto const& center : quad) {
-      cv::circle(inputImage, center, 10, cv::Scalar(255, 0, 0));
+  if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
+    for (const auto& quad : corners) {
+      for (const auto& center : quad) {
+        cv::circle(input_image, center, 10, cv::Scalar(255, 0, 0));
+      }
     }
   }
   // The returned transformation is the one that transforms points from each
@@ -49,9 +52,8 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& inputImage) {
         SE3(SO3::exp(jcc::Vec3(rvecs_tvecs.rvecs.at(i)[0],
                                rvecs_tvecs.rvecs.at(i)[1],
                                rvecs_tvecs.rvecs.at(i)[2])),
-                      jcc::Vec3(rvecs_tvecs.tvecs.at(i)[0],
-                                rvecs_tvecs.tvecs.at(i)[1],
-                                rvecs_tvecs.tvecs.at(i)[2]));
+            jcc::Vec3(rvecs_tvecs.tvecs.at(i)[0], rvecs_tvecs.tvecs.at(i)[1],
+                      rvecs_tvecs.tvecs.at(i)[2]));
     detection.marker_center_from_camera = camera_from_marker_center.inverse();
     detections.push_back(detection);
   }
