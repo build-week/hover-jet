@@ -1,5 +1,4 @@
 //%deps(balsa_queue)
-//%deps(message)
 
 #include "logged_message_player_bq.hh"
 
