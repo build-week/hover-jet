@@ -1,43 +1,11 @@
 #include "log_reader.hh"
+#include "log_utils.hh"
 
 #include "infrastructure/logging/logged_message_leader.hh"
-
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include <stdint.h>
 
 namespace jet {
-
-std::string generate_log_file_path(const std::string& log_path, const std::string& channel_name, uint32_t file_number)
-{
-  return log_path + "/" + channel_name + "/" + std::to_string(file_number) + ".logfile";
-}
-
-bool is_directory(const std::string& path) {
-  struct stat info;
-  if (stat(path.data(), &info) == -1) {
-    std::cout << "Directory " << path << " does not exist." << std::endl;
-    return false;
-  } else if (info.st_mode & S_IFDIR) {
-    std::cout << path << " is a directory." << std::endl;
-    return true;
-  } else {
-    std::cout << path << "is not a directory." << std::endl;
-    return false;
-  }
-}
-
-bool create_directory(const std::string& path) {
-  std::cout << "Creating directory " << path << std::endl;
-  const int error_code = mkdir(path.data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  if (error_code == -1)
-  {
-    std::cout << "Error creating directory." << std::endl;
-    return false;
-  }
-  return true;
-}
 
 LogReader::LogReader(const std::string& log_path, const std::vector<std::string>& channel_names) : log_path_(log_path) {
   if (!is_directory(log_path)) {
@@ -72,8 +40,8 @@ bool LogReader::read_next_message(const std::string& channel_name, Message& mess
     auto& file = channel_it->second.current_file;
     uint32_t channel_id;
     uint32_t message_length;
-    file.read((char*) channel_id, 4);
-    file.read((char*) message_length, 4);
+    file.read((char*) &channel_id, sizeof(uint32_t));
+    file.read((char*) &message_length, sizeof(uint32_t));
     std::string message_data(message_length, ' ');
     file.read(&message_data[0], message_length);
     message.deserialize(message_data);
@@ -88,11 +56,12 @@ bool LogReader::read_next_message_raw(const std::string& channel_name, std::stri
     auto& file = channel_it->second.current_file;
     uint32_t channel_id;
     uint32_t message_length;
-    file.read((char*) &channel_id, 4);
-    file.read((char*) &message_length, 4);
+    file.read((char*) &channel_id, sizeof(uint32_t));
+    file.read((char*) &message_length, sizeof(uint32_t));
     message_data.resize(message_length, ' ');
     file.read(&message_data[0], message_length);
     if (!file) {
+      // TODO: Check to see if there's another log file after this one before assuming we've reached the end of the log.
       std::cout << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
       return false;
     }

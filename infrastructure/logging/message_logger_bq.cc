@@ -5,7 +5,6 @@
 #include "infrastructure/logging/message_logger_bq.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
-#include "infrastructure/comms/schemas/demo_message.hh"
 
 #include <ctime>
 #include <iomanip>

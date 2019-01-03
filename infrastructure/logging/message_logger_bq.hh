@@ -13,7 +13,6 @@ class MessageLoggerBQ : public BalsaQ {
   void shutdown();
 
  private:
-  SubscriberPtr subscriber_;
   std::unique_ptr<LogWriter> log_writer_ptr_;
   std::vector<std::pair<std::string, SubscriberPtr>> subscribers_;
   std::vector<std::string> channels_;

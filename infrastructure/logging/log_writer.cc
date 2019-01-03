@@ -1,42 +1,15 @@
 #include "log_writer.hh"
+#include "log_utils.hh"
 
 #include "infrastructure/logging/logged_message_leader.hh"
-
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include <stdint.h>
 
 namespace jet {
 
-std::string generate_log_file_path(const std::string& log_path, const std::string& channel_name, uint32_t file_number)
-{
-  return log_path + "/" + channel_name + "/" + std::to_string(file_number) + ".logfile";
-}
-
-bool is_directory(const std::string& path) {
-  struct stat info;
-  if (stat(path.data(), &info) == -1) {
-    std::cout << "Directory " << path << " does not exist." << std::endl;
-    return false;
-  } else if (info.st_mode & S_IFDIR) {
-    std::cout << path << " is a directory." << std::endl;
-    return true;
-  } else {
-    std::cout << path << "is not a directory." << std::endl;
-    return false;
-  }
-}
-
-bool create_directory(const std::string& path) {
-  std::cout << "Creating directory " << path << std::endl;
-  const int error_code = mkdir(path.data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  if (error_code == -1)
-  {
-    std::cout << "Error creating directory." << std::endl;
-    return false;
-  }
-  return true;
+namespace {
+constexpr uint32_t BYTES_PER_FLUSH = 1000;
+constexpr uint32_t MAX_FILE_SIZE = 200'000'000;
 }
 
 LogWriter::LogWriter(const std::string& log_path, const std::vector<std::string>& channel_names) : log_path_(log_path) {
@@ -72,14 +45,13 @@ LogWriter::~LogWriter() {
 
 bool LogWriter::write_message(const std::string& channel_name, const std::string& serialized_data) {
   ChannelState& channel_state = channels_[channel_name];
-  if (channel_state.file_size_bytes > channel_state.last_flush_bytes + 1000) {
-    std::cout << "Flushing!" << std::endl;
+  if (channel_state.file_size_bytes > channel_state.last_flush_bytes + BYTES_PER_FLUSH) {
     channel_state.current_file.flush();
     channel_state.last_flush_bytes = channel_state.file_size_bytes;
   }
 
   // If the current log file is too large, close it and open a new one.
-  if (channel_state.file_size_bytes > 200'000'000) {
+  if (channel_state.file_size_bytes > MAX_FILE_SIZE) {
     channel_state.current_file.flush();
     channel_state.current_file.close();
     channel_state.current_file_number += 1;
@@ -95,8 +67,6 @@ bool LogWriter::write_message(const std::string& channel_name, const std::string
   uint32_t serialized_data_length = serialized_data.size();
   channel_state.current_file.write((char*) &channel_state.channel_id, sizeof(uint32_t));
   channel_state.current_file.write((char*) &serialized_data_length, sizeof(uint32_t));
-  std::cout << "message size: " << serialized_data.size() << " bytes" << std::endl;
-  std::cout << "message raw: " << serialized_data << std::endl;
 
   // Write the message itself to the log file.
   channel_state.current_file.write(serialized_data.data(), serialized_data.size());

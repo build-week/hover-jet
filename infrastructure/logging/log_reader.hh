@@ -9,13 +9,12 @@
 
 namespace jet {
 
-struct ChannelState {
-  std::ifstream current_file;
-  uint32_t channel_id{0};
-  uint32_t current_file_number{0};
-};
-
 class LogReader {
+  struct ChannelState {
+    std::ifstream current_file;
+    uint32_t channel_id{0};
+    uint32_t current_file_number{0};
+  };
  public:
   // Construct a log reader.
   // @param 
@@ -31,6 +30,8 @@ class LogReader {
   bool read_next_message(const std::string& channel_name, Message& message);
   bool read_next_message_raw(const std::string& channel_name, std::string& message_data);
 
+  // Gets a vector of all channels in the log.
+  // @return                 A vector of the names of all channels contained in the log.
   std::vector<std::string> get_available_channels() {
     return channels_in_log_;
   }

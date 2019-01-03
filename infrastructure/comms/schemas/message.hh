@@ -7,7 +7,7 @@ namespace jet {
 struct Message {
   MessageHeader header;
 
-  MESSAGE(Message);
+  MESSAGE(Message, header);
 };
 
 }  //  namespace jet
