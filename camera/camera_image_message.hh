@@ -15,6 +15,6 @@ struct CameraImageMessage : Message {
   MESSAGE(CameraImageMessage, image_data, timestamp_ns, width, height);
 };
 
-cv::Mat getImageMat(CameraImageMessage message);
+cv::Mat get_image_mat(CameraImageMessage message);
 
 }  //  namespace jet
