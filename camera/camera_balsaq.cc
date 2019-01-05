@@ -1,3 +1,4 @@
+//%bin(camera_balsaq_main)
 #include "camera/camera_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
@@ -16,7 +17,6 @@ CameraBq::CameraBq() {
 }
 
 void CameraBq::init() {
-  std::cout << "Camera process starting." << std::endl;
   cap = cv::VideoCapture(0);
   // 0 is the id of video device.0 if you have only one camera.
   publisher_ = make_publisher("camera_image_channel");
@@ -24,6 +24,7 @@ void CameraBq::init() {
 
 void CameraBq::loop() {
   cv::Mat cameraFrame;
+  std::cout << "CAMERA TASK: trying to get a frame" << std::endl;
   if (cap.read(cameraFrame)) {
     CameraImageMessage message;
     const std::size_t n_elements = cameraFrame.rows * cameraFrame.cols * 3u;
@@ -46,4 +47,5 @@ void CameraBq::shutdown() {
 }
 
 }  // namespace jet
+
 BALSA_QUEUE_MAIN_FUNCTION(jet::CameraBq)
