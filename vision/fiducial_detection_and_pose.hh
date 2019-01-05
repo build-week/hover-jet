@@ -28,7 +28,7 @@ struct MarkerInWorld {
   int id;
 };
 
-std::vector<MarkerDetection> detect_markers(const cv::Mat& mat);
+std::vector<MarkerDetection> detect_markers(cv::Mat mat);
 
 std::vector<MarkerInWorld> get_world_from_marker_centers(
     const cv::Mat& camera_image, const SE3& world_from_camera);

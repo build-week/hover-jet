@@ -1,8 +1,9 @@
-
+//%bin(fiducial_detection_balsaq_main)
 //%deps(balsa_queue)
 //%deps(message)
 
 #include "vision/fiducial_detection_balsaq.hh"
+#include "vision/fiducial_detection_and_pose.hh"
 #include "camera/camera_image_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
