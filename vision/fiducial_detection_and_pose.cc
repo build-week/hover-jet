@@ -23,7 +23,7 @@ MarkerRvecsTvecs rvecs_tvecs_from_corners(
 
 }  // namespace
 
-std::vector<MarkerDetection> detect_markers(cv::Mat input_image) {
+std::vector<MarkerDetection> detect_markers(const cv::Mat& input_image) {
   const cv::Ptr<cv::aruco::Dictionary> dictionary =
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
   std::vector<int> ids;
