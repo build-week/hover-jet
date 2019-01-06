@@ -30,8 +30,14 @@ struct MarkerInWorld {
 
 std::vector<MarkerDetection> detect_markers(const cv::Mat& mat);
 
-std::vector<MarkerInWorld> get_world_from_marker_centers(
-    const cv::Mat& camera_image, const SE3& world_from_camera);
+std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image,
+                                                         const SE3& world_from_camera);
 
-void detect_board(const cv::Mat &input_image);
+void detect_board(const cv::Mat& input_image);
+
+const cv::Ptr<cv::aruco::Dictionary> aruco_dictionary =
+    cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+const cv::Ptr<cv::aruco::GridBoard> aruco_board =
+    cv::aruco::GridBoard::create(4, 4, 0.04, 0.03, aruco_dictionary);
+
 }  // namespace jet

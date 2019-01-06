@@ -47,7 +47,8 @@ void CameraBq::loop() {
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
     publisher_->publish(message);
-    std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " " << message.height << std::endl;
+    std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " "
+              << message.height << std::endl;
   } else {
   }
 }

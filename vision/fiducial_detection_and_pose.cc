@@ -6,20 +6,19 @@ namespace jet {
 
 namespace {
 
-
-MarkerRvecsTvecs
-rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Point2f>> &corners) {
+MarkerRvecsTvecs rvecs_tvecs_from_corners(
+    const std::vector<std::vector<cv::Point2f>> &corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
 
+  // TODO isaac move these to config
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535,
-                          0, 526.7508307011435, 233.3218572898686,
-                          0, 0, 1);
+      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535, 0, 526.7508307011435,
+       233.3218572898686, 0, 0, 1);
   const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
-                                                              -0.738918431892389,
-                                                              0.004904687104832405,
-                                                              0.01328395230082144,
-                                                              0.7438835398485716);
+                                           -0.738918431892389,
+                                           0.004904687104832405,
+                                           0.01328395230082144,
+                                           0.7438835398485716);
   cv::aruco::estimatePoseSingleMarkers(corners, 0.1335, camera_matrix,
                                        distortion_coefficients, rvecs, tvecs);
   MarkerRvecsTvecs result;
@@ -28,7 +27,7 @@ rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Point2f>> &corners) {
   return result;
 }
 
-} // namespace
+}  // namespace
 
 std::vector<MarkerDetection> detect_markers(const cv::Mat &input_image) {
   const cv::Ptr<cv::aruco::Dictionary> dictionary =
@@ -39,15 +38,13 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat &input_image) {
   params->doCornerRefinement = true;
   cv::aruco::detectMarkers(input_image, dictionary, corners, ids, params);
 
-  
-
   MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
     cv::Mat debug_drawing_image = input_image.clone();
     cv::imshow("window", debug_drawing_image);
-    cv::waitKey(1); // to get window to persist
-    for (const auto& quad : corners) {
-      for (const auto& center : quad) {
+    cv::waitKey(1);  // to get window to persist
+    for (const auto &quad : corners) {
+      for (const auto &center : quad) {
         cv::circle(input_image, center, 10, cv::Scalar(255, 0, 0));
       }
     }
@@ -75,11 +72,9 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat &input_image) {
   return detections;
 }
 
-std::vector<MarkerInWorld>
-get_world_from_marker_centers(const cv::Mat &camera_image,
-                              const SE3 &world_from_camera) {
-  const std::vector<MarkerDetection> marker_detections =
-      detect_markers(camera_image);
+std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat &camera_image,
+                                                         const SE3 &world_from_camera) {
+  const std::vector<MarkerDetection> marker_detections = detect_markers(camera_image);
   std::vector<MarkerInWorld> result;
   for (auto const &image_detection : marker_detections) {
     const auto marker_center_from_opencv_camera =
@@ -95,37 +90,41 @@ get_world_from_marker_centers(const cv::Mat &camera_image,
   return result;
 }
 
-
 void detect_board(const cv::Mat &input_image) {
-  const cv::Ptr<cv::aruco::Dictionary> dictionary =
-      cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-  cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(5, 5, 0.04, 0.02, dictionary);
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
-  cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
-  const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535,
-                          0, 526.7508307011435, 233.3218572898686,
-                          0, 0, 1);
-  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
-                                                              -0.738918431892389,
-                                                              0.004904687104832405,
-                                                              0.01328395230082144,
-                                                              0.7438835398485716);
+  const auto params = cv::aruco::DetectorParameters::create();
+  params->doCornerRefinement = true;
+  params->cornerRefinementWinSize = 2;
 
-  cv::Vec3d rvec, tvec;
-  int valid = estimatePoseBoard(corners, ids, board, camera_matrix,
-                                distortion_coefficients, rvec, tvec);
-  std::cout << cv::norm(tvec) << std::endl;
+  cv::aruco::detectMarkers(input_image, aruco_dictionary, corners, ids, params);
+
+  // TODO isaac move these to config
+  const cv::Mat camera_matrix =
+      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535, 0, 526.7508307011435,
+       233.3218572898686, 0, 0, 1);
+  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
+                                           -0.738918431892389,
+                                           0.004904687104832405,
+                                           0.01328395230082144,
+                                           0.7438835398485716);
+
+  // these must be CV mats to force aruco to not use their
+  // values as initial pose estimates.  Despair!
+  cv::Mat rvec;
+  cv::Mat tvec;
+  int valid = cv::aruco::estimatePoseBoard(corners, ids, aruco_board, camera_matrix,
+                                           distortion_coefficients, rvec, tvec);
+  if (tvec.size().height > 0) {
+    std::cout << (tvec.at<double>(0, 2)) << std::endl;
+  }
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
     for (const auto &quad : corners) {
       for (const auto &center : quad) {
-        cv::circle(input_image, center, 10, cv::Scalar(255, 0, 0));
+        cv::circle(input_image, center, 5, cv::Scalar(255, 0, 0));
       }
     }
   }
-  // std::cout << "pose valid " << valid << std::endl;
-  
 }
 
-} // namespace jet
+}  // namespace jet
