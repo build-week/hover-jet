@@ -1,29 +1,25 @@
 //%deps(yaml-cpp)
 
-#include "embedded/servo_driver/servo_driver.hh" // driver library
-#include <algorithm>                             // min
-#include <cmath>                                 // floor
+#include "embedded/servo_driver/servo_driver.hh"  // driver library
+#include <string.h>                               // memset
+#include <unistd.h>                               // usleep
+#include <yaml-cpp/yaml.h>
+#include <algorithm>  // min
+#include <cmath>      // floor
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string.h> // memset
-#include <unistd.h> // usleep
-#include <yaml-cpp/yaml.h>
 
 namespace {
 // 850 to 2150 microseconds for the PWM width, specified by the servo
 constexpr int MIN_COUNTS = 1160;
 constexpr int MAX_COUNTS = 2935;
-} // namespace
+}  // namespace
 
 ServoDriver::ServoDriver(const int channel,
                          const std::shared_ptr<PwmDriver> &pwm_driver,
                          const std::string &config_path)
     : channel_(channel), pwm_driver_(pwm_driver), config_path_(config_path) {
-  init();
-}
-
-int ServoDriver::init() {
   try {
     YAML::Node config = YAML::LoadFile(config_path_);
     max_angle_ = config["max_angle"].as<int>();
@@ -35,7 +31,6 @@ int ServoDriver::init() {
   }
   percentage_ = calibrated_center_;
   set_percentage(percentage_);
-  return 0;
 }
 
 void ServoDriver::set_percentage(int percentage) {
@@ -49,7 +44,9 @@ void ServoDriver::set_percentage(int percentage) {
   pwm_driver_->set_pwm(channel_, 0, counts);
 }
 
-int ServoDriver::get_percentage() const { return percentage_; }
+int ServoDriver::get_percentage() const {
+  return percentage_;
+}
 
 void ServoDriver::set_angle(float angle) {
   float angleFraction = static_cast<float>(angle) / max_angle_;

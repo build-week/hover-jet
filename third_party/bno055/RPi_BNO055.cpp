@@ -34,7 +34,7 @@
     @brief    Instantiates a new Adafruit_BNO055 class
 */
 /**************************************************************************/
-Adafruit_BNO055::Adafruit_BNO055(char* i2cBus, int32_t sensorID, uint8_t address) {
+Adafruit_BNO055::Adafruit_BNO055(const char* i2cBus, int32_t sensorID, uint8_t address) {
     _sensorID = sensorID;
     _address = address;
     _i2cChannel = 1;
