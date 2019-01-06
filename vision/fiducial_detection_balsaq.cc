@@ -32,6 +32,17 @@ void FidicualDetectionBq::loop() {
     detect_board(camera_frame);
     // std::cout << "number of detections " << marker_detections.size()
     //           << std::endl;
+    const cv::Ptr<cv::aruco::Dictionary> dictionary =
+      cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(5, 5, 0.04, 0.02, dictionary);
+    // The third and fourth parameters are the marker length and the marker separation respectively.
+    // They can be provided in any unit, having in mind that the estimated pose for this board
+    // will be measured in the same units (in general, meters are used).
+    cv::Mat boardImage;
+    board->draw( cv::Size(900, 900), boardImage, 10, 1 );
+    cv::imshow("window2", boardImage);
+    cv::waitKey(2);
+
     cv::imshow("window", camera_frame);
     cv::waitKey(1); // to get window to persist
     // for (const auto & detection : marker_detections) {
