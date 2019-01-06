@@ -17,7 +17,7 @@ ImuBq::ImuBq() {
 
 void ImuBq::init() {
   publisher_ = make_publisher("imu");
-  std::cout << "Imu starting" << std::endl;
+  std::cout << "IMU starting" << std::endl;
 
   imu_driver_.initialize();
 }
@@ -26,7 +26,7 @@ void ImuBq::loop() {
   ImuMessage msg;
 
   // msg.timestamp_ns = jcc::now().time_since_epoch().count();
-  msg.timestamp_ns = get_current_time().count;
+  msg.timestamp = get_current_time();
 
   const jcc::Vec3 accel_mpss = imu_driver_.read_accel_mpss();
   const jcc::Vec3 angvel_radps = imu_driver_.read_gyro_radps();
@@ -49,4 +49,4 @@ void ImuBq::shutdown() {
 }  // namespace embedded
 }  // namespace jet
 
-BALSA_QUEUE_MAIN_FUNCTION(jet::ImuBq)
+BALSA_QUEUE_MAIN_FUNCTION(jet::embedded::ImuBq)

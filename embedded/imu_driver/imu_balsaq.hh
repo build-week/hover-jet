@@ -20,7 +20,7 @@ class ImuBq : public BalsaQ {
 
  private:
   PublisherPtr publisher_;
-  ImuDriver imu_driver;
+  ImuDriver imu_driver_;
 };
 
 }  // namespace embedded

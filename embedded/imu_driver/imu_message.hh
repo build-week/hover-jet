@@ -1,6 +1,7 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
+#include "infrastructure/time/timestamp.hh"
 #include "infrastructure/comms/serialization/serialization_macros.hh"
 
 #include <string>
@@ -19,7 +20,7 @@ struct ImuMessage : Message {
   double gyro_radps_z;
 
   // Timestamp that the observation was *generated*
-  uint64_t timestamp_ns;
+  Timestamp timestamp;
 
   MESSAGE(ImuMessage,
           accel_mpss_x,
@@ -28,7 +29,7 @@ struct ImuMessage : Message {
           gyro_radps_x,
           gyro_radps_y,
           gyro_radps_z,
-          timestamp_ns);
+          timestamp);
 };
 
 }  // namespace jet
