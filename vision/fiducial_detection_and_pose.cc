@@ -9,14 +9,16 @@ namespace {
 MarkerRvecsTvecs rvecs_tvecs_from_corners(
     const std::vector<std::vector<cv::Point2f>>& corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
+
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 265.9604351267379, 0, 323.3841822012849, 0, 302.7743119963964,
-       177.7795703229708, 0, 0, 1);
-  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << -0.0881294556831833,
-                                           0.08627577358744372,
-                                           -0.006574803742454203,
-                                           0.01200680448589873,
-                                           -0.02887266477084746);
+      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535,
+                          0, 526.7508307011435, 233.3218572898686,
+                          0, 0, 1);
+  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
+                                                              -0.738918431892389,
+                                                              0.004904687104832405,
+                                                              0.01328395230082144,
+                                                              0.7438835398485716);
   cv::aruco::estimatePoseSingleMarkers(corners, 0.1335, camera_matrix,
                                        distortion_coefficients, rvecs, tvecs);
   MarkerRvecsTvecs result;
