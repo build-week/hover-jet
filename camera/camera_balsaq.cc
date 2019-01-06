@@ -18,6 +18,8 @@ CameraBq::CameraBq() {
 
 void CameraBq::init() {
   cap = cv::VideoCapture(0);
+  cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+  cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
   // 0 is the id of video device.0 if you have only one camera.
   publisher_ = make_publisher("camera_image_channel");
 }
@@ -38,7 +40,7 @@ void CameraBq::loop() {
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
     publisher_->publish(message);
-    std::cout << "Camera BQ: published a camera frame" << std::endl;
+    std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " " << message.height << std::endl;
   } else {
   }
 }
