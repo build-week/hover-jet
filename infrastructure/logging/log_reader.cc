@@ -16,14 +16,35 @@ LogReader::LogReader(const std::string& log_path, const std::vector<std::string>
     throw std::runtime_error("Couldn't open metadata file for log: " + log_path);
   }
 
-  for (auto& channel_name : channels_in_log_) {
-    ChannelState channel;
-    const std::string file_path = generate_log_file_path(log_path, channel_name, channel.current_file_number);
-    if (!open_file(file_path, channel.current_file))
-    {
-      throw std::runtime_error("Couldn't open file: " + file_path);
+  if (channel_names.empty())
+  {
+    for (auto& channel_name : channels_in_log_) {
+      ChannelState channel;
+      const std::string file_path = generate_log_file_path(log_path, channel_name, channel.current_file_number);
+      if (!open_file(file_path, channel.current_file))
+      {
+        throw std::runtime_error("Couldn't open file: " + file_path);
+      }
+      channels_.emplace(channel_name, std::move(channel));
     }
-    channels_.emplace(channel_name, std::move(channel));
+  }
+  else {
+    for (auto& channel_name : channel_names) {
+      auto channel_it = std::find(channels_in_log_.begin(), channels_in_log_.end(), channel_name);
+      if (channel_it != channels_in_log_.end())
+      {
+        ChannelState channel;
+        const std::string file_path = generate_log_file_path(log_path, channel_name, channel.current_file_number);
+        if (!open_file(file_path, channel.current_file))
+        {
+          throw std::runtime_error("Couldn't open file: " + file_path);
+        }
+        channels_.emplace(channel_name, std::move(channel));
+      }
+      else {
+        std::cerr << "Requested channel " << channel_name << " does not appear to exist in this log: " << log_path << std::endl;
+      }
+    }
   }
 }
 
@@ -44,6 +65,11 @@ bool LogReader::read_next_message(const std::string& channel_name, Message& mess
     file.read((char*) &message_length, sizeof(uint32_t));
     std::string message_data(message_length, ' ');
     file.read(&message_data[0], message_length);
+    if (!file) {
+      // TODO: Check to see if there's another log file after this one before assuming we've reached the end of the log.
+      std::cerr << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
+      return false;
+    }
     message.deserialize(message_data);
     return true;
   }
@@ -62,7 +88,7 @@ bool LogReader::read_next_message_raw(const std::string& channel_name, std::stri
     file.read(&message_data[0], message_length);
     if (!file) {
       // TODO: Check to see if there's another log file after this one before assuming we've reached the end of the log.
-      std::cout << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
+      std::cerr << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
       return false;
     }
     return true;
