@@ -24,3 +24,4 @@ void go() {
 int main() {
   jet::embedded::go();
 }
+
