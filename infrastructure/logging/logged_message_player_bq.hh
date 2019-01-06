@@ -3,6 +3,8 @@
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/logging/log_reader.hh"
 
+#include <atomic>
+
 namespace jet {
 
 class LoggedMessagePlayerBQ : public BalsaQ {
@@ -13,9 +15,10 @@ class LoggedMessagePlayerBQ : public BalsaQ {
   void shutdown();
 
  private:
-  std::unique_ptr<LogReader> log_reader_ptr_;
-  std::vector<std::pair<std::string, PublisherPtr>> publishers_;
-  std::vector<std::string> channels_;
+  void channel_handler_thread_fn(const std::string& channel_name, const std::string& log_path);
+  bool shutdown_{false};
+  std::vector<std::thread> threads_;
+  std::atomic<uint64_t> current_log_time_{0};
 };
 
 }  // namespace jet
