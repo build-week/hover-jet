@@ -3,13 +3,15 @@
 
 #include "infrastructure/logging/logged_message_leader.hh"
 
+#include "infrastructure/comms/schemas/message.hh"
+
 #include <stdint.h>
 
 namespace jet {
 
 namespace {
 constexpr uint32_t BYTES_PER_FLUSH = 1000;
-constexpr uint32_t MAX_FILE_SIZE = 200'000'000;
+constexpr uint64_t MAX_FILE_SIZE = 1'000'000'000;
 }
 
 LogWriter::LogWriter(const std::string& log_path, const std::vector<std::string>& channel_names) : log_path_(log_path) {
@@ -73,6 +75,7 @@ bool LogWriter::write_message(const std::string& channel_name, const std::string
 
   // Update the byte counter for this log file.
   channel_state.file_size_bytes += serialized_data.size() + sizeof(uint32_t) + sizeof(uint32_t);
+  return true;
 }
 
 bool LogWriter::create_log_directory(const std::string& log_path)
@@ -99,6 +102,7 @@ bool LogWriter::write_metadata(const std::string& log_path, const std::vector<st
     metadata_file.write(newline.data(), newline.size());
   }
   metadata_file.close();
+  return true;
 }
 
 bool LogWriter::open_file(const std::string& file_path, std::ofstream& file) {
@@ -108,6 +112,7 @@ bool LogWriter::open_file(const std::string& file_path, std::ofstream& file) {
     std::cerr << "Could not open file " << file_path << " because " << e.what() << std::endl;
     return false;
   }
+  return true;
 }
 
 }  // namespace jet

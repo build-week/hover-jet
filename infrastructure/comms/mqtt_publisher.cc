@@ -1,8 +1,9 @@
 #include "mqtt_publisher.hh"
 
+#include "infrastructure/time/time_utils.hh"
+
 #include <crossguid/guid.hpp>
 
-#include <chrono>
 #include <cstdlib>
 
 //%deps(paho-mqttpp3)
@@ -62,6 +63,7 @@ void MqttPublisher::publish(Message& message) {
   }
 
   message.header.sequence_number = sequence_number_;
+  message.header.timestamp_ns = time::get_current_time();
 
   std::string data;
   message.serialize(data);
