@@ -104,9 +104,14 @@ void detect_board(const cv::Mat &input_image) {
   std::vector<std::vector<cv::Point2f>> corners;
   cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
-  const cv::Mat distortion_coefficients =
-      (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
+      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535,
+                          0, 526.7508307011435, 233.3218572898686,
+                          0, 0, 1);
+  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
+                                                              -0.738918431892389,
+                                                              0.004904687104832405,
+                                                              0.01328395230082144,
+                                                              0.7438835398485716);
 
   cv::Vec3d rvec, tvec;
   int valid = estimatePoseBoard(corners, ids, board, camera_matrix,
