@@ -24,13 +24,21 @@ void FidicualDetectionBq::init() {
 void FidicualDetectionBq::loop() {
   CameraImageMessage message;
   if (subscriber_->read(message, 1)) {
+    // std::cout << "At " << message.header.timestamp_ns
+              // << " FidicualDetectionBq received message #: " << std::endl;
     const cv::Mat camera_frame = get_image_mat(message);
-    const std::vector<MarkerDetection> marker_detections =
-        detect_markers(camera_frame);
-
-    for (const auto & detection : marker_detections) {
-      std::cout << detection.marker_center_from_camera.translation().norm() << std::endl;
-    }
+    // const std::vector<MarkerDetection> marker_detections =
+    //     detect_markers(camera_frame);
+    detect_board(camera_frame);
+    // std::cout << "number of detections " << marker_detections.size()
+    //           << std::endl;
+    cv::imshow("window", camera_frame);
+    cv::waitKey(1); // to get window to persist
+    // for (const auto & detection : marker_detections) {
+    //   std::cout << "detected artag #" << detection.id << std::endl;
+    //   std::cout << detection.marker_center_from_camera.translation().transpose()
+    //             << std::endl;
+    // }
   }
 }
 

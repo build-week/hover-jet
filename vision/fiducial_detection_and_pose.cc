@@ -6,8 +6,9 @@ namespace jet {
 
 namespace {
 
-MarkerRvecsTvecs rvecs_tvecs_from_corners(
-    const std::vector<std::vector<cv::Point2f>>& corners) {
+
+MarkerRvecsTvecs
+rvecs_tvecs_from_corners(const std::vector<std::vector<cv::Point2f>> &corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
 
   const cv::Mat camera_matrix =
@@ -27,9 +28,9 @@ MarkerRvecsTvecs rvecs_tvecs_from_corners(
   return result;
 }
 
-}  // namespace
+} // namespace
 
-std::vector<MarkerDetection> detect_markers(const cv::Mat& input_image) {
+std::vector<MarkerDetection> detect_markers(const cv::Mat &input_image) {
   const cv::Ptr<cv::aruco::Dictionary> dictionary =
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
   std::vector<int> ids;
@@ -74,12 +75,13 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& input_image) {
   return detections;
 }
 
-std::vector<MarkerInWorld> get_world_from_marker_centers(
-    const cv::Mat& camera_image, const SE3& world_from_camera) {
+std::vector<MarkerInWorld>
+get_world_from_marker_centers(const cv::Mat &camera_image,
+                              const SE3 &world_from_camera) {
   const std::vector<MarkerDetection> marker_detections =
       detect_markers(camera_image);
   std::vector<MarkerInWorld> result;
-  for (auto const& image_detection : marker_detections) {
+  for (auto const &image_detection : marker_detections) {
     const auto marker_center_from_opencv_camera =
         image_detection.marker_center_from_camera;
     const auto opencv_camera_from_marker_center =
@@ -93,4 +95,33 @@ std::vector<MarkerInWorld> get_world_from_marker_centers(
   return result;
 }
 
-}  // namespace jet
+
+void detect_board(const cv::Mat &input_image) {
+  const cv::Ptr<cv::aruco::Dictionary> dictionary =
+      cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+  cv::Ptr<cv::aruco::GridBoard> board =
+      cv::aruco::GridBoard::create(5, 7, 0.04, 0.01, dictionary);
+  std::vector<int> ids;
+  std::vector<std::vector<cv::Point2f>> corners;
+  cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
+  const cv::Mat camera_matrix =
+      (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
+  const cv::Mat distortion_coefficients =
+      (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
+
+  cv::Vec3d rvec, tvec;
+  int valid = estimatePoseBoard(corners, ids, board, camera_matrix,
+                                distortion_coefficients, rvec, tvec);
+  std::cout << tvec << std::endl;
+  if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
+    for (const auto &quad : corners) {
+      for (const auto &center : quad) {
+        cv::circle(input_image, center, 10, cv::Scalar(255, 0, 0));
+      }
+    }
+  }
+  std::cout << "pose valid " << valid << std::endl;
+  
+}
+
+} // namespace jet
