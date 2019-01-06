@@ -112,7 +112,7 @@ void detect_board(const cv::Mat &input_image) {
   cv::Vec3d rvec, tvec;
   int valid = estimatePoseBoard(corners, ids, board, camera_matrix,
                                 distortion_coefficients, rvec, tvec);
-  std::cout << tvec << std::endl;
+  std::cout << cv::norm(tvec) << std::endl;
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
     for (const auto &quad : corners) {
       for (const auto &center : quad) {
