@@ -9,11 +9,17 @@ namespace {
 MarkerRvecsTvecs rvecs_tvecs_from_corners(
     const std::vector<std::vector<cv::Point2f>>& corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
+
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
-  const cv::Mat distortion_coefficients =
-      (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
-  cv::aruco::estimatePoseSingleMarkers(corners, 0.49375, camera_matrix,
+      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535,
+                          0, 526.7508307011435, 233.3218572898686,
+                          0, 0, 1);
+  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
+                                                              -0.738918431892389,
+                                                              0.004904687104832405,
+                                                              0.01328395230082144,
+                                                              0.7438835398485716);
+  cv::aruco::estimatePoseSingleMarkers(corners, 0.1335, camera_matrix,
                                        distortion_coefficients, rvecs, tvecs);
   MarkerRvecsTvecs result;
   result.rvecs = rvecs;
@@ -28,10 +34,17 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& input_image) {
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
-  cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
-  MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
+  const auto params = cv::aruco::DetectorParameters::create();
+  params->doCornerRefinement = true;
+  cv::aruco::detectMarkers(input_image, dictionary, corners, ids, params);
 
+  
+
+  MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
+    cv::Mat debug_drawing_image = input_image.clone();
+    cv::imshow("window", debug_drawing_image);
+    cv::waitKey(1); // to get window to persist
     for (const auto& quad : corners) {
       for (const auto& center : quad) {
         cv::circle(input_image, center, 10, cv::Scalar(255, 0, 0));

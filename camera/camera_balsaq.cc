@@ -12,12 +12,16 @@
 
 namespace jet {
 
+constexpr double WEBCAM_EXPOSURE = 0.01;
+
 CameraBq::CameraBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
 void CameraBq::init() {
   cap = cv::VideoCapture(0);
+  cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+  cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
   // 0 is the id of video device.0 if you have only one camera.
   publisher_ = make_publisher("camera_image_channel");
 }
@@ -25,6 +29,11 @@ void CameraBq::init() {
 void CameraBq::loop() {
   cv::Mat camera_frame;
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
+
+  cap.set(cv::CAP_PROP_AUTOFOCUS, 0);
+  cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.25);
+  cap.set(cv::CAP_PROP_EXPOSURE, WEBCAM_EXPOSURE);
+
   if (cap.read(camera_frame)) {
     CameraImageMessage message;
     const std::size_t n_elements = camera_frame.rows * camera_frame.cols * 3u;
@@ -38,7 +47,7 @@ void CameraBq::loop() {
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
     publisher_->publish(message);
-    std::cout << "Camera BQ: published a camera frame" << std::endl;
+    std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " " << message.height << std::endl;
   } else {
   }
 }
