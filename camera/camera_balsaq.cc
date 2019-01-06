@@ -34,7 +34,7 @@ void CameraBq::loop() {
       std::memcpy(message.image_data.data(), camera_frame.data,
                   SIZE_OF_UCHAR * n_elements);
     }
-    message.timestamp = get_current_time();  // TODO isaac: populate
+    message.timestamp = get_current_time();
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
     publisher_->publish(message);
