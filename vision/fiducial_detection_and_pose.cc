@@ -38,8 +38,13 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& input_image) {
   params->doCornerRefinement = true;
   cv::aruco::detectMarkers(input_image, dictionary, corners, ids, params);
 
+  
+
   MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
+    cv::Mat debug_drawing_image = input_image.clone();
+    cv::imshow("window", debug_drawing_image);
+    cv::waitKey(1); // to get window to persist
     for (const auto& quad : corners) {
       for (const auto& center : quad) {
         cv::circle(input_image, center, 10, cv::Scalar(255, 0, 0));

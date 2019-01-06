@@ -27,8 +27,7 @@ void FidicualDetectionBq::loop() {
     const cv::Mat camera_frame = get_image_mat(message);
     const std::vector<MarkerDetection> marker_detections =
         detect_markers(camera_frame);
-    cv::imshow("window", camera_frame);
-    cv::waitKey(1); // to get window to persist
+
     for (const auto & detection : marker_detections) {
       std::cout << detection.marker_center_from_camera.translation().norm() << std::endl;
     }
