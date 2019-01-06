@@ -24,7 +24,7 @@ int main() {
 	while (!shutdown)
 	{
 		message_logger_bq.loop();
-		usleep(5000);
+		usleep(1);
 	}
 	message_logger_bq.shutdown();
 	return 0;
