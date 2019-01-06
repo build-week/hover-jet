@@ -99,8 +99,7 @@ get_world_from_marker_centers(const cv::Mat &camera_image,
 void detect_board(const cv::Mat &input_image) {
   const cv::Ptr<cv::aruco::Dictionary> dictionary =
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-  cv::Ptr<cv::aruco::GridBoard> board =
-      cv::aruco::GridBoard::create(5, 7, 0.04, 0.01, dictionary);
+  cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(5, 5, 0.04, 0.02, dictionary);
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
@@ -120,7 +119,7 @@ void detect_board(const cv::Mat &input_image) {
       }
     }
   }
-  std::cout << "pose valid " << valid << std::endl;
+  // std::cout << "pose valid " << valid << std::endl;
   
 }
 
