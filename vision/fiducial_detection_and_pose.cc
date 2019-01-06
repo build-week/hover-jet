@@ -10,10 +10,14 @@ MarkerRvecsTvecs rvecs_tvecs_from_corners(
     const std::vector<std::vector<cv::Point2f>>& corners) {
   std::vector<cv::Vec3d> rvecs, tvecs;
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 320, 0, 320, 0, 320, 320, 0, 0, 1);
-  const cv::Mat distortion_coefficients =
-      (cv::Mat1d(1, 8) << 0, 0, 0, 0, 0, 0, 0, 0);
-  cv::aruco::estimatePoseSingleMarkers(corners, 0.49375, camera_matrix,
+      (cv::Mat1d(3, 3) << 265.9604351267379, 0, 323.3841822012849, 0, 302.7743119963964,
+       177.7795703229708, 0, 0, 1);
+  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << -0.0881294556831833,
+                                           0.08627577358744372,
+                                           -0.006574803742454203,
+                                           0.01200680448589873,
+                                           -0.02887266477084746);
+  cv::aruco::estimatePoseSingleMarkers(corners, 0.1335, camera_matrix,
                                        distortion_coefficients, rvecs, tvecs);
   MarkerRvecsTvecs result;
   result.rvecs = rvecs;
@@ -28,7 +32,9 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& input_image) {
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
-  cv::aruco::detectMarkers(input_image, dictionary, corners, ids);
+  const auto params = cv::aruco::DetectorParameters::create();
+  params->cornerRefinementMethod = cv::aruco::CORNER_REFINE_SUBPIX;
+  cv::aruco::detectMarkers(input_image, dictionary, corners, ids, params);
   MarkerRvecsTvecs rvecs_tvecs = rvecs_tvecs_from_corners(corners);
 
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
