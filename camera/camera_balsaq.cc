@@ -12,6 +12,8 @@
 
 namespace jet {
 
+constexpr double WEBCAM_EXPOSURE = 0.01;
+
 CameraBq::CameraBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
@@ -27,6 +29,11 @@ void CameraBq::init() {
 void CameraBq::loop() {
   cv::Mat camera_frame;
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
+
+  cap.set(cv::CAP_PROP_AUTOFOCUS, 0);
+  cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.25);
+  cap.set(cv::CAP_PROP_EXPOSURE, WEBCAM_EXPOSURE);
+
   if (cap.read(camera_frame)) {
     CameraImageMessage message;
     const std::size_t n_elements = camera_frame.rows * camera_frame.cols * 3u;
