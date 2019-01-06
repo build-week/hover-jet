@@ -23,22 +23,22 @@ void CameraBq::init() {
 }
 
 void CameraBq::loop() {
-  cv::Mat cameraFrame;
-  std::cout << "CAMERA TASK: trying to get a frame" << std::endl;
-  if (cap.read(cameraFrame)) {
+  cv::Mat camera_frame;
+  std::cout << "Camera BQ: trying to get a frame" << std::endl;
+  if (cap.read(camera_frame)) {
     CameraImageMessage message;
-    const std::size_t n_elements = cameraFrame.rows * cameraFrame.cols * 3u;
+    const std::size_t n_elements = camera_frame.rows * camera_frame.cols * 3u;
     message.image_data.resize(n_elements);
     constexpr std::size_t SIZE_OF_UCHAR = sizeof(uint8_t);
-    if (cameraFrame.isContinuous()) {
-      std::memcpy(message.image_data.data(), cameraFrame.data,
+    if (camera_frame.isContinuous()) {
+      std::memcpy(message.image_data.data(), camera_frame.data,
                   SIZE_OF_UCHAR * n_elements);
     }
-    message.timestamp_ns = 0;  // TODO isaac: populate
-    message.height = cameraFrame.size().height;
-    message.width = cameraFrame.size().width;
+    message.timestamp = get_current_time();
+    message.height = camera_frame.size().height;
+    message.width = camera_frame.size().width;
     publisher_->publish(message);
-    std::cout << "CAMERA TASK: publishes a camera frame" << std::endl;
+    std::cout << "Camera BQ: published a camera frame" << std::endl;
   } else {
   }
 }
