@@ -38,6 +38,6 @@ void detect_board(const cv::Mat& input_image);
 const cv::Ptr<cv::aruco::Dictionary> aruco_dictionary =
     cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 const cv::Ptr<cv::aruco::GridBoard> aruco_board =
-    cv::aruco::GridBoard::create(4, 4, 0.04, 0.03, aruco_dictionary);
+    cv::aruco::GridBoard::create(4, 4, 35.15 / 1000, 35.15 / 1000, aruco_dictionary);
 
 }  // namespace jet
