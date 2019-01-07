@@ -36,11 +36,11 @@ void FidicualDetectionBq::loop() {
 
     cv::imshow("window", camera_frame);
     cv::waitKey(1); // to get window to persist
-    for (const auto & detection : marker_detections) {
-      std::cout << "detected artag #" << detection.id << std::endl;
-      std::cout << detection.marker_center_from_camera.translation().transpose()
-                << std::endl;
-    }
+    // for (const auto & detection : marker_detections) {
+    //   std::cout << "detected artag #" << detection.id << std::endl;
+    //   std::cout << detection.marker_center_from_camera.translation().transpose()
+    //             << std::endl;
+    // }
   }
 }
 

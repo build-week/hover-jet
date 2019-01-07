@@ -116,7 +116,11 @@ void detect_board(const cv::Mat &input_image) {
   int valid = cv::aruco::estimatePoseBoard(corners, ids, aruco_board, camera_matrix,
                                            distortion_coefficients, rvec, tvec);
   if (tvec.size().height > 0) {
-    std::cout << (tvec.at<double>(0, 2)) << std::endl;
+    cv::Vec3d x;
+    x[0] = tvec.at<double>(0, 0);
+    x[1] = tvec.at<double>(0, 1);
+    x[2] = tvec.at<double>(0, 2);
+    std::cout << (cv::norm(x)) << std::endl;
   }
   if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
     for (const auto &quad : corners) {
