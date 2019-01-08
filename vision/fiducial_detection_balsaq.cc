@@ -16,7 +16,7 @@ FidicualDetectionBq::FidicualDetectionBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void FidicualDetectionBq::init() {
+void FidicualDetectionBq::init(int argc, char *argv[]) {
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 }

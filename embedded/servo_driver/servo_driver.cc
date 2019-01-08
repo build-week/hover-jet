@@ -48,7 +48,7 @@ int ServoDriver::get_percentage() const {
   return percentage_;
 }
 
-void ServoDriver::set_angle(float angle) {
+void ServoDriver::set_angle(float angle) { // TODO noble to give units to angle
   float angleFraction = static_cast<float>(angle) / max_angle_;
   int half_range = (calibrated_max_ - calibrated_center_);
   set_percentage(calibrated_center_ + half_range * angleFraction);

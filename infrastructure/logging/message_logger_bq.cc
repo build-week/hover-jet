@@ -5,6 +5,7 @@
 #include "infrastructure/logging/message_logger_bq.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
+#include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 #include <ctime>
 #include <iomanip>
@@ -18,7 +19,7 @@ MessageLoggerBQ::MessageLoggerBQ() {
   // loop_delay_microseconds = 5000;
 }
 
-void MessageLoggerBQ::init() {
+void MessageLoggerBQ::init(int argc, char *argv[]) {
   if (const char* env_logged_channels = std::getenv("LOGGED_CHANNELS")) {
       std::string channels_string(env_logged_channels);
       std::string delimiter = ",";
@@ -70,3 +71,5 @@ void MessageLoggerBQ::shutdown() {
 }
 
 }  // namespace jet
+
+BALSA_QUEUE_MAIN_FUNCTION(jet::MessageLoggerBQ)

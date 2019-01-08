@@ -14,7 +14,7 @@ namespace jet {
 class CameraBq : public BalsaQ {
  public:
   CameraBq();
-  void init();
+  void init(int argc, char *argv[]);
   void loop();
   void shutdown();
 

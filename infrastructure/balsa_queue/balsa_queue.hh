@@ -14,7 +14,7 @@ class BalsaQ {
  public:
   const static uint loop_delay_microseconds = 10000;
   BalsaQ() = default;
-  virtual void init() = 0;
+  virtual void init(int argc, char *argv[]) = 0;
   virtual void loop() = 0;
   virtual void shutdown() = 0;
 
