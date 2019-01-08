@@ -8,7 +8,7 @@ namespace jet {
 class MessageLoggerBQ : public BalsaQ {
  public:
   MessageLoggerBQ();
-  void init();
+  void init(int argc, char *argv[]);
   void loop();
   void shutdown();
 

@@ -3,6 +3,7 @@
 //%deps(message)
 
 #include "infrastructure/comms/tests/pub_sub_demo_bqs/subscriber_demo_bq.hh"
+#include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "infrastructure/comms/schemas/demo_message.hh"
@@ -15,7 +16,7 @@ SubscriberDemoBq::SubscriberDemoBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void SubscriberDemoBq::init() {
+void SubscriberDemoBq::init(int argc, char *argv[]) {
   subscriber_ = make_subscriber("demo_channel_name");
 }
 
@@ -34,3 +35,5 @@ void SubscriberDemoBq::shutdown() {
 }
 
 }  // namespace jet
+
+BALSA_QUEUE_MAIN_FUNCTION(jet::SubscriberDemoBq)

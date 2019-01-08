@@ -4,6 +4,7 @@
 
 #include "infrastructure/comms/schemas/message.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
+#include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 #include <ctime>
 #include <iomanip>
@@ -19,7 +20,7 @@ LoggedMessagePlayerBQ::LoggedMessagePlayerBQ() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void LoggedMessagePlayerBQ::init() {
+void LoggedMessagePlayerBQ::init(int argc, char *argv[]) {
   std::string log_path;
   if (const char* env_log_path = std::getenv("LOG_PATH")) {
       log_path = env_log_path;
@@ -71,3 +72,5 @@ void LoggedMessagePlayerBQ::shutdown() {
 }
 
 }  // namespace jet
+
+BALSA_QUEUE_MAIN_FUNCTION(jet::LoggedMessagePlayerBQ)
