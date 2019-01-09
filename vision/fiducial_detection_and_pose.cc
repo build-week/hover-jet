@@ -1,3 +1,4 @@
+    // }
 #include "vision/fiducial_detection_and_pose.hh"
 #include <cassert>
 #include <cstdlib>
@@ -90,21 +91,23 @@ std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat &camera_i
   return result;
 }
 
-void detect_board(const cv::Mat &input_image) {
+std::optional<SE3> detect_board(const cv::Mat &input_image) {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   const auto params = cv::aruco::DetectorParameters::create();
   params->doCornerRefinement = true;
   params->cornerRefinementWinSize = 2;
 
+  // TODO make aruco_dictionary parameter
   cv::aruco::detectMarkers(input_image, aruco_dictionary, corners, ids, params);
 
   // TODO isaac move these to config
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 499.7749869454186, 0, 309.3792706235992,
- 0, 496.9300965132637, 241.6934416030273,
- 0, 0, 1);
-  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.003861115403120386, 0.09541932181851349, 0.001898991151152847, -0.003082742498836169, -0.2932184860155891);
+      (cv::Mat1d(3, 3) << 499.7749869454186, 0, 309.3792706235992, 0, 496.9300965132637,
+       241.6934416030273, 0, 0, 1);
+  const cv::Mat distortion_coefficients =
+      (cv::Mat1d(1, 5) << 0.003861115403120386, 0.09541932181851349, 0.001898991151152847,
+       -0.003082742498836169, -0.2932184860155891);
 
   // these must be CV mats to force aruco to not use their
   // values as initial pose estimates.  Despair!
@@ -112,19 +115,24 @@ void detect_board(const cv::Mat &input_image) {
   cv::Mat tvec;
   int valid = cv::aruco::estimatePoseBoard(corners, ids, aruco_board, camera_matrix,
                                            distortion_coefficients, rvec, tvec);
+
   if (tvec.size().height > 0) {
-    cv::Vec3d x;
-    x[0] = tvec.at<double>(0, 0);
-    x[1] = tvec.at<double>(0, 1);
-    x[2] = tvec.at<double>(0, 2);
-    std::cout << (cv::norm(x)) << std::endl;
-  }
-  if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
-    for (const auto &quad : corners) {
-      for (const auto &center : quad) {
-        cv::circle(input_image, center, 5, cv::Scalar(255, 0, 0));
+    SE3 camera_from_marker_center = SE3(
+        SO3::exp(jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1),
+                           tvec.at<double>(0, 2))),
+        jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1), tvec.at<double>(0, 2)));
+    SE3 marker_center_from_camera = camera_from_marker_center.inverse();
+
+    if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
+      for (const auto &quad : corners) {
+        for (const auto &center : quad) {
+          cv::circle(input_image, center, 5, cv::Scalar(255, 0, 0));
+        }
       }
     }
+    return {marker_center_from_camera};
+  } else {
+    return std::nullopt;
   }
 }
 
