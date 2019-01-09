@@ -26,7 +26,7 @@ void FidicualDetectionBq::loop() {
   CameraImageMessage message;
   if (subscriber_->read(message, 1)) {
     const cv::Mat camera_frame = get_image_mat(message);
-    std::optional<SE3> board_from_camera = detect_board(camera_frame);
+    const std::optional<SE3> board_from_camera = detect_board(camera_frame);
     if (board_from_camera) {
       // publish a message using *board_from_camera
       FiducialDetectionMessage detection_message;
