@@ -10,20 +10,28 @@ Starts a docker container from the jet image, then executes the specified comman
 END
 }
 
+MQTT_ADDRESS=tcp://localhost:1883
+
 while [ -n "$1" ]; do
     case "$1" in
         -h | --help)
             help
             exit
             ;;
+        -b | --broker)
+                MQTT_ADDRESS=$2
+                shift
+                shift
+                ;;
         *)
             break
             ;;
     esac
 done
 
+jet_broker.sh
+
 JET_REPO_PATH=$(git rev-parse --show-toplevel)
-MQTT_ADDRESS=tcp://localhost:1883
 
 if [ $? -ne 0 ]; then
     exit $?
