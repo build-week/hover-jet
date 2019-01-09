@@ -11,7 +11,7 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   params->doCornerRefinement = true;
   params->cornerRefinementWinSize = 5;
 
-  // TODO isaac make aruco_dictionary parameter of this method to allow for 
+  // TODO isaac make aruco_dictionary parameter of this method to allow for
   // multiple unique boards
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
 
@@ -28,9 +28,10 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   cv::Mat rvec;
   cv::Mat tvec;
 
-  const int num_fiducials_detected_on_board = cv::aruco::estimatePoseBoard(
-      corners, ids, get_aruco_board(), camera_matrix, distortion_coefficients, rvec, tvec);
-  (void) num_fiducials_detected_on_board;
+  const int num_fiducials_detected_on_board =
+      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(), camera_matrix,
+                                   distortion_coefficients, rvec, tvec);
+  (void)num_fiducials_detected_on_board;
 
   if (tvec.size().height > 0) {
     // The returned transformation is the one that transforms points from each
