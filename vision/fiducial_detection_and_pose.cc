@@ -50,10 +50,7 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat &input_image) {
       }
     }
   }
-  // The returned transformation is the one that transforms points from each
-  // marker coordinate system to the camera coordinate system. The marker
-  // corrdinate system is centered on the middle of the marker, with the Z axis
-  // perpendicular to the marker plane.
+
   std::vector<MarkerDetection> detections;
   // draw axis for each marker
   for (int i = 0; i < static_cast<int>(ids.size()); i++) {
@@ -117,10 +114,15 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
                                            distortion_coefficients, rvec, tvec);
 
   if (tvec.size().height > 0) {
+    // The returned transformation is the one that transforms points from each
+    // marker coordinate system to the camera coordinate system. The marker
+    // corrdinate system is centered on the middle of the marker, with the Z axis
+    // perpendicular to the marker plane.
     SE3 camera_from_marker_center = SE3(
         SO3::exp(jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1),
                            tvec.at<double>(0, 2))),
         jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1), tvec.at<double>(0, 2)));
+    std::cout << camera_from_marker_center.translation().norm();
     SE3 marker_center_from_camera = camera_from_marker_center.inverse();
 
     if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
