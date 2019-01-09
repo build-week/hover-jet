@@ -18,7 +18,7 @@ CameraBq::CameraBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void CameraBq::init() {
+void CameraBq::init(int argc, char *argv[]) {
   cap = cv::VideoCapture(0);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
