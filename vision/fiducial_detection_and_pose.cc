@@ -1,4 +1,3 @@
-// }
 #include "vision/fiducial_detection_and_pose.hh"
 #include <cassert>
 #include <cstdlib>
@@ -14,7 +13,7 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
 
   // TODO isaac make aruco_dictionary parameter of this method to allow for 
   // multiple unique boards
-  cv::aruco::detectMarkers(input_image, aruco_dictionary, corners, ids, params);
+  cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
 
   // TODO isaac move these to config and make them
   const cv::Mat camera_matrix =
@@ -29,19 +28,20 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   cv::Mat rvec;
   cv::Mat tvec;
 
-  int num_fiducials_detected_on_board = cv::aruco::estimatePoseBoard(
-      corners, ids, aruco_board, camera_matrix, distortion_coefficients, rvec, tvec);
+  const int num_fiducials_detected_on_board = cv::aruco::estimatePoseBoard(
+      corners, ids, get_aruco_board(), camera_matrix, distortion_coefficients, rvec, tvec);
+  (void) num_fiducials_detected_on_board;
 
   if (tvec.size().height > 0) {
     // The returned transformation is the one that transforms points from each
     // marker coordinate system to the camera coordinate system. The marker
     // corrdinate system is centered on the middle of the marker, with the Z axis
     // perpendicular to the marker plane.
-    SE3 camera_from_marker_center = SE3(
+    const SE3 camera_from_marker_center = SE3(
         SO3::exp(jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1),
                            tvec.at<double>(0, 2))),
         jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1), tvec.at<double>(0, 2)));
-    SE3 marker_center_from_camera = camera_from_marker_center.inverse();
+    const SE3 marker_center_from_camera = camera_from_marker_center.inverse();
 
     return {marker_center_from_camera};
   } else {

@@ -33,7 +33,7 @@ void FidicualDetectionBq::loop() {
     // They can be provided in any unit, having in mind that the estimated pose for this board
     // will be measured in the same units (in general, meters are used).
     cv::Mat board_image;
-    aruco_board->draw(cv::Size(900, 900), board_image, 50, 1);
+    get_aruco_board()->draw(cv::Size(900, 900), board_image, 50, 1);
     if (OPEN_DEBUG_WINDOWS) {
       cv::imshow("window2", board_image);
       cv::waitKey(2);

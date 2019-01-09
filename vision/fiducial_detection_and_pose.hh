@@ -11,11 +11,6 @@
 
 namespace jet {
 
-struct MarkerRvecsTvecs {
-  std::vector<cv::Vec<double, 3>> rvecs;
-  std::vector<cv::Vec<double, 3>> tvecs;
-};
-
 struct MarkerDetection {
   SE3 marker_center_from_camera;
   int id;
@@ -33,13 +28,17 @@ std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_i
 
 std::optional<SE3> detect_board(const cv::Mat& input_image);
 
-const cv::Ptr<cv::aruco::Dictionary> aruco_dictionary =
-    cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_250);
-
 constexpr float FIDUCIAL_WIDTH_METERS = 30.25 / 1000;
 constexpr float FIDUCIAL_GAP_WIDTH_METERS = 22.98 / 1000;
 
-const cv::Ptr<cv::aruco::GridBoard> aruco_board =
-    cv::aruco::GridBoard::create(4, 4, FIDUCIAL_WIDTH_METERS, FIDUCIAL_GAP_WIDTH_METERS, aruco_dictionary);
+
+inline cv::Ptr<cv::aruco::Dictionary> get_aruco_dictionary(){
+    return cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_250);
+}
+
+
+inline cv::Ptr<cv::aruco::GridBoard> get_aruco_board(){
+    return cv::aruco::GridBoard::create(4, 4, FIDUCIAL_WIDTH_METERS, FIDUCIAL_GAP_WIDTH_METERS, get_aruco_dictionary());
+}
 
 }  // namespace jet
