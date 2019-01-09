@@ -25,11 +25,13 @@ void FidicualDetectionBq::loop() {
   CameraImageMessage message;
   if (subscriber_->read(message, 1)) {
     const cv::Mat camera_frame = get_image_mat(message);
-    detect_board(camera_frame);
-    // The third and fourth parameters are the marker length and the marker separation
-    // respectively. They can be provided in any unit, having in mind that the estimated
-    // pose for this board will be measured in the same units (in general, meters are
-    // used).
+    std::optional<SE3> board_from_camera = detect_board(camera_frame);
+    if(board_from_camera){
+      // publish a message using *board_from_camera
+    }
+    // The third and fourth parameters are the marker length and the marker separation respectively.
+    // They can be provided in any unit, having in mind that the estimated pose for this board
+    // will be measured in the same units (in general, meters are used).
     cv::Mat board_image;
     aruco_board->draw(cv::Size(900, 900), board_image, 50, 1);
     if (OPEN_DEBUG_WINDOWS) {
