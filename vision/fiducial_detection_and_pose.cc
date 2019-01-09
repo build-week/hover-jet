@@ -41,10 +41,10 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
         SO3::exp(jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1),
                            tvec.at<double>(0, 2))),
         jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1), tvec.at<double>(0, 2)));
-    std::cout << camera_from_marker_center.translation().norm() << std::endl;
     SE3 marker_center_from_camera = camera_from_marker_center.inverse();
 
     if (DRAW_FIDUCIAL_CORNER_DETECTIONS) {
+      std::cout << camera_from_marker_center.translation().norm() << std::endl;
       for (const auto &quad : corners) {
         for (const auto &center : quad) {
           cv::circle(input_image, center, 5, cv::Scalar(255, 0, 0));
