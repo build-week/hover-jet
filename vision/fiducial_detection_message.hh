@@ -12,9 +12,8 @@
 namespace jet {
 
 struct FiducialDetectionMessage : Message {
-  int marker_id;
   std::array<double, 6> fiducial_from_camera_log;
-  MESSAGE(FiducialDetectionMessage, marker_id, fiducial_from_camera_log);
+  MESSAGE(FiducialDetectionMessage, fiducial_from_camera_log);
 };
 
 }  //  namespace jet
