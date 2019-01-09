@@ -25,6 +25,20 @@
 
 #include "third_party/bno055/RPi_BNO055.h"
 
+namespace {
+constexpr double get_rad_per_lsb_gyro() {
+  constexpr double DEGPS_PER_LSB = 1.0 / 16.0;
+  constexpr double RADPS_PER_DEGPS = 0.0174533;
+  constexpr double RADPS_PER_LSB = RADPS_PER_DEGPS * DEGPS_PER_LSB;
+  return RADPS_PER_LSB;
+}
+
+constexpr double get_mpss_per_lsb_accel() {
+  constexpr double MPSS_PER_LSB = 1.0 / 100.0;
+  return MPSS_PER_LSB;
+}
+}  // namespace
+
 /***************************************************************************
  CONSTRUCTOR
  ***************************************************************************/
@@ -109,7 +123,7 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode) {
     write8(BNO055_AXIS_MAP_SIGN_ADDR, REMAP_SIGN_P2); // P0-P7, Default is P1
     usleep(1000*10);
     */
-    
+
     write8(BNO055_SYS_TRIGGER_ADDR, 0x0);
     usleep(1000*10);
 
@@ -276,52 +290,58 @@ int8_t Adafruit_BNO055::getTemp(void) {
 */
 /**************************************************************************/
 imu::Vector<3> Adafruit_BNO055::getVector(adafruit_vector_type_t vector_type) {
-    imu::Vector<3> xyz;
-    uint8_t buffer[6];
-    memset (buffer, 0, 6);
+  imu::Vector<3> xyz;
+  uint8_t buffer[6];
+  memset(buffer, 0, 6);
 
-    int16_t x, y, z;
-    x = y = z = 0;
+  int16_t x, y, z;
+  x = y = z = 0;
 
-    /* Read vector data (6 bytes) */
-    readLen((adafruit_bno055_reg_t)vector_type, buffer, 6);
+  /* Read vector data (6 bytes) */
+  readLen((adafruit_bno055_reg_t)vector_type, buffer, 6);
 
-    x = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
-    y = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
-    z = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
+  x = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
+  y = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
+  z = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
 
-    /* Convert the value to an appropriate range (section 3.6.4) */
-    /* and assign the value to the Vector type */
-    switch(vector_type) {
-        case VECTOR_MAGNETOMETER:
-            /* 1uT = 16 LSB */
-            xyz[0] = ((double)x)/16.0;
-            xyz[1] = ((double)y)/16.0;
-            xyz[2] = ((double)z)/16.0;
-            break;
-        case VECTOR_GYROSCOPE:
-            /* 1rps = 900 LSB */
-            xyz[0] = ((double)x)/900.0;
-            xyz[1] = ((double)y)/900.0;
-            xyz[2] = ((double)z)/900.0;
-            break;
-        case VECTOR_EULER:
-            /* 1 degree = 16 LSB */
-            xyz[0] = ((double)x)/16.0;
-            xyz[1] = ((double)y)/16.0;
-            xyz[2] = ((double)z)/16.0;
-            break;
-        case VECTOR_ACCELEROMETER:
-        case VECTOR_LINEARACCEL:
-        case VECTOR_GRAVITY:
-            /* 1m/s^2 = 100 LSB */
-            xyz[0] = ((double)x)/100.0;
-            xyz[1] = ((double)y)/100.0;
-            xyz[2] = ((double)z)/100.0;
-            break;
-    }
+  constexpr double RADPS_PER_LSB = get_rad_per_lsb_gyro();
+  constexpr double MPSS_PER_LSB = get_mpss_per_lsb_accel();
 
-    return xyz;
+  /* Convert the value to an appropriate range (section 3.6.4) */
+  /* and assign the value to the Vector type */
+  switch (vector_type) {
+    case VECTOR_MAGNETOMETER:
+      /* 1uT = 16 LSB */
+      xyz[0] = ((double)x) / 16.0;
+      xyz[1] = ((double)y) / 16.0;
+      xyz[2] = ((double)z) / 16.0;
+      break;
+    case VECTOR_GYROSCOPE:
+      xyz[0] = static_cast<double>(x) * RADPS_PER_LSB;
+      xyz[1] = static_cast<double>(y) * RADPS_PER_LSB;
+      xyz[2] = static_cast<double>(z) * RADPS_PER_LSB;
+      break;
+    case VECTOR_EULER:
+      /* 1 degree = 16 LSB */
+      xyz[0] = ((double)x) / 16.0;
+      xyz[1] = ((double)y) / 16.0;
+      xyz[2] = ((double)z) / 16.0;
+      break;
+    case VECTOR_ACCELEROMETER:
+      xyz[0] = static_cast<double>(x) * MPSS_PER_LSB;
+      xyz[1] = static_cast<double>(y) * MPSS_PER_LSB;
+      xyz[2] = static_cast<double>(z) * MPSS_PER_LSB;
+      break;
+    case VECTOR_LINEARACCEL:
+    case VECTOR_GRAVITY:
+      /* 1m/s^2 = 100 LSB */
+      xyz[0] = ((double)x) / 100.0;
+      xyz[1] = ((double)y) / 100.0;
+      xyz[2] = ((double)z) / 100.0;
+      break;
+  }
+
+  return xyz;
 }
 
 /**************************************************************************/
@@ -537,9 +557,23 @@ bool Adafruit_BNO055::isFullyCalibrated(void) {
 }
 
 
+void Adafruit_BNO055::configure_page_1(const int address, const uint8_t value) {
+  write8(BNO055_PAGE_ID_ADDR, 1);
+  write8_unprotected(address, value);
+}
+
 /***************************************************************************
  PRIVATE FUNCTIONS
  ***************************************************************************/
+
+bool Adafruit_BNO055::write8_unprotected(int reg, uint8_t value) {
+  ssize_t bytes_written = 0;
+  uint8_t val_to_write = value;
+  bytes_written = i2c_write(&_i2cDevice, reg, &val_to_write, 1);
+
+  /* ToDo: Check for error! */
+  return bytes_written == 1;
+}
 
 /**************************************************************************/
 /*!
@@ -562,7 +596,7 @@ bool Adafruit_BNO055::write8(adafruit_bno055_reg_t reg, uint8_t value) {
 /**************************************************************************/
 uint8_t Adafruit_BNO055::read8(adafruit_bno055_reg_t reg ) {
     uint8_t value = 0;
-    i2c_read(&_i2cDevice, reg, &value, 1); 
+    i2c_read(&_i2cDevice, reg, &value, 1);
 
     return value;
 }
@@ -574,7 +608,7 @@ uint8_t Adafruit_BNO055::read8(adafruit_bno055_reg_t reg ) {
 /**************************************************************************/
 bool Adafruit_BNO055::readLen(adafruit_bno055_reg_t reg, uint8_t * buffer, uint8_t len) {
     int BRead = i2c_read(&_i2cDevice, reg, (char*)buffer, len);
-    
+
     if (BRead != (int) len)
 	   return -1;
 
