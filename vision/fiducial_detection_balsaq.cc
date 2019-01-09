@@ -3,10 +3,10 @@
 //%deps(message)
 
 #include "vision/fiducial_detection_balsaq.hh"
-#include "vision/fiducial_detection_and_pose.hh"
 #include "camera/camera_image_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
+#include "vision/fiducial_detection_and_pose.hh"
 
 #include <iostream>
 
@@ -26,21 +26,19 @@ void FidicualDetectionBq::loop() {
   if (subscriber_->read(message, 1)) {
     const cv::Mat camera_frame = get_image_mat(message);
     detect_board(camera_frame);
-    // The third and fourth parameters are the marker length and the marker separation respectively.
-    // They can be provided in any unit, having in mind that the estimated pose for this board
-    // will be measured in the same units (in general, meters are used).
+    // The third and fourth parameters are the marker length and the marker separation
+    // respectively. They can be provided in any unit, having in mind that the estimated
+    // pose for this board will be measured in the same units (in general, meters are
+    // used).
     cv::Mat board_image;
-    aruco_board->draw( cv::Size(900, 900), board_image, 50, 1 );
-    cv::imshow("window2", board_image);
-    cv::waitKey(2);
+    aruco_board->draw(cv::Size(900, 900), board_image, 50, 1);
+    if (OPEN_DEBUG_WINDOWS) {
+      cv::imshow("window2", board_image);
+      cv::waitKey(2);
 
-    cv::imshow("window", camera_frame);
-    cv::waitKey(1); // to get window to persist
-    // for (const auto & detection : marker_detections) {
-    //   std::cout << "detected artag #" << detection.id << std::endl;
-    //   std::cout << detection.marker_center_from_camera.translation().transpose()
-    //             << std::endl;
-    // }
+      cv::imshow("window", camera_frame);
+      cv::waitKey(1);
+    }
   }
 }
 
