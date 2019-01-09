@@ -20,7 +20,7 @@ void signal_handler(int s) {
     sigIntHandler.sa_flags = 0;                    \
     sigaction(SIGINT, &sigIntHandler, NULL);       \
     bq_type balsa_queue = bq_type();               \
-    balsa_queue.init(argc, argv);                            \
+    balsa_queue.init(argc, argv);                  \
     while (!shutdown) {                            \
       balsa_queue.loop();                          \
       usleep(balsa_queue.loop_delay_microseconds); \
