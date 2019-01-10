@@ -11,13 +11,6 @@
 
 namespace jet {
 
-constexpr bool DRAW_FIDUCIAL_CORNER_DETECTIONS = true;
-
-struct MarkerRvecsTvecs {
-  std::vector<cv::Vec<double, 3>> rvecs;
-  std::vector<cv::Vec<double, 3>> tvecs;
-};
-
 struct MarkerDetection {
   SE3 marker_center_from_camera;
   int id;
@@ -30,7 +23,22 @@ struct MarkerInWorld {
 
 std::vector<MarkerDetection> detect_markers(const cv::Mat& mat);
 
-std::vector<MarkerInWorld> get_world_from_marker_centers(
-    const cv::Mat& camera_image, const SE3& world_from_camera);
+std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image,
+                                                         const SE3& world_from_camera);
+
+std::optional<SE3> detect_board(const cv::Mat& input_image);
+
+constexpr float FIDUCIAL_WIDTH_METERS = 30.25 / 1000;
+constexpr float FIDUCIAL_GAP_WIDTH_METERS = 22.98 / 1000;
+
+
+inline cv::Ptr<cv::aruco::Dictionary> get_aruco_dictionary(){
+    return cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_250);
+}
+
+
+inline cv::Ptr<cv::aruco::GridBoard> get_aruco_board(){
+    return cv::aruco::GridBoard::create(4, 4, FIDUCIAL_WIDTH_METERS, FIDUCIAL_GAP_WIDTH_METERS, get_aruco_dictionary());
+}
 
 }  // namespace jet
