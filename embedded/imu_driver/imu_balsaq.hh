@@ -11,7 +11,7 @@ namespace embedded {
 class ImuBq : public BalsaQ {
  public:
   ImuBq();
-  void init();
+  void init(int argc, char *argv[]);
   void loop();
   void shutdown();
 
