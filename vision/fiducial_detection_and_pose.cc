@@ -16,12 +16,23 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
 
   // TODO isaac move these to config and make them
+  // const cv::Mat camera_matrix =
+  //     (cv::Mat1d(3, 3) << 499.7749869454186, 0, 309.3792706235992, 0,
+  //     496.9300965132637,
+  //      241.6934416030273, 0, 0, 1);
+  // const cv::Mat distortion_coefficients =
+  //     (cv::Mat1d(1, 5) << 0.003861115403120386, 0.09541932181851349,
+  //     0.001898991151152847,
+  //      -0.003082742498836169, -0.2932184860155891);
+
   const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 499.7749869454186, 0, 309.3792706235992, 0, 496.9300965132637,
-       241.6934416030273, 0, 0, 1);
-  const cv::Mat distortion_coefficients =
-      (cv::Mat1d(1, 5) << 0.003861115403120386, 0.09541932181851349, 0.001898991151152847,
-       -0.003082742498836169, -0.2932184860155891);
+      (cv::Mat1d(3, 3) << 533.086677901258, 0, 318.6124474231535, 0, 526.7508307011435,
+       233.3218572898686, 0, 0, 1);
+  const cv::Mat distortion_coefficients = (cv::Mat1d(1, 5) << 0.1957195456695698,
+                                           -0.738918431892389,
+                                           0.004904687104832405,
+                                           0.01328395230082144,
+                                           0.7438835398485716);
 
   // these must be CV mats to force aruco to not use their
   // values as initial pose estimates.  Despair!

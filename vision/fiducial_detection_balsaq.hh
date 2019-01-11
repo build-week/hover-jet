@@ -20,7 +20,7 @@ class FidicualDetectionBq : public BalsaQ {
  private:
   PublisherPtr publisher_;
   SubscriberPtr subscriber_;
-  static constexpr bool OPEN_DEBUG_WINDOWS = false;
+  static constexpr bool OPEN_DEBUG_WINDOWS = true;
 };
 
 }  // namespace jet
