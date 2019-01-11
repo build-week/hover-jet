@@ -84,5 +84,11 @@ jcc::Vec3 ImuDriver::read_gyro_radps() {
   return jcc::Vec3(gyro_radps.x(), gyro_radps.y(), gyro_radps.z());
 }
 
+jcc::Vec3 ImuDriver::read_magnetometer_utesla() {
+  assert(initialized_);
+  const imu::Vector<3> mag_utesla = bno_->getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+  return jcc::Vec3(mag_utesla.x(), mag_utesla.y(), mag_utesla.z());
+}
+
 }  // namespace embedded
 }  // namespace jet

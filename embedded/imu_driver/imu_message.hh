@@ -19,6 +19,10 @@ struct ImuMessage : Message {
   double gyro_radps_y;
   double gyro_radps_z;
 
+  double mag_utesla_x;
+  double mag_utesla_y;
+  double mag_utesla_z;
+
   // Timestamp that the observation was *generated*
   Timestamp timestamp;
 
