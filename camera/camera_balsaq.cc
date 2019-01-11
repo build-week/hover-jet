@@ -32,6 +32,7 @@ void CameraBq::loop() {
   cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.25);
   cap.set(cv::CAP_PROP_EXPOSURE, WEBCAM_EXPOSURE);
 
+  const auto current_time = get_current_time();
   if (cap.read(camera_frame)) {
     gonogo_.go();
     last_msg_recvd_timestamp_ = get_current_time();
@@ -43,7 +44,7 @@ void CameraBq::loop() {
       std::memcpy(message.image_data.data(), camera_frame.data,
                   SIZE_OF_UCHAR * n_elements);
     }
-    message.timestamp = get_current_time();
+    message.timestamp = current_time;
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
     publisher_->publish(message);

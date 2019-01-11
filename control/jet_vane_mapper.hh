@@ -20,6 +20,8 @@ class JetVaneMapper {
 
   MappingResult map_wrench(const Wrench& target_wrench, const JetStatus& current_jet_status) const;
 
+  Wrench wrench_for_status(const QuadraframeStatus&, const JetStatus&) const;
+
  private:
   VaneConfiguration vane_cfg_;
   JetConfiguration jet_cfg_;
