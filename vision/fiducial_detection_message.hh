@@ -1,11 +1,6 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
-#include "vision/fiducial_detection_and_pose.hh"
-#include "third_party/experiments/eigen.hh"
-
-//%deps(opencv)
-#include <opencv2/opencv.hpp>
 
 #include <string>
 

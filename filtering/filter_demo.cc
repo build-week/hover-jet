@@ -23,14 +23,13 @@
 
 //
 #include "vision/fiducial_detection_and_pose.hh"
+#include "vision/fiducial_detection_message.hh"
 
 namespace jet {
 namespace filtering {
 namespace {
 // TODO FACTOR
-void draw_states(viewer::SimpleGeometry& geo,
-                 const std::vector<estimation::jet_filter::State>& states,
-                 bool truth) {
+void draw_states(viewer::SimpleGeometry& geo, const std::vector<estimation::jet_filter::State>& states, bool truth) {
   const int n_states = static_cast<int>(states.size());
   for (int k = 0; k < n_states; ++k) {
     auto& state = states.at(k);
@@ -42,8 +41,7 @@ void draw_states(viewer::SimpleGeometry& geo,
       if (k < n_states - 1) {
         const auto& next_state = states.at(k + 1);
         const SE3 T_world_from_body_next = next_state.T_body_from_world.inverse();
-        geo.add_line(
-            {T_world_from_body.translation(), T_world_from_body_next.translation()});
+        geo.add_line({T_world_from_body.translation(), T_world_from_body_next.translation()});
       }
     }
   }
@@ -54,8 +52,7 @@ void setup() {
   // view->set_azimuth(0.0);
   // view->set_elevation(0.0);
   // view->set_zoom(1.0);
-  view->set_target_from_world(SE3(SO3::exp(Eigen::Vector3d(-3.1415 * 0.5, 0.0, 0.0)),
-                                  jcc::Vec3(-1.0, 0.0, -1.0)));
+  view->set_target_from_world(SE3(SO3::exp(Eigen::Vector3d(-3.1415 * 0.5, 0.0, 0.0)), jcc::Vec3(-1.0, 0.0, -1.0)));
   view->set_continue_time_ms(10);
   const auto background = view->add_primitive<viewer::SimpleGeometry>();
   const geometry::shapes::Plane ground{jcc::Vec3::UnitZ(), 0.0};
@@ -118,7 +115,7 @@ class Calibrator {
 
       earliest_camera_time_ = time_of_validity;
     }
-    // std::cout << "cam: " << uint64_t(ts) << std::endl;
+    std::cout << "cam: " << uint64_t(ts) << std::endl;
     if (estimation::to_seconds(time_of_validity - earliest_camera_time_) > 25.0) {
       return;
     }
@@ -175,18 +172,15 @@ class Calibrator {
   estimation::jet_filter::JetPoseOptimizer::Visitor make_visitor() {
     const auto view = viewer::get_window3d("Filter Debug");
     const auto visitor_geo = view->add_primitive<viewer::SimpleGeometry>();
-    const auto visitor =
-        [view,
-         visitor_geo](const estimation::jet_filter::JetPoseOptimizer::Solution& soln) {
-          visitor_geo->clear();
-          draw_states(*visitor_geo, soln.x, false);
-          visitor_geo->flip();
-          // std::cout << "\tOptimized g: " << soln.p.g_world.transpose() << std::endl;
-          std::cout << "\tOptimized T_imu_from_vehicle: "
-                    << soln.p.T_imu_from_vehicle.translation().transpose() << "; "
-                    << soln.p.T_imu_from_vehicle.so3().log().transpose() << std::endl;
-          view->spin_until_step();
-        };
+    const auto visitor = [view, visitor_geo](const estimation::jet_filter::JetPoseOptimizer::Solution& soln) {
+      visitor_geo->clear();
+      draw_states(*visitor_geo, soln.x, false);
+      visitor_geo->flip();
+      // std::cout << "\tOptimized g: " << soln.p.g_world.transpose() << std::endl;
+      std::cout << "\tOptimized T_imu_from_vehicle: " << soln.p.T_imu_from_vehicle.translation().transpose() << "; "
+                << soln.p.T_imu_from_vehicle.so3().log().transpose() << std::endl;
+      view->spin_until_step();
+    };
     return visitor;
   }
 
@@ -209,7 +203,7 @@ void go() {
   setup();
   const auto view = viewer::get_window3d("Filter Debug");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
-  const std::vector<std::string> channel_names = {"imu", "camera_image_channel"};
+  const std::vector<std::string> channel_names = {"imu", "fiducial_detection_channel", "camera_image_channel"};
   // const std::string path = "/jet/logs/20190110065258";
   // const std::string path = "/jet/logs/20190111021022";
   // const std::string path = "/jet/logs/20190111022616";
@@ -217,20 +211,21 @@ void go() {
 
   // const std::string path = "/jet/logs/20190111045557";
   // const std::string path = "/jet/logs/20190111071808";
-  const std::string path = "/jet/logs/magnetometer_cal_20190111080357";
+  const std::string path = "/jet/logs/calibration-log-jan26-1";
 
   Calibrator calibrator;
   jet::LogReader reader(path, channel_names);
 
   for (int k = 0; k < 3000; ++k) {
     ImuMessage imu_msg;
-    CameraImageMessage cam_msg;
     if (reader.read_next_message("imu", imu_msg)) {
       calibrator.maybe_add_imu(imu_msg);
     } else {
       std::cout << "Breaking at : " << k << std::endl;
       break;
     }
+
+    CameraImageMessage cam_msg;
     if (reader.read_next_message("camera_image_channel", cam_msg)) {
       const auto image = get_image_mat(cam_msg);
 
@@ -238,6 +233,14 @@ void go() {
       if (result) {
         const SE3 world_from_camera = *result;
         calibrator.add_fiducial(cam_msg.timestamp, world_from_camera);
+      }
+    }
+
+    FiducialDetectionMessage fiducial_msg;
+    if (reader.read_next_message("fiducial_detection_channel", fiducial_msg)) {
+      const Eigen::Map<double, 6, 1> fid_log(fiducial_msg.fiducial_from_camera_log.data());
+      const SE3 world_from_camera SE3::exp(fid_log);
+      calibrator.add_fiducial(cam_msg.timestamp, world_from_camera);
       }
 
       // cv::imshow("Image", image);
