@@ -24,11 +24,11 @@ std::string get_channel_name_from_servo_index(int servo_index) {
 }  // namespace
 
 void ServoBq::init(int argc, char* argv[]) {
-  assert(argc > 2);
+  assert(argc > 1);
   const int n_servos = argc - 1;
   // ServoDriver servos [n_servos];
   for (int i = 0; i < n_servos; i++) {
-    std::string config_path = argv[1 + 1];
+    std::string config_path = argv[1 + i];
     ServoDriver servo = ServoDriver(config_path);  // TODO create standard config dir
     // servos.push_back(servo);
     SubscriberPtr subscriber = make_subscriber(get_channel_name_from_servo_index(i));
