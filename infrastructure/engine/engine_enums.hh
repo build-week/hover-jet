@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdint.h>
 #include <map>
 #include <string>
 
@@ -29,8 +28,32 @@ enum class State {
   KEROS_FULL_ON
 };
 
+inline std::string enum_to_string(State state) {
+  static const char* state_string[] = {  "Off",
+                                          "Wait for RPM",
+                                          "Ignite",
+                                          "Accelerate",
+                                          "Stabilize",
+                                          "Learn High",
+                                          "Learn Low",
+                                          "UNUSED0",
+                                          "Slow Down",
+                                          "UNUSED1",
+                                          "Auto Off",
+                                          "Run",
+                                          "Acceleration Delay",
+                                          "Speed Reg",
+                                          "Two Shaft Regulate",
+                                          "Preheat 1",
+                                          "Preheat 2",
+                                          "MAINFSTRT",
+                                          "UNUSED2",
+                                          "Kerosene Full On"};
+  return state_string[static_cast<typename std::underlying_type<OffCondition>::type>(
+      state)];
+}
+
 enum class OffCondition {
-  DESCRIPTION,
   NO_OFF_CONDITION_DEFINED,
   SHUT_DOWN_VIA_RC,
   OVERTEMPERATURE,
@@ -55,6 +78,33 @@ enum class OffCondition {
   DIFFERENTIAL_TO_HIGH_2ND_ENGINE,
   NO_COMMUNICATION_2ND_ENGINE
 };
+
+inline std::string enum_to_string(OffCondition off_condition) {
+  static const char* off_condition_string[] = {"No off condition defined",
+                                            "Shut down via RC",
+                                            "Overtemperature",
+                                            "Ignition timeout",
+                                            "Acceleration Timeout",
+                                            "Acceleration too slow",
+                                            "Over RPM",
+                                            "Low RPM",
+                                            "Low battery",
+                                            "Auto off",
+                                            "Low temperature",
+                                            "High temperature",
+                                            "Glow plug defective",
+                                            "Watchdog timer",
+                                            "Failsafe",
+                                            "Manual off",
+                                            "Power failure",
+                                            "Temperature sensor failure",
+                                            "Fuel failure",
+                                            "Prop failure",
+                                            "Engine failure, 2nd engine",
+                                            "Differential too high, 2nd engine"};
+  return off_condition_string[static_cast<typename std::underlying_type<OffCondition>::type>(
+      off_condition)];
+}
 
 enum class ErrorCode : uint16_t {
   OK = 0,
@@ -90,36 +140,4 @@ inline ErrorCode string_to_enum(const std::string& error_string) {
   return error_codes[error_string.c_str()];
 }
 
-struct LiveValues {
-  uint32_t turbine_rpm;
-  uint32_t exhaust_gas_temperature_c;
-  float pump_voltage;
-  State turbine_state;
-  uint32_t throttle_position_percent;
-};
-
-struct SystemStatus {
-  OffCondition off_condition;
-  uint32_t actual_flight_speed;
-  uint32_t proportional_part_of_speed_regulator;
-  uint32_t AD_value_of_AirSpeed_input;
-  uint32_t AD_Zero_value_of_AirSpeed_input;
-};
-
-struct TurbineInfo {
-  std::string firmware_version_type;
-  std::string version_number;
-  uint32_t last_run_time;
-  uint32_t total_operation_time;
-  uint16_t serial_number;
-  std::string turbine_type;
-};
-
-struct FuelInfo {
-  uint32_t actual_fuel_flow;
-  uint32_t rest_volume_in_tank;
-  uint32_t set_rpm;
-  uint32_t actual_battery_voltage;
-  uint32_t last_run_time_s;
-};
 }  // namespace jet::JetCat

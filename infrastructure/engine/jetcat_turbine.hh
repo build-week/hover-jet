@@ -1,6 +1,6 @@
 #pragma once
 
-#include "infrastructure/engine/engine_enums.hh"
+#include "infrastructure/engine/jetcat_schemas.hh"
 
 #include <serial/serial.h>
 
