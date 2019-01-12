@@ -12,10 +12,6 @@
 
 namespace jet {
 
-SubscriberDemoBq::SubscriberDemoBq() {
-  set_comms_factory(std::make_unique<MqttCommsFactory>());
-}
-
 void SubscriberDemoBq::init(int argc, char *argv[]) {
   subscriber_ = make_subscriber("demo_channel_name");
 }

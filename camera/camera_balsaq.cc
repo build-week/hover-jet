@@ -14,10 +14,6 @@ namespace jet {
 
 constexpr double WEBCAM_EXPOSURE = 0.01;
 
-CameraBq::CameraBq() {
-  set_comms_factory(std::make_unique<MqttCommsFactory>());
-}
-
 void CameraBq::init(int argc, char *argv[]) {
   cap = cv::VideoCapture(0);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);

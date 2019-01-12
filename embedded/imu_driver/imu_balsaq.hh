@@ -10,7 +10,7 @@ namespace embedded {
 
 class ImuBq : public BalsaQ {
  public:
-  ImuBq();
+  ImuBq() = default;
   void init(int argc, char *argv[]);
   void loop();
   void shutdown();

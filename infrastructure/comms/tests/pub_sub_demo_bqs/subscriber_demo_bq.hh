@@ -4,7 +4,7 @@ namespace jet {
 
 class SubscriberDemoBq : public BalsaQ {
  public:
-  SubscriberDemoBq();
+  SubscriberDemoBq() = default;
   void init(int argc, char *argv[]);
   void loop();
   void shutdown();

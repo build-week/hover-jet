@@ -10,7 +10,7 @@ namespace jet {
 
 class ServoBq : public BalsaQ {
  public:
-  ServoBq();
+  ServoBq() = default;
   void init(int argc, char *argv[]);
   void loop();
   void shutdown();
