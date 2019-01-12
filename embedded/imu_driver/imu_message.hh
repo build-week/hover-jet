@@ -1,10 +1,8 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
-#include "infrastructure/time/timestamp.hh"
 #include "infrastructure/comms/serialization/serialization_macros.hh"
-
-#include <string>
+#include "infrastructure/time/timestamp.hh"
 
 namespace jet {
 
@@ -33,6 +31,9 @@ struct ImuMessage : Message {
           gyro_radps_x,
           gyro_radps_y,
           gyro_radps_z,
+          mag_utesla_x,
+          mag_utesla_y,
+          mag_utesla_z,
           timestamp);
 };
 
