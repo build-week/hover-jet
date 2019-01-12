@@ -107,16 +107,6 @@ RUN cd /usr/local/lib/; mv libserial.so libjet_serial.so
 
 
 #
-# Realsense support
-#
-
-RUN apt-key adv --keyserver keys.gnupg.net --recv-key C8B3A55A6F3EFCDE || apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key C8B3A55A6F3EFCDE
-RUN add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo bionic main" -u
-RUN apt update
-RUN apt install librealsense2-dkms librealsense2-utils librealsense2-dev librealsense2-dbg -y
-
-
-#
 # X tests (xeyes, glxgears, etc.)
 #
 
