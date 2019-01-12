@@ -13,6 +13,7 @@ build                Build the jet code
 image                Build a new jet docker image
 run                  Run an executable inside of a docker container
 deploy               Run jet software on a vehicle or bench
+broker               Configure the IPC Broker on this host
 END
 }
 
@@ -41,8 +42,11 @@ case "$1" in
 "deploy")
 	jet_deploy.sh "${@:2}"
 	;;
+"broker")
+    jet_broker.sh "${@:2}"
+    ;;
 *)
-    echo "Unknown option '$1': jet modes are [run|build|image|deploy]"
+    echo "Unknown option '$1': jet modes are [run|build|image|deploy|broker]"
     help
     ;;
 esac
