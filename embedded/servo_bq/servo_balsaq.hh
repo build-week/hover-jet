@@ -15,8 +15,7 @@ class ServoBq : public BalsaQ {
   void shutdown();
 
  private:
-  SubscriberPtr subscriber_;
-  std::unique_ptr<ServoDriver> servo;
+  std::vector<std::pair<ServoDriver, SubscriberPtr>> servo_subscriber_pairs;
   float current_target_percentage;
 
 };
