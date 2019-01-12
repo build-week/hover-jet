@@ -13,12 +13,6 @@
 
 namespace jet {
 
-MessageLoggerBQ::MessageLoggerBQ() {
-  set_comms_factory(std::make_unique<MqttCommsFactory>());
-  // Set loop to run at 500hz
-  // loop_delay_microseconds = 5000;
-}
-
 void MessageLoggerBQ::init(int argc, char *argv[]) {
   if (const char* env_logged_channels = std::getenv("LOGGED_CHANNELS")) {
       std::string channels_string(env_logged_channels);

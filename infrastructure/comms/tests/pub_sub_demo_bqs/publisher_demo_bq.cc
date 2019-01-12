@@ -12,9 +12,6 @@
 
 namespace jet {
 
-PublisherDemoBq::PublisherDemoBq() {
-  set_comms_factory(std::make_unique<MqttCommsFactory>());
-}
 
 void PublisherDemoBq::init(int argc, char *argv[]) {
   publisher_ = make_publisher("demo_channel_name");

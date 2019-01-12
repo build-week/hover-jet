@@ -14,10 +14,6 @@
 
 namespace jet {
 
-ServoBq::ServoBq() {
-  set_comms_factory(std::make_unique<MqttCommsFactory>());
-}
-
 namespace {
 constexpr int PWM_FREQUENCY = 330;
 }

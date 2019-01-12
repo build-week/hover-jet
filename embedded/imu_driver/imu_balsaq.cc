@@ -11,10 +11,6 @@
 namespace jet {
 namespace embedded {
 
-ImuBq::ImuBq() {
-  set_comms_factory(std::make_unique<MqttCommsFactory>());
-}
-
 void ImuBq::init(int argc, char *argv[]) {
   publisher_ = make_publisher("imu");
   std::cout << "IMU starting" << std::endl;

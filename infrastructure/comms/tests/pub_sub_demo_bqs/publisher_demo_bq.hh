@@ -4,7 +4,7 @@ namespace jet {
 
 class PublisherDemoBq : public BalsaQ {
  public:
-  PublisherDemoBq();
+  PublisherDemoBq() = default;
   void init(int argc, char *argv[]);
   void loop();
   void shutdown();
