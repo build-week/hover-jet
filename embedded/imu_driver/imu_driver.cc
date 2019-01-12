@@ -47,6 +47,7 @@ void ImuDriver::initialize() {
   constexpr uint8_t gyro_cfg = GyroConfig0::DPS_125 | GyroConfig0::HZ_116;
   constexpr int gyro_cfg_addr = ConfigAdresses::GYR_CONFIG_0;
   bno_->configure_page_1(gyro_cfg_addr, gyro_cfg);
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   //
   // Configure accelerometer range and sample rate
@@ -54,6 +55,16 @@ void ImuDriver::initialize() {
   constexpr uint8_t accel_cfg = AccConfig::g_2 | AccConfig::HZ_125;
   constexpr int accel_cfg_addr = ConfigAdresses::ACC_CONFIG;
   bno_->configure_page_1(accel_cfg_addr, accel_cfg);
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  //
+  // Configure Magnetometer
+  //
+  constexpr uint8_t high_accuracy = 0b00011000;
+  constexpr uint8_t normal_power = 0b00000000;
+  constexpr int mag_cfg_addr = 0x6d;
+  bno_->configure_page_1(mag_cfg_addr, high_accuracy | normal_power);
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   // omg sleep is not a synchronization primitive
   // TODO(jake): Figure out if we can get an "i2c ready" flag
@@ -82,6 +93,12 @@ jcc::Vec3 ImuDriver::read_gyro_radps() {
   assert(initialized_);
   const imu::Vector<3> gyro_radps = bno_->getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
   return jcc::Vec3(gyro_radps.x(), gyro_radps.y(), gyro_radps.z());
+}
+
+jcc::Vec3 ImuDriver::read_magnetometer_utesla() {
+  assert(initialized_);
+  const imu::Vector<3> mag_utesla = bno_->getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+  return jcc::Vec3(mag_utesla.x(), mag_utesla.y(), mag_utesla.z());
 }
 
 }  // namespace embedded

@@ -46,6 +46,15 @@ class ImuDriver {
   // @returns: Estimated angular velocity in the IMU frame
   jcc::Vec3 read_gyro_radps();
 
+  // Read the magnetometer register on the IMU
+  // NOTE: It is suggested that one does not call this function
+  //       more frequently than the IMU sample rate
+  // NOTE: This function is non-const because the BNO055 API
+  //       is not const-correct
+  //
+  // @returns: Estimated magnetic field strength in the IMU frame
+  jcc::Vec3 read_magnetometer_utesla();
+
  private:
   bool initialized_ = false;
   std::shared_ptr<Adafruit_BNO055> bno_;

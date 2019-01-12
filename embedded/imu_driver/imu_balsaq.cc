@@ -21,11 +21,11 @@ void ImuBq::init(int argc, char *argv[]) {
 void ImuBq::loop() {
   ImuMessage msg;
 
-  // msg.timestamp_ns = jcc::now().time_since_epoch().count();
   msg.timestamp = get_current_time();
 
   const jcc::Vec3 accel_mpss = imu_driver_.read_accel_mpss();
   const jcc::Vec3 angvel_radps = imu_driver_.read_gyro_radps();
+  const jcc::Vec3 mag_utesla = imu_driver_.read_magnetometer_utesla();
 
   msg.accel_mpss_x = accel_mpss.x();
   msg.accel_mpss_y = accel_mpss.y();
@@ -34,6 +34,10 @@ void ImuBq::loop() {
   msg.gyro_radps_x = angvel_radps.x();
   msg.gyro_radps_y = angvel_radps.y();
   msg.gyro_radps_z = angvel_radps.z();
+
+  msg.mag_utesla_x = mag_utesla.x();
+  msg.mag_utesla_y = mag_utesla.y();
+  msg.mag_utesla_z = mag_utesla.z();
 
   publisher_->publish(msg);
 }
