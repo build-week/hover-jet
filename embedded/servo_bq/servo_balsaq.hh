@@ -17,7 +17,8 @@ class ServoBq : public BalsaQ {
  private:
   SubscriberPtr subscriber_;
   std::unique_ptr<ServoDriver> servo;
-  int servo_index;
+  float current_target_percentage;
+
 };
 
 }  // namespace jet
