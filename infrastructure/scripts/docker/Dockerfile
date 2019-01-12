@@ -31,6 +31,12 @@ RUN apt install libssl-dev -y
 RUN apt install libreadline6-dev -y
 RUN apt install libserial-dev -y
 
+#
+# Process management
+#
+RUN apt install supervisor -y
+RUN mkdir -p /var/log/supervisor
+
 
 #
 # Python
@@ -43,7 +49,6 @@ RUN pip install matplotlib
 RUN pip install colorama
 RUN pip install generate-cmake 
 RUN apt install python-tk -y
-
 
 #
 # Gl Viewer Support
@@ -89,6 +94,26 @@ RUN rm -r paho.mqtt.cpp
 RUN apt install uuid-dev -y
 RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; mkdir build; cd build; cmake ..; make install
 RUN rm -r crossguid
+
+
+#
+# Serial library
+#
+
+RUN apt install catkin -y; git clone https://github.com/wjwwood/serial.git; cd serial; make; make install;
+RUN cp -R /tmp/usr/ .
+RUN rm -r serial
+RUN cd /usr/local/lib/; mv libserial.so libjet_serial.so
+
+
+#
+# Realsense support
+#
+
+RUN apt-key adv --keyserver keys.gnupg.net --recv-key C8B3A55A6F3EFCDE || apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key C8B3A55A6F3EFCDE
+RUN add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo bionic main" -u
+RUN apt update
+RUN apt install librealsense2-dkms librealsense2-utils librealsense2-dev librealsense2-dbg -y
 
 
 #
