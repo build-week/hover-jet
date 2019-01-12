@@ -38,7 +38,7 @@ void draw_states(viewer::SimpleGeometry& geo,
     if (truth) {
       geo.add_axes({T_world_from_body, 0.1});
     } else {
-      geo.add_axes({T_world_from_body, 0.05, 2.0, true});
+      geo.add_axes({T_world_from_body, 0.01, 1.0, true});
       if (k < n_states - 1) {
         const auto& next_state = states.at(k + 1);
         const SE3 T_world_from_body_next = next_state.T_body_from_world.inverse();
@@ -70,27 +70,39 @@ estimation::TimePoint to_time_point(const Timestamp& ts) {
 
 class Calibrator {
  public:
-  Calibrator() = default;
+  Calibrator() {
+    const auto view = viewer::get_window3d("Filter Debug");
+    geo_ = view->add_primitive<viewer::SimpleGeometry>();
+  }
 
   void maybe_add_imu(const ImuMessage& msg) {
-    const auto timestamp = to_time_point(msg.timestamp);
-    if (uint64_t(msg.timestamp) > 1547103182284210843) {
+    const auto time_of_validity = to_time_point(msg.timestamp);
+    if (estimation::to_seconds(time_of_validity - earliest_camera_time_) > 25.0) {
       return;
     }
-
-    if (timestamp > earliest_camera_time_) {
-      const jcc::Vec3 accel_mpss(msg.accel_mpss_x, msg.accel_mpss_y, msg.accel_mpss_z);
-
+    // if (timestamp > earliest_camera_time_) {
+    if (true) {
       estimation::jet_filter::AccelMeasurement accel_meas;
-      accel_meas.observed_acceleration = accel_mpss;
-      jf_.measure_imu(accel_meas, timestamp);
-      jet_opt_.measure_imu(accel_meas, timestamp);
-      const jcc::Vec3 gyro_radps(msg.gyro_radps_x, msg.gyro_radps_y, msg.gyro_radps_z);
+      const jcc::Vec3 accel_mpss(msg.accel_mpss_x, msg.accel_mpss_y, msg.accel_mpss_z);
+      last_accel_ = accel_mpss;
+      got_imu_ = true;
 
+      accel_meas.observed_acceleration = accel_mpss;
+      jf_.measure_imu(accel_meas, time_of_validity);
+      jet_opt_.measure_imu(accel_meas, time_of_validity);
+
+      // const jcc::Vec3 gyro_radps(msg.gyro_radps_x, msg.gyro_radps_y, msg.gyro_radps_z);
       // estimation::jet_filter::GyroMeasurement gyro_meas;
       // gyro_meas.observed_w = gyro_radps;
-      // jf_.measure_gyro(gyro_meas, timestamp + estimation::to_duration(0.0001));
-      // jet_opt_.measure_gyro(gyro_meas, timestamp + estimation::to_duration(0.0001));
+      // jf_.measure_gyro(gyro_meas, time_of_validity + estimation::to_duration(0.0001));
+      // jet_opt_.measure_gyro(gyro_meas,
+      //                      time_of_validity + estimation::to_duration(0.0001));
+
+      const jcc::Vec3 mag_utesla(msg.mag_utesla_x, msg.mag_utesla_y, msg.mag_utesla_z);
+
+      const jcc::Vec3 offset_mag_utesla(-32.5, 14.1875, -32.5625);
+      geo_->add_point({(mag_utesla - offset_mag_utesla) * 0.1});
+      geo_->flush();
     }
     // Otherwise, ignore it
   }
@@ -106,24 +118,51 @@ class Calibrator {
 
       earliest_camera_time_ = time_of_validity;
     }
+    // std::cout << "cam: " << uint64_t(ts) << std::endl;
+    if (estimation::to_seconds(time_of_validity - earliest_camera_time_) > 25.0) {
+      return;
+    }
+
     got_camera_ = true;
 
     estimation::jet_filter::FiducialMeasurement fiducial_meas;
     fiducial_meas.T_fiducial_from_camera = world_from_camera;
 
-    jf_.measure_fiducial(fiducial_meas,
-                         time_of_validity - estimation::to_duration(0.0001));
-    jet_opt_.measure_fiducial(fiducial_meas,
-                              time_of_validity - estimation::to_duration(0.0001));
+    jf_.measure_fiducial(fiducial_meas, time_of_validity);
+    jet_opt_.measure_fiducial(fiducial_meas, time_of_validity);
+
+    if (got_imu_) {
+      got_imu_ = false;
+      geo_->add_axes({world_from_camera, 0.1});
+
+      const SE3 imu_from_vehicle = jf_.parameters().T_imu_from_vehicle;
+
+      const SE3 T_camera_from_body = SE3();
+      const SE3 world_from_body = world_from_camera * T_camera_from_body;
+
+      const SE3 world_from_imu = world_from_body * imu_from_vehicle.inverse();
+      const jcc::Vec3 accel_world = world_from_imu * last_accel_;
+      // geo_->add_line({world_from_imu.translation(), accel_world});
+      // geo_->add_line({jcc::Vec3::Zero(), world_from_imu.so3() * last_accel_});
+      geo_->flush();
+
+      // const auto view = viewer::get_window3d("Filter Debug");
+      // view->spin_until_step();
+    }
   }
 
   void run() {
     std::vector<estimation::jet_filter::State> est_states;
+    const auto view = viewer::get_window3d("Filter Debug");
+
     while (true) {
       const auto xx = jf_.next_measurement();
       if (!xx) {
         break;
       }
+      // geo_->add_axes({xx->T_body_from_world.inverse(), 0.1, 3.0});
+      // geo_->flush();
+      // view->spin_until_step();
       est_states.push_back(*xx);
     }
 
@@ -137,12 +176,12 @@ class Calibrator {
     const auto view = viewer::get_window3d("Filter Debug");
     const auto visitor_geo = view->add_primitive<viewer::SimpleGeometry>();
     const auto visitor =
-        [&view,
-         &visitor_geo](const estimation::jet_filter::JetPoseOptimizer::Solution& soln) {
+        [view,
+         visitor_geo](const estimation::jet_filter::JetPoseOptimizer::Solution& soln) {
           visitor_geo->clear();
           draw_states(*visitor_geo, soln.x, false);
           visitor_geo->flip();
-          std::cout << "\tOptimized g: " << soln.p.g_world.transpose() << std::endl;
+          // std::cout << "\tOptimized g: " << soln.p.g_world.transpose() << std::endl;
           std::cout << "\tOptimized T_imu_from_vehicle: "
                     << soln.p.T_imu_from_vehicle.translation().transpose() << "; "
                     << soln.p.T_imu_from_vehicle.so3().log().transpose() << std::endl;
@@ -151,11 +190,17 @@ class Calibrator {
     return visitor;
   }
 
+  bool got_imu_ = false;
+  jcc::Vec3 last_accel_ = jcc::Vec3::Zero();
+
   estimation::TimePoint earliest_camera_time_ = estimation::TimePoint::max();
   bool got_camera_ = false;
 
   estimation::jet_filter::JetFilter jf_;
   estimation::jet_filter::JetOptimizer jet_opt_;
+
+  // temp
+  std::shared_ptr<viewer::SimpleGeometry> geo_;
 };
 
 }  // namespace
@@ -165,16 +210,23 @@ void go() {
   const auto view = viewer::get_window3d("Filter Debug");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
   const std::vector<std::string> channel_names = {"imu", "camera_image_channel"};
-  const std::string path = "/jet/logs/20190110065258";
+  // const std::string path = "/jet/logs/20190110065258";
+  // const std::string path = "/jet/logs/20190111021022";
+  // const std::string path = "/jet/logs/20190111022616";
+  // const std::string path = "/jet/logs/20190111043642";
+
+  // const std::string path = "/jet/logs/20190111045557";
+  // const std::string path = "/jet/logs/20190111071808";
+  const std::string path = "/jet/logs/magnetometer_cal_20190111080357";
 
   Calibrator calibrator;
   jet::LogReader reader(path, channel_names);
 
   for (int k = 0; k < 3000; ++k) {
-    ImuMessage msg;
+    ImuMessage imu_msg;
     CameraImageMessage cam_msg;
-    if (reader.read_next_message("imu", msg)) {
-      calibrator.maybe_add_imu(msg);
+    if (reader.read_next_message("imu", imu_msg)) {
+      calibrator.maybe_add_imu(imu_msg);
     } else {
       std::cout << "Breaking at : " << k << std::endl;
       break;
@@ -185,15 +237,11 @@ void go() {
       const auto result = detect_board(image);
       if (result) {
         const SE3 world_from_camera = *result;
-        calibrator.add_fiducial(msg.timestamp, world_from_camera);
-
-        geo->add_axes({world_from_camera});
-        geo->flush();
-        // view->spin_until_step();
+        calibrator.add_fiducial(cam_msg.timestamp, world_from_camera);
       }
 
       // cv::imshow("Image", image);
-      // cv::waitKey(1);
+      // cv::waitKey(0);
     }
   }
   geo->flush();
