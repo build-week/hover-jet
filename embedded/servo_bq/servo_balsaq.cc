@@ -38,8 +38,6 @@ void ServoBq::loop() {
     }
   }
 }
-// std::cout << "about to command servo" << std::endl;
-// std::cout << " commanded" << std::endl;
 void ServoBq::shutdown() {
 }
 }  // namespace jet

@@ -1,11 +1,11 @@
 //%deps(yaml-cpp)
 
 #include "embedded/servo_driver/servo_driver.hh"  // driver library
-#include <math.h>                                 // M_PI
 #include <string.h>                               // memset
 #include <unistd.h>                               // usleep
 #include <yaml-cpp/yaml.h>
 #include <algorithm>  // max, min
+#include <cmath>      // M_PI
 #include <fstream>
 #include <iostream>
 #include <sstream>

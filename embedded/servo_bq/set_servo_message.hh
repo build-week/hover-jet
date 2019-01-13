@@ -1,7 +1,6 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
-// #include "infrastructure/comms/serialization/serialization_macros.hh"
 #include <vector>
 
 namespace jet {

@@ -50,11 +50,10 @@ WEBCAM_DEFAULT_DEV_PATH=/dev/video0
 if [ -d "$WEBCAM_DEFAULT_DEV_PATH" ]; then
   ATTACH_WEBCAM_DEVICE=--device=/dev/video0:/dev/video0
 fi
-SERVO_DEVICE=--device=/dev/i2c-1
 
 xhost +
 
-CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v $JET_REPO_PATH/logs:/logs -v /tmp/.X11-unix:/tmp/.X11-unix -e LOG_BASE_PATH=/logs/ -e DISPLAY -e NO_AT_BRIDGE=1 -e MQTT_ADDRESS=$MQTT_ADDRESS $ATTACH_WEBCAM_DEVICE $SERVO_DEVICE --net=host --privileged $FULL_IMAGE_NAME bash)
+CONTAINER_ID=$(docker run -it -d -v $JET_REPO_PATH:/jet -v $JET_REPO_PATH/logs:/logs -v /tmp/.X11-unix:/tmp/.X11-unix -e LOG_BASE_PATH=/logs/ -e DISPLAY -e NO_AT_BRIDGE=1 -e MQTT_ADDRESS=$MQTT_ADDRESS $ATTACH_WEBCAM_DEVICE --net=host --privileged $FULL_IMAGE_NAME bash)
 
 if [ $? -ne 0 ]; then
     exit $?
