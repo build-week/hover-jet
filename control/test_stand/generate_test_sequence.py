@@ -5,6 +5,7 @@ import os
 
 MAX_ANGLE_RAD = 0.2268
 MS_PER_TICK = 25
+SEC_PER_MS = 1e-3
 LENGTH_TICKS = 1000
 ALL_INDICES = {0, 1, 2, 3}
 
@@ -39,47 +40,13 @@ def set_zero():
     return cmds
 
 
-def sine_wave_all(freq_hz):
-    milliseconds = np.arange(0.0, LENGTH_TICKS)
+def sine_wave_all(freq_hz, scaling_factor=np.array([1.0, 1.0, 1.0, 1.0])):
+    ticks = np.arange(0.0, LENGTH_TICKS)
 
-    seconds = milliseconds * 1e-3
+    millseconds = MS_PER_TICK * ticks
+    seconds = millseconds * SEC_PER_MS
 
-    angular_freq_radps = freq_hz / (2.0 * np.pi)
-
-    return MAX_ANGLE_RAD * np.vstack([
-        np.sin(angular_freq_radps * seconds),
-        np.sin(angular_freq_radps * seconds),
-        np.sin(angular_freq_radps * seconds),
-        np.sin(angular_freq_radps * seconds)
-    ]).transpose()
-
-
-def symmetric(included, freq_hz=3.0):
-    milliseconds = np.arange(0.0, LENGTH_TICKS)
-
-    seconds = milliseconds * 1e-3
-
-    angular_freq_radps = freq_hz / (2.0 * np.pi)
-
-    result = MAX_ANGLE_RAD * np.vstack([
-        np.sin(angular_freq_radps * seconds),
-        np.sin(angular_freq_radps * seconds),
-        -np.sin(angular_freq_radps * seconds),
-        -np.sin(angular_freq_radps * seconds)
-    ]).transpose()
-
-    not_incls = ALL_INDICES - set(included)
-    for not_incl in not_incls:
-        result[:, not_incl] == 0.0
-
-    return result
-
-
-def antisymmetric(included, freq_hz=3.0):
-    milliseconds = np.arange(0.0, LENGTH_TICKS)
-
-    seconds = milliseconds * 1e-3
-    angular_freq_radps = freq_hz / (2.0 * np.pi)
+    angular_freq_radps = freq_hz * (2.0 * np.pi)
 
     result = MAX_ANGLE_RAD * np.vstack([
         np.sin(angular_freq_radps * seconds),
@@ -88,18 +55,11 @@ def antisymmetric(included, freq_hz=3.0):
         np.sin(angular_freq_radps * seconds)
     ]).transpose()
 
-    not_incls = ALL_INDICES - set(included)
-
-    for not_incl in not_incls:
-        print not_incl
-        result[:, not_incl] == 0.0
-
-    return result
+    return scaling_factor * result
 
 
 def all_hold(target_angle):
-    result = np.ones((LENGTH_TICKS, 4))
-    result *= target_angle
+    result = np.ones((LENGTH_TICKS, 4)) * target_angle
     return result
 
 
@@ -111,34 +71,30 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tests = {
-        "set_zero": set_zero,
-        "sine_wave_slow": partial(sine_wave_all, freq_hz=0.1),
-        "sine_wave_medium": partial(sine_wave_all, freq_hz=7.0),
-        "sine_wave_fast": partial(sine_wave_all, freq_hz=25.0),
-
-        "02_symmetric": partial(symmetric, included=(0, 2)),
-        "13_symmetric": partial(symmetric, included=(1, 3)),
-
-        "02_antisymmetric": partial(antisymmetric, included=(0, 2)),
-        "13_antisymmetric": partial(antisymmetric, included=(1, 3)),
-
-        "all_max": partial(all_hold, target_angle=MAX_ANGLE_RAD),
-        "all_min": partial(all_hold, target_angle=-MAX_ANGLE_RAD),
+        "set_zero": set_zero(),
+        "sine_wave_slow": sine_wave_all(freq_hz=0.1),
+        "sine_wave_medium": sine_wave_all(freq_hz=0.5),
+        "sine_wave_fast": sine_wave_all(freq_hz=1.0),
+        "02_symmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([1.0, 0.0, 1.0, 0.0])),
+        "13_symmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([0.0, 1.0, 0.0, 1.0])),
+        "02_antisymmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([1.0, 0.0, -1.0, 0.0])),
+        "13_antisymmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([0.0, 1.0, 0.0, -1.0])),
+        "all_max": all_hold(target_angle=MAX_ANGLE_RAD),
+        "all_min": all_hold(target_angle=-MAX_ANGLE_RAD),
     }
 
-    for test_name, generate_cmds in tests.items():
-        test_cmds = generate_cmds()
-        test_yaml_text = generate_yaml(test_cmds)
+    for test_name, command_sequence in tests.items():
+        test_yaml_text = generate_yaml(command_sequence)
 
         test_file_name = "{}.yaml".format(test_name)
         write_file(test_yaml_text, test_file_name)
 
         if (args.plot):
-            ticks = np.arange(0.0, test_cmds.shape[0])
+            ticks = np.arange(0.0, command_sequence.shape[0])
             tt_milliseconds = ticks * MS_PER_TICK
-            tt_seconds = tt_milliseconds * 1e-3
+            tt_seconds = tt_milliseconds * SEC_PER_MS
             for servo_index in range(4):
-                plt.plot(tt_seconds, test_cmds[:, servo_index], label='Angle: {}'.format(servo_index))
+                plt.plot(tt_seconds, command_sequence[:, servo_index], label='Angle: {}'.format(servo_index))
 
             plt.ylim(np.array([-MAX_ANGLE_RAD, MAX_ANGLE_RAD]) * 1.1)
             plt.xlabel("Time From Start (Seconds)")
