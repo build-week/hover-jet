@@ -3,18 +3,14 @@
 #include "infrastructure/time/timestamp.hh"
 #include "infrastructure/comms/schemas/message.hh"
 
-//%deps(opencv)
-#include <opencv2/opencv.hpp>
-
 namespace jet {
 
 struct ForceSensorMessage : Message {
-  Timestamp timestamp;
-  int force_sensor_index;
+	//TODO Ralph rename values to something better?
+  std::vector<float> values;
 
-  MESSAGE(ForceSensorMessage, timestamp, force_sensor_index);
+  MESSAGE(ForceSensorMessage, values);
 };
 
-cv::Mat get_image_mat(ForceSensorMessage message);
 
 }  //  namespace jet

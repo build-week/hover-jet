@@ -16,7 +16,6 @@ class ForceSensorBq : public BalsaQ {
 
  private:
   PublisherPtr publisher_;
-  int force_sensor_index;
 };
 
 }  // namespace jet
