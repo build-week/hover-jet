@@ -15,7 +15,9 @@ using control::QuadraframeConfiguration;
 using control::QuadraframeStatus;
 using control::VaneConfiguration;
 
-void put_plane(viewer::SimpleGeometry& geo, const SE3& world_from_plane) {
+void put_plane(viewer::SimpleGeometry& geo,
+               const SE3& world_from_plane,
+               const jcc::Vec4& color) {
   viewer::Polygon poly;
 
   // The frame here looks like the following
@@ -52,7 +54,8 @@ void put_plane(viewer::SimpleGeometry& geo, const SE3& world_from_plane) {
     poly.points.push_back(world_from_plane * (pt_plane_frame + vane_tip_edge_from_cp));
   }
   poly.outline = true;
-  poly.color = jcc::Vec4(0.8, 0.8, 0.8, 0.8);
+  poly.color = color;
+
   geo.add_polygon(poly);
 
   geo.add_axes({world_from_plane, 0.005, 3.0});
@@ -81,25 +84,28 @@ void put_quadraframe(viewer::SimpleGeometry& geo,
                      const QuadraframeStatus& status,
                      const QuadraframeConfiguration& quad_cfg,
                      const VaneConfiguration& vane_cfg) {
+  const jcc::Vec4 normal_color(0.8, 0.8, 0.8, 0.8);
+  const jcc::Vec4 vane_0_color(0.8, 0.3, 0.3, 0.8);
+
   const SE3 com_from_oriented_vane_0 =
       quad_cfg.com_from_vane_unit_0 *
       vane_unit_from_vane(status.servo_0_angle_rad, vane_cfg);
-  put_plane(geo, com_from_oriented_vane_0);
+  put_plane(geo, com_from_oriented_vane_0, vane_0_color);
 
   const SE3 com_from_oriented_vane_1 =
       quad_cfg.com_from_vane_unit_1 *
       vane_unit_from_vane(status.servo_1_angle_rad, vane_cfg);
-  put_plane(geo, com_from_oriented_vane_1);
+  put_plane(geo, com_from_oriented_vane_1, normal_color);
 
   const SE3 com_from_oriented_vane_2 =
       quad_cfg.com_from_vane_unit_2 *
       vane_unit_from_vane(status.servo_2_angle_rad, vane_cfg);
-  put_plane(geo, com_from_oriented_vane_2);
+  put_plane(geo, com_from_oriented_vane_2, normal_color);
 
   const SE3 com_from_oriented_vane_3 =
       quad_cfg.com_from_vane_unit_3 *
       vane_unit_from_vane(status.servo_3_angle_rad, vane_cfg);
-  put_plane(geo, com_from_oriented_vane_3);
+  put_plane(geo, com_from_oriented_vane_3, normal_color);
 }
 
 }  // namespace visualization

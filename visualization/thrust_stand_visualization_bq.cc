@@ -17,6 +17,10 @@ void ThrustStandVisualizerBq::init(int argc, char* argv[]) {
   view_ = viewer::get_window3d(viewer_name);
   geo_ = view_->add_primitive<viewer::SimpleGeometry>();
   setup_view(viewer_name);
+
+  // Draw something before we have get a message
+  put_quadraframe(*geo_, {}, {}, {});
+  geo_->flip();
 }
 
 void ThrustStandVisualizerBq::loop() {
