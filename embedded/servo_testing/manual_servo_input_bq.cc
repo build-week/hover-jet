@@ -25,13 +25,20 @@ constexpr int PWM_FREQUENCY = 330;
 void SingleServoCommandBq::init(int argc, char *argv[]) {
   assert(argc == 3);
   int servo_index = atoi(argv[1]);
-  float target_angle = (float)(atoi(argv[2]));
+  float target_percentage = (float)(atoi(argv[2]));
 
-  const std::string channel_name = "servo_channel_" + std::to_string(servo_index);
+  const std::string channel_name = "servo_command_channel";
   std::cout << "channel name " << channel_name << std::endl;
   publisher_ = make_publisher(channel_name);
   SetServoMessage set_servo_message;
-  set_servo_message.target_angle = target_angle;
+  std::vector<float> target_percentages;
+  target_percentages.push_back(target_percentage);
+  set_servo_message.target_percentages = target_percentages;
+
+  std::vector<int> servo_indices;
+  servo_indices.push_back(servo_index);
+  set_servo_message.servo_indices = servo_indices;
+
   std::cout << "enter to send command" << std::endl;
   std::cin.ignore();
   publisher_->publish(set_servo_message);

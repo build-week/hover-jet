@@ -1,13 +1,22 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
+// #include "infrastructure/comms/serialization/serialization_macros.hh"
+#include <vector>
 
 namespace jet {
 
-struct SetServoMessage : Message {
-  float target_angle; //TODO units
+// struct ServoCommand{
+// 	int servo_index;
+// 	float target_percentage;
+// 	SERIALIZABLE_STRUCTURE(ServoCommand, servo_index, target_percentage);
+// };
 
-  MESSAGE(SetServoMessage, target_angle);
+struct SetServoMessage : Message {
+  std::vector<int> servo_indices;
+  std::vector<float> target_percentages;
+
+  MESSAGE(SetServoMessage, servo_indices, target_percentages);
 };
 
 }
