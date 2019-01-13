@@ -18,7 +18,7 @@ namespace jet {
 
 namespace {
     constexpr char* SERIAL_PORT_PATH = "/dev/ttyUSB0";
-    Duration TIME_BETWEEN_TURBINE_READS{200000000}; // 200ms
+    // Duration TIME_BETWEEN_TURBINE_READS{200000000}; // 200ms
 }
 
 TurbineInterfaceBQ::TurbineInterfaceBQ() {
@@ -27,6 +27,7 @@ TurbineInterfaceBQ::TurbineInterfaceBQ() {
 
 void TurbineInterfaceBQ::init(int argc, char *argv[]) {
 
+  loop_delay_microseconds = 200000;
   turbine_ignition_subscriber_ = make_subscriber("/turbine/ignition");
   turbine_throttle_setting_subscriber_ = make_subscriber("/turbine/set_throttle");
   turbine_state_publisher_ = make_publisher("/turbine/state");
@@ -35,6 +36,7 @@ void TurbineInterfaceBQ::init(int argc, char *argv[]) {
 }
 
 void TurbineInterfaceBQ::start_turbine() {
+  std::cout << "Received turbine start command!" << std::endl;
   bool success = turbine_ptr_->start_engine();
   if (!success) {
     std::cerr << "Failed to start engine!" << std::endl;
@@ -44,6 +46,7 @@ void TurbineInterfaceBQ::start_turbine() {
 }
 
 void TurbineInterfaceBQ::shutdown_turbine() {
+  std::cout << "Received turbine stop command!" << std::endl;
   bool success = turbine_ptr_->stop_engine();
   if (!success) {
     std::cerr << "Failed to stop engine!" << std::endl;
@@ -53,6 +56,7 @@ void TurbineInterfaceBQ::shutdown_turbine() {
 }
 
 void TurbineInterfaceBQ::set_turbine_throttle(uint32_t throttle_percent) {
+  std::cout << "Received turbine throttle command! Setting throttle to: " << throttle_percent << std::endl;
   turbine_ptr_->set_rpm(throttle_percent);
 }
 
@@ -80,21 +84,17 @@ void TurbineInterfaceBQ::loop() {
     set_turbine_throttle(throttle_command_message.throttle_percent);
   }
 
-  Timestamp current_time = get_current_time();
-  if (current_time - last_turbine_read_time_ > TIME_BETWEEN_TURBINE_READS) {
-    std::optional<JetCat::LiveValues> live_values = turbine_ptr_->get_live_values();
-    if (!live_values) {
-      std::cerr << "Could not read live values from turbine." << std::endl;
-    } else {
-      TurbineStateMessage state_message;
-      state_message.turbine_rpm = live_values->turbine_rpm;
-      state_message.exhaust_gas_temperature_c = live_values->exhaust_gas_temperature_c;
-      state_message.pump_voltage = live_values->pump_voltage;
-      state_message.turbine_state = live_values->turbine_state;
-      state_message.throttle_position_percent = live_values->throttle_position_percent;
-      turbine_state_publisher_->publish(state_message);
-    }
-    last_turbine_read_time_ = current_time;
+  std::optional<JetCat::LiveValues> live_values = turbine_ptr_->get_live_values();
+  if (!live_values) {
+    std::cerr << "Could not read live values from turbine." << std::endl;
+  } else {
+    TurbineStateMessage state_message;
+    state_message.turbine_rpm = live_values->turbine_rpm;
+    state_message.exhaust_gas_temperature_c = live_values->exhaust_gas_temperature_c;
+    state_message.pump_voltage = live_values->pump_voltage;
+    state_message.turbine_state = live_values->turbine_state;
+    state_message.throttle_position_percent = live_values->throttle_position_percent;
+    turbine_state_publisher_->publish(state_message);
   }
 }
 

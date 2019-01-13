@@ -12,7 +12,7 @@ namespace jet {
 /// structure and common event loop implementation.
 class BalsaQ {
  public:
-  const static uint loop_delay_microseconds = 10000;
+  uint loop_delay_microseconds = 10000;
   BalsaQ() = default;
   virtual void init(int argc, char *argv[]) = 0;
   virtual void loop() = 0;
