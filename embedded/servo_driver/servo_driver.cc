@@ -21,7 +21,7 @@ float rad_to_deg(float radians) {
 }  // namespace
 
 ServoDriver::ServoDriver(const std::string &config_path) : config_path_(config_path) {
-  int i2cHandle = i2c_open("/dev/i2c-1");
+  int i2cHandle = i2c_open("/dev/i2c-1"); // TODO make configurable
   if (i2cHandle == -1) {
     std::string err = std::string("Failed to open i2c") + config_path_;
     throw std::runtime_error(err);
@@ -37,10 +37,12 @@ ServoDriver::ServoDriver(const std::string &config_path) : config_path_(config_p
     calibrated_center_ = config["calibrated_center"].as<float>();
     calibrated_max_ = config["calibrated_max"].as<float>();
     servo_index_ = config["index"].as<int>();
+    assert(servo_index_ >= 0);
   } catch (YAML::BadFile e) {
     std::string err = std::string("Could not find YAML file ") + config_path_;
     throw std::runtime_error(err);
   }
+
   percentage_ = calibrated_center_;
   set_percentage(percentage_);
 }

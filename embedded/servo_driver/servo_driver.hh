@@ -22,7 +22,7 @@ class ServoDriver {
   void set_angle_radians(float angle);
 
  private:
-  int servo_index_;
+  int servo_index_ = -1;
   std::shared_ptr<PwmDriver> pwm_driver_;
   std::string config_path_;
   // The percentage corresponding to max angle.

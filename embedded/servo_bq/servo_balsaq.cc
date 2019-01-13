@@ -1,7 +1,6 @@
 //%bin(servo_balsaq_main)
 #include "embedded/servo_bq/servo_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
-// #include "servo_driver.hh"
 
 #include <yaml-cpp/yaml.h>
 #include <cassert>
