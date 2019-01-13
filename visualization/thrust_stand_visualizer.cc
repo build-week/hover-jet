@@ -1,9 +1,5 @@
-// %deps(simple_geometry)
 // %deps(scene_tree)
-// %deps(window_3d)
 #include "third_party/experiments/viewer/primitives/scene_tree.hh"
-#include "third_party/experiments/viewer/primitives/simple_geometry.hh"
-#include "third_party/experiments/viewer/window_3d.hh"
 
 #include "control/servo_interface.hh"
 #include "visualization/thrust_stand_visualizer.hh"
@@ -68,8 +64,8 @@ SE3 vane_unit_from_vane(const double angle, const VaneConfiguration& cfg) {
 }
 }  // namespace
 
-void setup_view() {
-  const auto view = viewer::get_window3d("Mr. Test Stand Visualization, visualizes");
+void setup_view(const std::string& viewer_name) {
+  const auto view = viewer::get_window3d(viewer_name);
   view->set_target_from_world(
       SE3(SO3::exp(Eigen::Vector3d(-M_PI * 0.5, 0.0, 0.0)), Eigen::Vector3d::Zero()));
   view->set_continue_time_ms(10);

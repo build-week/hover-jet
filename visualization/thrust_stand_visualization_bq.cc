@@ -12,7 +12,11 @@ namespace visualization {
 
 void ThrustStandVisualizerBq::init(int argc, char* argv[]) {
   servo_sub_ = make_subscriber("servo_command_channel");
-  setup_view();
+
+  const std::string viewer_name = "Mr. Thrust Stand Visualizer, Visualizes";
+  view_ = viewer::get_window3d(viewer_name);
+  geo_ = view_->add_primitive<viewer::SimpleGeometry>();
+  setup_view(viewer_name);
 }
 
 void ThrustStandVisualizerBq::loop() {
@@ -21,10 +25,10 @@ void ThrustStandVisualizerBq::loop() {
 
   SetServoMessage servo_message;
   if (servo_sub_->read(servo_message, 1)) {
-    std::cout << "Got message" << std::endl;
     const control::QuadraframeStatus qframe_status =
         control::create_quadraframe_status(servo_message);
     put_quadraframe(*geo_, qframe_status, qframe_cfg, vane_cfg);
+    geo_->flip();
   }
 }
 void ThrustStandVisualizerBq::shutdown() {

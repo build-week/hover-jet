@@ -7,6 +7,7 @@
 #include "embedded/servo_bq/set_servo_message.hh"
 
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
+#include "third_party/experiments/viewer/window_3d.hh"
 
 namespace jet {
 namespace visualization {
@@ -23,6 +24,7 @@ class ThrustStandVisualizerBq : public BalsaQ {
  private:
   SubscriberPtr servo_sub_;
   std::shared_ptr<viewer::SimpleGeometry> geo_;
+  std::shared_ptr<viewer::Window3D> view_;
 };
 
 }  // namespace visualization
