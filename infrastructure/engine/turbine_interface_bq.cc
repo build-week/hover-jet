@@ -100,7 +100,6 @@ void TurbineInterfaceBQ::loop() {
 
 void TurbineInterfaceBQ::shutdown() {
   std::cout << "Shutting down!" << std::endl;
-  bool success = turbine_ptr_->stop_engine();
   shutdown_turbine();
 }
 
