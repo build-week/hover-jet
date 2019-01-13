@@ -36,6 +36,9 @@ JetCatTurbine::JetCatTurbine(const std::string& serial_port_path)
     sp_new_config(&config);
     sp_set_config_baudrate(config, SERIAL_BAUD_RATE);
     sp_set_config(serial_port_ptr_, config);
+  } else {
+    std::cerr << "Could not open serial port to turbine." << std::endl;
+    exit(1);
   }
 
     // const size_t nbytes = 4; // Since adc_freerun writes a 4-byte string
