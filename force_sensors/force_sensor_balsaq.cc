@@ -18,16 +18,17 @@ ForceSensorBq::ForceSensorBq() {
 }
 
 void ForceSensorBq::init(int argc, char *argv[]) {
-  assert(argc == 2);
-  force_sensor_index = std::atoi(argv[1]);
-  publisher_ = make_publisher("force_sensor_channel_" + std::to_string(force_sensor_index));
+  publisher_ = make_publisher("force_sensor_output_channel");
 }
 
 void ForceSensorBq::loop() {
   std::cout << "Camera BQ: trying to get a frame" << std::endl;	
   ForceSensorMessage message;
-  message.force_sensor_index = force_sensor_index;
-  message.timestamp = get_current_time();
+
+  //TODO Ralph: put some data in this vector
+  message.values.push_back(1);
+  message.values.push_back(2);
+  message.values.push_back(3);
   publisher_->publish(message);
 }
 void ForceSensorBq::shutdown() {
