@@ -7,6 +7,6 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AllowShortFunctionsOnASingleLine: None
 BinPackParameters: false
-ColumnLimit: 90
+ColumnLimit: 120
 ExperimentalAutoDetectBinPacking: true
 PenaltyReturnTypeOnItsOwnLine: 10000
