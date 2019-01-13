@@ -10,10 +10,6 @@ FIND_PACKAGE(crossguid REQUIRED)
 # CMakeLists
 find_package(OpenCV REQUIRED)
 
-find_package(Boost 1.65 REQUIRED COMPONENTS wserialization system)
-message(baboost "${Boost_LIBRARIES} ${Boost_LIBRARY_DIR}")
-message("Foumd" Boost_FOUND)
-
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 
 # Get yaml-cpp configured

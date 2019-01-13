@@ -1,28 +1,27 @@
-/*
-///%deps(jet_serial)
-//#include <serial/serial.h>
-*/
-
-#include <boost/asio.hpp> 
-#include <boost/asio/serial_port.hpp> 
-
+// %deps(serialport)
 #include <memory>
+#include <optional>
+#include <string>
+
+#include <libserialport.h>
 
 namespace jet {
 
+struct ForceReading {
+  size_t id;
+  float value;
+};
+
 class LoadCellReceiver {
  public:
-  LoadCellReceiver();
-  void receive();
+  LoadCellReceiver(const std::string& path);
+  std::optional<ForceReading> receive();
 
  private:
-  std::unique_ptr<boost::asio::serial_port> serial_port_;
+  const std::string serial_port_path_;
+  sp_port* serial_port_ptr_ = 0;
 
-  //std::unique_ptr<serial::Serial> serial_port_;
-
-  void tokenize(const std::string& str,
-                std::vector<float>& tokens,
-                char delim);
+  std::string read_bytes(const int buffer_byte_size);
 };
 
 }  // namespace jet
