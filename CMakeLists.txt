@@ -36,5 +36,6 @@ set(CMAKE_CXX_FLAGS "--std=c++17 -g -O1 -fno-omit-frame-pointer -Wall -Wno-depre
 # It will automatically generate CMake files for your code.
 include_directories("third_party/experiments/third_party/Sophus")
 include_directories("third_party/experiments/third_party/eigen3")
+include_directories("third_party/experiments")
 add_subdirectory(third_party)
 add_subdirectory(tmp)
