@@ -15,21 +15,20 @@
 
 class ServoDriver {
  public:
-  ServoDriver(const int channel,
-              const std::shared_ptr<PwmDriver> &driver,
-              const std::string &config_path);
-  void set_percentage(int percentage);
-  int get_percentage() const;
-  void set_angle(float angle);
+  ServoDriver(const std::string &config_path);
+  void set_percentage(float percentage);
+  float get_percentage() const;
+  int get_servo_index() const;
+  void set_angle_radians(float angle);
 
  private:
-  int channel_;
-  const std::shared_ptr<PwmDriver> &pwm_driver_;
+  int servo_index_ = -1;
+  std::shared_ptr<PwmDriver> pwm_driver_;
   std::string config_path_;
   // The percentage corresponding to max angle.
-  int calibrated_max_;
+  float calibrated_max_;
   // The percentage corresponding to zero angle.
-  int calibrated_center_;
-  int max_angle_;
-  int percentage_;
+  float calibrated_center_;
+  float max_angle_;
+  float percentage_;
 };

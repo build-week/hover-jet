@@ -1,13 +1,16 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
+#include <vector>
 
 namespace jet {
 
 struct SetServoMessage : Message {
-  float target_angle; //TODO units
+  std::vector<int> servo_indices;
+  std::vector<float> target_radians;
 
-  MESSAGE(SetServoMessage, target_angle);
+  MESSAGE(SetServoMessage, servo_indices, target_radians);
 };
 
 }
+ 

@@ -41,9 +41,9 @@ int keypress(int count, int key) {
   ServoDriver &servo = servos[(num - 1) / 2];
   Direction direction = num % 2 == 1 ? UP : DOWN;
   if (direction == DOWN) {
-    servo.set_percentage(std::max(0, servo.get_percentage() - 1));
+    servo.set_percentage(std::max(0.0f, servo.get_percentage() - 1.0f));
   } else {
-    servo.set_percentage(std::min(100, servo.get_percentage() + 1));
+    servo.set_percentage(std::min(100.0f, servo.get_percentage() + 1.0f));
   }
   print_help(servos);
   return 0;
@@ -56,18 +56,11 @@ int main() {
     return -1;
   }
   clear_screen();
-  std::shared_ptr<PwmDriver> pwm_driver = std::make_shared<PwmDriver>(i2cHandle);
-  pwm_driver->set_pwm_freq(PWM_FREQUENCY);
-  pwm_driver->enable_auto_increment(true);
 
-  ServoDriver servo1 =
-      ServoDriver(0, pwm_driver, "../embedded/servo_driver/cfg/servo_cfg0.yaml");
-  ServoDriver servo2 =
-      ServoDriver(1, pwm_driver, "../embedded/servo_driver/cfg/servo_cfg1.yaml");
-  ServoDriver servo3 =
-      ServoDriver(2, pwm_driver, "../embedded/servo_driver/cfg/servo_cfg2.yaml");
-  ServoDriver servo4 =
-      ServoDriver(3, pwm_driver, "../embedded/servo_driver/cfg/servo_cfg3.yaml");
+  ServoDriver servo1 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg0.yaml");
+  ServoDriver servo2 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg1.yaml");
+  ServoDriver servo3 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg2.yaml");
+  ServoDriver servo4 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg3.yaml");
 
   servos.push_back(servo1);
   servos.push_back(servo2);
