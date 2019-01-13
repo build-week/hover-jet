@@ -84,11 +84,6 @@ if __name__ == '__main__':
     }
 
     for test_name, command_sequence in tests.items():
-        test_yaml_text = generate_yaml(command_sequence)
-
-        test_file_name = "{}.yaml".format(test_name)
-        write_file(test_yaml_text, test_file_name)
-
         if (args.plot):
             ticks = np.arange(0.0, command_sequence.shape[0])
             tt_milliseconds = ticks * MS_PER_TICK
@@ -104,6 +99,9 @@ if __name__ == '__main__':
             plt.legend()
             plt.show()
 
+        test_yaml_text = generate_yaml(command_sequence)
+        test_file_name = "{}.yaml".format(test_name)
         output_path = os.path.join(os.getcwdu(), test_file_name)
-        real_path = os.path.realpath(output_path)
+        test_file_path = os.path.realpath(output_path)
+        write_file(test_yaml_text, test_file_path)
         print("Writing to {} to {}".format(test_name, output_path))
