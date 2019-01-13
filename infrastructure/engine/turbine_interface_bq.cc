@@ -27,9 +27,9 @@ TurbineInterfaceBQ::TurbineInterfaceBQ() {
 void TurbineInterfaceBQ::init(int argc, char* argv[]) {
   // Only send commands to the turbine every 200ms.
   loop_delay_microseconds = 200000;
-  turbine_ignition_subscriber_ = make_subscriber("/turbine/ignition");
-  turbine_throttle_setting_subscriber_ = make_subscriber("/turbine/set_throttle");
-  turbine_state_publisher_ = make_publisher("/turbine/state");
+  turbine_ignition_subscriber_ = make_subscriber("turbine_ignition");
+  turbine_throttle_setting_subscriber_ = make_subscriber("turbine_set_throttle");
+  turbine_state_publisher_ = make_publisher("turbine_state");
 
   turbine_ptr_ = std::make_unique<JetCatTurbine>(SERIAL_PORT_PATH);
 }

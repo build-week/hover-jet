@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[]) {
   auto comms_factory = std::make_unique<jet::MqttCommsFactory>();
-  auto publisher = comms_factory->make_publisher("/turbine/ignition");
+  auto publisher = comms_factory->make_publisher("turbine_ignition");
   jet::TurbineIgnitionCommandMessage ignition_command_message;
   ignition_command_message.command = jet::IgnitionCommand::STOP;
 
