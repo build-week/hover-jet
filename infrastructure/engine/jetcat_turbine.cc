@@ -9,9 +9,10 @@
 
 namespace jet {
 
-JetCatTurbine::JetCatTurbine(const std::string& serial_port_path) : serial_port_path_(serial_port_path) {
-  serial_port_ =
-      std::make_unique<serial::Serial>(serial_port_path, 9600, serial::Timeout::simpleTimeout(200));
+JetCatTurbine::JetCatTurbine(const std::string& serial_port_path)
+    : serial_port_path_(serial_port_path) {
+  serial_port_ = std::make_unique<serial::Serial>(
+      serial_port_path, 9600, serial::Timeout::simpleTimeout(200));
 }
 
 void JetCatTurbine::tokenize(const std::string& input_string,

@@ -29,7 +29,7 @@ class JetCatTurbine {
   std::optional<uint32_t> get_throttle_position_percent() const;
 
  private:
-  const std::string serial_port_path_; 
+  const std::string serial_port_path_;
   std::unique_ptr<serial::Serial> serial_port_;
   uint8_t turbine_slave_address_{1};
   bool handle_command_response(const std::string& command,

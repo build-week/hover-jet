@@ -29,28 +29,27 @@ enum class State {
 };
 
 inline std::string enum_to_string(State state) {
-  static const char* state_string[] = {  "Off",
-                                          "Wait for RPM",
-                                          "Ignite",
-                                          "Accelerate",
-                                          "Stabilize",
-                                          "Learn High",
-                                          "Learn Low",
-                                          "UNUSED0",
-                                          "Slow Down",
-                                          "UNUSED1",
-                                          "Auto Off",
-                                          "Run",
-                                          "Acceleration Delay",
-                                          "Speed Reg",
-                                          "Two Shaft Regulate",
-                                          "Preheat 1",
-                                          "Preheat 2",
-                                          "MAINFSTRT",
-                                          "UNUSED2",
-                                          "Kerosene Full On"};
-  return state_string[static_cast<typename std::underlying_type<State>::type>(
-      state)];
+  static const char* state_string[] = {"Off",
+                                       "Wait for RPM",
+                                       "Ignite",
+                                       "Accelerate",
+                                       "Stabilize",
+                                       "Learn High",
+                                       "Learn Low",
+                                       "UNUSED0",
+                                       "Slow Down",
+                                       "UNUSED1",
+                                       "Auto Off",
+                                       "Run",
+                                       "Acceleration Delay",
+                                       "Speed Reg",
+                                       "Two Shaft Regulate",
+                                       "Preheat 1",
+                                       "Preheat 2",
+                                       "MAINFSTRT",
+                                       "UNUSED2",
+                                       "Kerosene Full On"};
+  return state_string[static_cast<typename std::underlying_type<State>::type>(state)];
 }
 
 enum class OffCondition {
@@ -81,29 +80,29 @@ enum class OffCondition {
 
 inline std::string enum_to_string(OffCondition off_condition) {
   static const char* off_condition_string[] = {"No off condition defined",
-                                            "Shut down via RC",
-                                            "Overtemperature",
-                                            "Ignition timeout",
-                                            "Acceleration Timeout",
-                                            "Acceleration too slow",
-                                            "Over RPM",
-                                            "Low RPM",
-                                            "Low battery",
-                                            "Auto off",
-                                            "Low temperature",
-                                            "High temperature",
-                                            "Glow plug defective",
-                                            "Watchdog timer",
-                                            "Failsafe",
-                                            "Manual off",
-                                            "Power failure",
-                                            "Temperature sensor failure",
-                                            "Fuel failure",
-                                            "Prop failure",
-                                            "Engine failure, 2nd engine",
-                                            "Differential too high, 2nd engine"};
-  return off_condition_string[static_cast<typename std::underlying_type<OffCondition>::type>(
-      off_condition)];
+                                               "Shut down via RC",
+                                               "Overtemperature",
+                                               "Ignition timeout",
+                                               "Acceleration Timeout",
+                                               "Acceleration too slow",
+                                               "Over RPM",
+                                               "Low RPM",
+                                               "Low battery",
+                                               "Auto off",
+                                               "Low temperature",
+                                               "High temperature",
+                                               "Glow plug defective",
+                                               "Watchdog timer",
+                                               "Failsafe",
+                                               "Manual off",
+                                               "Power failure",
+                                               "Temperature sensor failure",
+                                               "Fuel failure",
+                                               "Prop failure",
+                                               "Engine failure, 2nd engine",
+                                               "Differential too high, 2nd engine"};
+  return off_condition_string
+      [static_cast<typename std::underlying_type<OffCondition>::type>(off_condition)];
 }
 
 enum class ErrorCode : uint16_t {

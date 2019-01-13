@@ -2,12 +2,14 @@
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "infrastructure/engine/throttle_command_message.hh"
 
-#include <memory>
 #include <unistd.h>
+#include <memory>
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
-    std::cerr << "Set Turbine Throttle tool takes one argument. An integer between 0 and 100." << std::endl;
+    std::cerr
+        << "Set Turbine Throttle tool takes one argument. An integer between 0 and 100."
+        << std::endl;
     exit(1);
   }
 
@@ -16,7 +18,8 @@ int main(int argc, char *argv[]) {
   jet::ThrottleCommandMessage throttle_command_message;
   throttle_command_message.throttle_percent = std::atoi(argv[1]);
 
-  std::cout << "Setting throttle to " << throttle_command_message.throttle_percent << "%." << std::endl;
+  std::cout << "Setting throttle to " << throttle_command_message.throttle_percent << "%."
+            << std::endl;
   usleep(1000000);
   publisher->publish(throttle_command_message);
   std::cout << "Sent engine stop command!" << std::endl;

@@ -17,16 +17,15 @@
 namespace jet {
 
 namespace {
-    constexpr char* SERIAL_PORT_PATH = "/dev/ttyUSB0";
-    // Duration TIME_BETWEEN_TURBINE_READS{200000000}; // 200ms
-}
+constexpr char* SERIAL_PORT_PATH = "/dev/ttyUSB0";
+}  // namespace
 
 TurbineInterfaceBQ::TurbineInterfaceBQ() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void TurbineInterfaceBQ::init(int argc, char *argv[]) {
-
+void TurbineInterfaceBQ::init(int argc, char* argv[]) {
+  // Only send commands to the turbine every 200ms.
   loop_delay_microseconds = 200000;
   turbine_ignition_subscriber_ = make_subscriber("/turbine/ignition");
   turbine_throttle_setting_subscriber_ = make_subscriber("/turbine/set_throttle");
@@ -56,7 +55,8 @@ void TurbineInterfaceBQ::shutdown_turbine() {
 }
 
 void TurbineInterfaceBQ::set_turbine_throttle(uint32_t throttle_percent) {
-  std::cout << "Received turbine throttle command! Setting throttle to: " << throttle_percent << std::endl;
+  std::cout << "Received turbine throttle command! Setting throttle to: "
+            << throttle_percent << std::endl;
   turbine_ptr_->set_rpm(throttle_percent);
 }
 
