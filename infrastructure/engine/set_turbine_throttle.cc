@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   }
 
   auto comms_factory = std::make_unique<jet::MqttCommsFactory>();
-  auto publisher = comms_factory->make_publisher("/turbine/set_throttle");
+  auto publisher = comms_factory->make_publisher("turbine_set_throttle");
   jet::ThrottleCommandMessage throttle_command_message;
   throttle_command_message.throttle_percent = std::atoi(argv[1]);
 

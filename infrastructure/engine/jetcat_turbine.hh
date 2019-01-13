@@ -6,8 +6,6 @@
 #include <optional>
 #include <vector>
 
-// #include <SerialPort.h>
-// #include <SerialStream.h>
 #include <libserialport.h>
 
 namespace jet {
@@ -33,9 +31,7 @@ class JetCatTurbine {
 
  private:
   const std::string serial_port_path_;
-  // std::unique_ptr<LibSerial::SerialPort> serial_port_;
   sp_port *serial_port_ptr_ = 0;
-  // std::make_unique<boost::asio::serial_port> serial_port_;
   uint8_t turbine_slave_address_{1};
   bool handle_command_response(const std::string& command,
                                const std::string& response) const;
