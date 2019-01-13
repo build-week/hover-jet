@@ -15,13 +15,6 @@ Wrench wrench_from_force_arm(const jcc::Vec3& force_N, const jcc::Vec3& arm_m) {
   return wrench;
 }
 
-Wrench operator+(const Wrench& w1, const Wrench& w2) {
-  return Wrench({
-      .force_N = w1.force_N + w2.force_N,       //
-      .torque_Nm = w1.torque_Nm + w2.torque_Nm  //
-  });
-}
-
 Wrench wrench_in_frame(const SE3& frame_2_from_frame_1, const Wrench& wrench_frame_1) {
   // TODO(Matt, Jake): One should expect this to work, why doesn't it?
   // Explore: It's not transposed; the txR block is just *swapped*
@@ -45,6 +38,19 @@ Wrench wrench_in_frame(const SE3& frame_2_from_frame_1, const Wrench& wrench_fra
 void print_wrench(const Wrench& wrench) {
   std::cout << wrench.force_N.transpose() << "; " << wrench.torque_Nm.transpose() << std::endl;
 }
+
+Wrench operator+(const Wrench& wrench_a, const Wrench& wrench_b) {
+  return Wrench({
+      .force_N = wrench_a.force_N + wrench_b.force_N,
+      .torque_Nm = wrench_a.torque_Nm + wrench_b.torque_Nm,
+  });
+}
+// Wrench operator-(const Wrench& wrench_a, const Wrench& wrench_b) {
+//   return Wrench({
+//       .force_N = wrench_a.force_N - wrench_b.force_N,
+//       .torque_Nm = wrench_a.torque_Nm - wrench_b.torque_Nm,
+//   });
+// }
 
 }  // namespace control
 }  // namespace jet
