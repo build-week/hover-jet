@@ -4,16 +4,69 @@
 #include <sstream>
 
 #include <iostream>
+
+
 //%deps(paho-mqttpp3)
-//%deps(jet_serial)
+//%deps(serialport)
 
 namespace jet {
 
+namespace {
+  const unsigned int SERIAL_BAUD_RATE  = 9600;
+  const unsigned int SERIAL_TIMEOUT_MS = 200;
+}
+
 JetCatTurbine::JetCatTurbine(const std::string& serial_port_path)
     : serial_port_path_(serial_port_path) {
-  serial_port_ = std::make_unique<serial::Serial>(
-      serial_port_path, 9600, serial::Timeout::simpleTimeout(200));
+  // serial_port_ = std::make_unique<serial::Serial>(
+  //     serial_port_path, 9600, serial::Timeout::simpleTimeout(200));
+  // const std::string SERIAL_PORT        = "/dev/ttyUSB0";
+
+
+  // boost::asio::io_service io;
+  // serial_port_ = std::make_unique<boost::asio::serial_port>(io);
+  // serial_port_->open(SERIAL_PORT);
+  // serial_port_->set_option(boost::asio::serial_port_base::baud_rate(SERIAL_BAUD_RATE));
+
+
+  if (sp_get_port_by_name("/dev/ttyUSB0", &serial_port_ptr_) == SP_OK)
+  {
+    sp_open(serial_port_ptr_, SP_MODE_READ_WRITE);
+    sp_port_config *config = 0;
+    sp_new_config(&config);
+    sp_set_config_baudrate(config, SERIAL_BAUD_RATE);
+    sp_set_config(serial_port_ptr_, config);
+  }
+
+    // const size_t nbytes = 4; // Since adc_freerun writes a 4-byte string
+    // char readbuf[nbytes];
+    // unsigned int timeout = 10; // milliseconds
+
+    // while (1)
+    // {
+    //   // Count the number of bytes accumulated in the input buffer
+    //   int nbytes_waiting = sp_input_waiting(port);
+
+    //   if (nbytes_waiting >= nbytes)
+    //   {
+    //     sp_blocking_read(port, readbuf, nbytes, timeout);
+
+    //     cout << "   ADC value: " << atoi(readbuf) << flush;
+    //     cout << "   \r" << flush;
+
+    //     sp_flush(port, SP_BUF_INPUT);
+    //   }
+    // }
+
+
 }
+
+// std::string JetCatTurbine::read_serial(size_t number_bytes_to_read) {
+//     std::string read_msg(number_bytes_to_read, ' ');
+//     boost::asio::read(*serial_port_, boost::asio::buffer(&read_msg[0], number_bytes_to_read));
+//     std::cout << read_msg << std::endl;
+//     return read_msg;
+// }
 
 void JetCatTurbine::tokenize(const std::string& input_string,
                              std::vector<std::string>& tokens,
@@ -31,16 +84,24 @@ bool JetCatTurbine::handle_command_response(const std::string& command,
 }
 
 void JetCatTurbine::empty_the_buffer() const {
-  size_t available_bytes = serial_port_->available();
-  serial_port_->read(available_bytes);
+  // size_t available_bytes = serial_port_->available();
+  size_t available_bytes = sp_input_waiting(serial_port_ptr_);
+  std::string dev_null_buffer(available_bytes, ' ');
+  sp_blocking_read(serial_port_ptr_, &dev_null_buffer[0], available_bytes, 0);
+  // serial_port_->read(available_bytes);
 }
 
 bool JetCatTurbine::start_engine() const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",TCO,1\r";  // Ex: "1,TCO,1\r"
-  serial_port_->write(command_stream.str());
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // serial_port_->write(command_stream.str());
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
   return handle_command_response(command_stream.str(), handshake_resp);
 }
 
@@ -48,8 +109,13 @@ bool JetCatTurbine::stop_engine() const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",TCO,0\r";  // Ex: "1,TCO,0\r"
-  serial_port_->write(command_stream.str());
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // serial_port_->write(command_stream.str());
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
   return handle_command_response(command_stream.str(), handshake_resp);
 }
 
@@ -70,8 +136,12 @@ bool JetCatTurbine::set_rpm(uint32_t target_rpm) const {
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",WRP," << target_rpm << "\r";
 
-  serial_port_->write(command_stream.str());
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // serial_port_->write(command_stream.str());
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
 
   std::ostringstream expected_response_stream;
   expected_response_stream << command_stream.str() << turbine_slave_address_
@@ -88,9 +158,17 @@ std::optional<JetCat::SystemStatus> JetCatTurbine::get_system_status() const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",RSS,1\r";
-  serial_port_->write(command_stream.str());
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
-  std::string data = serial_port_->read(100);
+  // serial_port_->write(command_stream.str());
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // std::string data = serial_port_->read(100);
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
+  std::string data(100, ' ');
+  sp_blocking_read(serial_port_ptr_, &data[0], 100, SERIAL_TIMEOUT_MS);
+
 
   std::vector<std::string> tokens;
   tokenize(data, tokens, ',');
@@ -112,10 +190,19 @@ std::optional<JetCat::LiveValues> JetCatTurbine::get_live_values() const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",RAC,1\r";
-  serial_port_->write(command_stream.str());
+  // serial_port_->write(command_stream.str());
 
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
-  std::string data = serial_port_->read(100);
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // std::string data = serial_port_->read(100);
+
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
+  std::string data(100, ' ');
+  sp_blocking_read(serial_port_ptr_, &data[0], 100, SERIAL_TIMEOUT_MS);
+
 
   std::vector<std::string> tokens;
   tokenize(data, tokens, ',');
@@ -138,10 +225,17 @@ std::optional<JetCat::TurbineInfo> JetCatTurbine::get_turbine_info() const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",RTY,1\r";
-  serial_port_->write(command_stream.str());
+  // serial_port_->write(command_stream.str());
 
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
-  std::string data = serial_port_->read(100);
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // std::string data = serial_port_->read(100);
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
+  std::string data(100, ' ');
+  sp_blocking_read(serial_port_ptr_, &data[0], 100, SERIAL_TIMEOUT_MS);
 
   std::vector<std::string> tokens;
   tokenize(data, tokens, ',');
@@ -165,10 +259,17 @@ std::optional<JetCat::FuelInfo> JetCatTurbine::get_fuel_info() const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",RFI,1\r";
-  serial_port_->write(command_stream.str());
+  // serial_port_->write(command_stream.str());
 
-  std::string handshake_resp = serial_port_->read(command_stream.str().size());
-  std::string data = serial_port_->read(100);
+  // std::string handshake_resp = serial_port_->read(command_stream.str().size());
+  // std::string data = serial_port_->read(100);
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
+  std::string data(100, ' ');
+  sp_blocking_read(serial_port_ptr_, &data[0], 100, SERIAL_TIMEOUT_MS);
 
   std::vector<std::string> tokens;
   tokenize(data, tokens, ',');
