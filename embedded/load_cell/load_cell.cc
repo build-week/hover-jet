@@ -31,10 +31,6 @@ std::string LoadCellReceiver::read_bytes(const int buffer_byte_size) {
   return byte_we_read;
 }
 
-// Returns a vector containing the sensor identifier along with its raw reading.
-// std::optional<ForceReading> LoadCellReceiver::parse(const std::string &tx) {
-// }
-
 std::optional<ForceReading> LoadCellReceiver::receive() {
   const std::string start_str = "SENSOR";
 
