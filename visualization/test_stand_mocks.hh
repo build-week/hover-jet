@@ -1,5 +1,10 @@
 #pragma once
 
+//
+// This file contains changes from other (large) PR's that have not yet been merged
+// They are here so they can be used in visualization before those land
+//
+
 #include "third_party/experiments/eigen.hh"
 #include "third_party/experiments/sophus.hh"
 

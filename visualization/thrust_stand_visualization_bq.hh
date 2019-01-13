@@ -11,11 +11,11 @@
 namespace jet {
 namespace visualization {
 
-class ThrustStandVisualizer : public BalsaQ {
+class ThrustStandVisualizerBq : public BalsaQ {
  public:
   const static uint loop_delay_microseconds = 50000;
 
-  ThrustStandVisualizer() = default;
+  ThrustStandVisualizerBq() = default;
   void init(int argc, char *argv[]) override;
   void loop() override;
   void shutdown() override;

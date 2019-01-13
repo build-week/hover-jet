@@ -1,3 +1,4 @@
+#include "visualization/test_stand_mocks.hh"
 
 namespace jet {
 namespace control {

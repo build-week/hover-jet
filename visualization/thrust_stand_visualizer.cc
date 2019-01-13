@@ -6,13 +6,18 @@
 #include "third_party/experiments/viewer/window_3d.hh"
 
 #include "control/servo_interface.hh"
-#include "visualization/test_stand_mocks.hh"
 #include "visualization/thrust_stand_visualizer.hh"
 
 namespace jet {
 namespace visualization {
 
 namespace {
+
+using control::JetConfiguration;
+using control::JetStatus;
+using control::QuadraframeConfiguration;
+using control::QuadraframeStatus;
+using control::VaneConfiguration;
 
 void put_plane(viewer::SimpleGeometry& geo, const SE3& world_from_plane) {
   viewer::Polygon poly;
@@ -99,27 +104,6 @@ void put_quadraframe(viewer::SimpleGeometry& geo,
       quad_cfg.com_from_vane_unit_3 *
       vane_unit_from_vane(status.servo_3_angle_rad, vane_cfg);
   put_plane(geo, com_from_oriented_vane_3);
-}
-
-void go2() {
-  setup();
-  const auto view = viewer::get_window3d("Mr. Vane, vanes");
-  const auto geo = view->add_primitive<viewer::SimpleGeometry>();
-
-  //
-  // Generate a force sample
-  //
-
-  const JetStatus jet_status({.throttle = 1.0});
-  const VaneConfiguration vane_cfg;
-  const JetConfiguration jet_cfg;
-  const QuadraframeConfiguration quad_cfg = {};
-
-  double t = 0.0;
-  while (!view->should_close()) {
-    geo->flip();
-    view->spin_until_step();
-  }
 }
 
 }  // namespace visualization

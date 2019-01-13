@@ -1,3 +1,7 @@
+#pragma once
+
+#include "visualization/test_stand_mocks.hh"
+
 namespace jet {
 namespace visualization {
 void setup_view();

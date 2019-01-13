@@ -1,5 +1,7 @@
 #include "control/servo_interface.hh"
 
+#include <cassert>
+
 namespace jet {
 namespace control {
 
@@ -20,13 +22,13 @@ SetServoMessage create_servo_command(const QuadraframeStatus& qframe_status) {
   return servo_msg;
 }
 
-QuadraframeStatus create_quadraframe_status(const SetServoMessage& servo_message) {
-  assert(servo_message.servo_indices.size() == 4u);
-  assert(servo_message.target_radians.size() == 4u);
+QuadraframeStatus create_quadraframe_status(const SetServoMessage& servo_msg) {
+  assert(servo_msg.servo_indices.size() == 4u);
+  assert(servo_msg.target_radians.size() == 4u);
 
   for (std::size_t k = 0; k < servo_msg.servo_indices.size(); ++k) {
     // Assert we have 0...3 and only 0...3
-    assert(servo_msg.servo_indices.at(k) == k);
+    assert(servo_msg.servo_indices.at(k) == static_cast<int>(k));
   }
 
   QuadraframeStatus qframe_status;
