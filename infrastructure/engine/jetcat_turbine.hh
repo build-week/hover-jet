@@ -11,11 +11,11 @@ namespace jet {
 
 class JetCatTurbine {
  public:
-  JetCatTurbine();
+  JetCatTurbine(const std::string& serial_port_path);
   bool start_engine() const;
   bool stop_engine() const;
   void set_serial_control_mode(bool on) const;
-  bool set_turbine_rpm(uint32_t target_rpm) const;
+  bool set_rpm(uint32_t target_rpm) const;
 
   std::optional<JetCat::SystemStatus> get_system_status() const;
   std::optional<JetCat::LiveValues> get_live_values() const;
@@ -29,13 +29,14 @@ class JetCatTurbine {
   std::optional<uint32_t> get_throttle_position_percent() const;
 
  private:
+  const std::string serial_port_path_; 
   std::unique_ptr<serial::Serial> serial_port_;
   uint8_t turbine_slave_address_{1};
   bool handle_command_response(const std::string& command,
                                const std::string& response) const;
-  void tokenize(const std::string& str,
+  void tokenize(const std::string& input_string,
                 std::vector<std::string>& tokens,
-                char delim) const;
+                char delimiter) const;
   void empty_the_buffer() const;
 };
 

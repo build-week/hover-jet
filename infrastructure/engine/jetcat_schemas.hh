@@ -36,7 +36,7 @@ struct FuelInfo {
   uint32_t actual_fuel_flow;
   uint32_t rest_volume_in_tank;
   uint32_t set_rpm;
-  uint32_t actual_battery_voltage;
+  float actual_battery_voltage;
   uint32_t last_run_time_s;
 };
 

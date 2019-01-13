@@ -49,7 +49,7 @@ inline std::string enum_to_string(State state) {
                                           "MAINFSTRT",
                                           "UNUSED2",
                                           "Kerosene Full On"};
-  return state_string[static_cast<typename std::underlying_type<OffCondition>::type>(
+  return state_string[static_cast<typename std::underlying_type<State>::type>(
       state)];
 }
 

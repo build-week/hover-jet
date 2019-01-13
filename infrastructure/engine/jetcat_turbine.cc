@@ -9,18 +9,17 @@
 
 namespace jet {
 
-JetCatTurbine::JetCatTurbine() {
-  std::string port = "/dev/ttyUSB0";
+JetCatTurbine::JetCatTurbine(const std::string& serial_port_path) : serial_port_path_(serial_port_path) {
   serial_port_ =
-      std::make_unique<serial::Serial>(port, 9600, serial::Timeout::simpleTimeout(200));
+      std::make_unique<serial::Serial>(serial_port_path, 9600, serial::Timeout::simpleTimeout(200));
 }
 
-void JetCatTurbine::tokenize(const std::string& str,
+void JetCatTurbine::tokenize(const std::string& input_string,
                              std::vector<std::string>& tokens,
-                             char delim = ',') const {
-  std::stringstream ss(str);
+                             char delimiter = ',') const {
+  std::stringstream ss(input_string);
   std::string token;
-  while (std::getline(ss, token, delim)) {
+  while (std::getline(ss, token, delimiter)) {
     tokens.push_back(token);
   }
 }
@@ -65,7 +64,7 @@ void JetCatTurbine::set_serial_control_mode(bool on) const {
       << ",HS,OK\r";  // Ex: "1,WSM,1\r1,HS,OK\r" or "1,WSM,0\r1,HS,OK\r"
 }
 
-bool JetCatTurbine::set_turbine_rpm(uint32_t target_rpm) const {
+bool JetCatTurbine::set_rpm(uint32_t target_rpm) const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",WRP," << target_rpm << "\r";
@@ -181,7 +180,7 @@ std::optional<JetCat::FuelInfo> JetCatTurbine::get_fuel_info() const {
   info.actual_fuel_flow = std::stoi(tokens[3]);
   info.rest_volume_in_tank = std::stoi(tokens[4]);
   info.set_rpm = std::stoi(tokens[5]);
-  info.actual_battery_voltage = std::stoi(tokens[6]);
+  info.actual_battery_voltage = std::stof(tokens[6]);
   info.last_run_time_s = std::stoi(tokens[7]);
 
   return info;
