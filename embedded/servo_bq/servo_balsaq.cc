@@ -33,11 +33,9 @@ void ServoBq::loop() {
   if (subscriber->read(message, 1)) {
     for (int i = 0; i < message.servo_indices.size(); i++) {
       auto servo_index = message.servo_indices.at(i);
-      auto target_percentage = message.target_percentages.at(i);
-      std::cout << "target is " << target_percentage << std::endl;
-      current_target_percentage = target_percentage;
+      auto target_radian = message.target_radians.at(i);
       assert (servo_index < servos.size());
-      servos.at(servo_index).set_percentage(current_target_percentage);
+      servos.at(servo_index).set_angle(target_radian);
     }
   }
 }

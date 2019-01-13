@@ -6,17 +6,11 @@
 
 namespace jet {
 
-// struct ServoCommand{
-// 	int servo_index;
-// 	float target_percentage;
-// 	SERIALIZABLE_STRUCTURE(ServoCommand, servo_index, target_percentage);
-// };
-
 struct SetServoMessage : Message {
   std::vector<int> servo_indices;
-  std::vector<float> target_percentages;
+  std::vector<float> target_radians;
 
-  MESSAGE(SetServoMessage, servo_indices, target_percentages);
+  MESSAGE(SetServoMessage, servo_indices, target_radians);
 };
 
 }

@@ -17,7 +17,7 @@ class ServoBq : public BalsaQ {
  private:
   std::vector<ServoDriver> servos;
   SubscriberPtr subscriber;
-  float current_target_percentage;
+ 
 
 };
 
