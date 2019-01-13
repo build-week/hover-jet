@@ -19,7 +19,6 @@ void ServoBq::init(int argc, char* argv[]) {
   assert(argc > 1);
   subscriber = make_subscriber("servo_command_channel");
   const int n_servos = argc - 1;
-  // ServoDriver servos [n_servos];
   for (int i = 0; i < n_servos; i++) {
     std::string config_path = argv[1 + i];
     ServoDriver servo = ServoDriver(config_path);  // TODO create standard config dir
