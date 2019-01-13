@@ -16,7 +16,8 @@ RUN apt install cmake gcc-7 g++-7 -y
 RUN apt install libgtest-dev -y
 RUN cd /usr/src/gtest; cmake CMakeLists.txt; make; cp *.a /usr/lib
 RUN apt install i2c-tools -y
-
+RUN apt install vim nano -y
+RUN apt install gdb -y
 
 #
 # Libs
@@ -36,6 +37,7 @@ RUN apt install libserial-dev -y
 #
 RUN apt install supervisor -y
 RUN mkdir -p /var/log/supervisor
+RUN mkdir /var/log/supervisord/
 
 
 #
@@ -97,16 +99,6 @@ RUN rm -r crossguid
 
 
 #
-# Serial library
-#
-
-RUN apt install catkin -y; git clone https://github.com/wjwwood/serial.git; cd serial; make; make install;
-RUN cp -R /tmp/usr/ .
-RUN rm -r serial
-RUN cd /usr/local/lib/; mv libserial.so libjet_serial.so
-
-
-#
 # X tests (xeyes, glxgears, etc.)
 #
 
@@ -118,3 +110,12 @@ RUN apt install mesa-utils x11-apps -y
 #
 
 RUN apt install fswebcam eog -y
+
+
+#
+# Adding serial library
+#
+RUN apt install -y autoconf libtool
+RUN git clone https://github.com/martinling/libserialport.git; cd libserialport; ./autogen.sh; ./configure; make; make install;
+RUN rm -r libserialport
+RUN ldconfig
