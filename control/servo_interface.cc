@@ -20,5 +20,22 @@ SetServoMessage create_servo_command(const QuadraframeStatus& qframe_status) {
   return servo_msg;
 }
 
+QuadraframeStatus create_quadraframe_status(const SetServoMessage& servo_message) {
+  assert(servo_message.servo_indices.size() == 4u);
+  assert(servo_message.target_radians.size() == 4u);
+
+  for (std::size_t k = 0; k < servo_msg.servo_indices.size(); ++k) {
+    // Assert we have 0...3 and only 0...3
+    assert(servo_msg.servo_indices.at(k) == k);
+  }
+
+  QuadraframeStatus qframe_status;
+  qframe_status.servo_0_angle_rad = servo_msg.target_radians[0];
+  qframe_status.servo_1_angle_rad = servo_msg.target_radians[1];
+  qframe_status.servo_2_angle_rad = servo_msg.target_radians[2];
+  qframe_status.servo_3_angle_rad = servo_msg.target_radians[3];
+  return qframe_status;
+}
+
 }  // namespace control
 }  // namespace jet
