@@ -1,16 +1,16 @@
 #pragma once
 
-#include "infrastructure/time/timestamp.hh"
 #include "infrastructure/comms/schemas/message.hh"
+#include "infrastructure/time/timestamp.hh"
 
 namespace jet {
 
 struct ForceSensorMessage : Message {
-	//TODO Ralph rename values to something better?
-  std::vector<float> values;
+  int id;
+  float value;
+  Timestamp timestamp;
 
-  MESSAGE(ForceSensorMessage, values);
+  MESSAGE(ForceSensorMessage, id, value, timestamp);
 };
-
 
 }  //  namespace jet
