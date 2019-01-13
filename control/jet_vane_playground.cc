@@ -157,22 +157,23 @@ void go2() {
   double t = 0.0;
   while (!view->should_close()) {
     t += 0.01;
-    // const Wrench target_wrench({.force_N = jcc::Vec3(0.1 * std::cos(t * 0.3), 0.1 * std::sin(t), -2.53459),
-    // .torque_Nm = jcc::Vec3(0.0, 0.0, 0.0)});
-
-    const Wrench target_wrench({.force_N = jcc::Vec3(2.92087, 1.11022e-16, -2.53459),
-                                .torque_Nm = jcc::Vec3(0.0, 0.01 * std::cos(t), 0.1 * std::sin(t * 0.1))});
+    const Wrench target_wrench(
+        {.force_N = jcc::Vec3(2.92087, 1.11022e-16, -2.53459),
+         .torque_Nm = jcc::Vec3(0.0, 0.01 * std::cos(t), 0.1 * std::sin(t * 0.1))});
 
     const auto mapping_result = mapper.map_wrench(target_wrench, jet_status);
     const auto qframe_status = mapping_result.optimal_status;
 
-    std::cout << "Status: " << qframe_status.servo_0_angle << ", " << qframe_status.servo_1_angle << ", "
-              << qframe_status.servo_2_angle << ", " << qframe_status.servo_3_angle << std::endl;
+    const Wrench com_wrench = total_wrench_com_frame(jet_status, qframe_status, vane_cfg, jet_cfg, quad_cfg);
+
+    //
+    // Add visualization elements and output text
+    //
 
     put_quadraframe(*geo, qframe_status, quad_cfg, vane_cfg);
 
-    const Wrench com_wrench = total_wrench_com_frame(jet_status, qframe_status, vane_cfg, jet_cfg, quad_cfg);
-
+    std::cout << "Status: " << qframe_status.servo_0_angle << ", " << qframe_status.servo_1_angle << ", "
+              << qframe_status.servo_2_angle << ", " << qframe_status.servo_3_angle << std::endl;
     std::cout << "Residual " << Wrench::compute_delta(com_wrench, mapping_result.achieved_wrench).norm() << std::endl;
 
     constexpr double LINE_WIDTH = 4.0;
@@ -180,8 +181,6 @@ void go2() {
     const jcc::Vec4 torque_color(0.0, 1.0, 1.0, 0.8);
     geo->add_line({jcc::Vec3::Zero(), com_wrench.force_N, force_color, LINE_WIDTH});
     geo->add_line({jcc::Vec3::Zero(), com_wrench.torque_Nm * 10.0, torque_color, LINE_WIDTH * 0.3});
-
-    // print_wrench(com_wrench);
 
     geo->flip();
     view->spin_until_step();
