@@ -41,9 +41,9 @@ int keypress(int count, int key) {
   ServoDriver &servo = servos[(num - 1) / 2];
   Direction direction = num % 2 == 1 ? UP : DOWN;
   if (direction == DOWN) {
-    servo.set_percentage(std::max(0, servo.get_percentage() - 1));
+    servo.set_percentage(std::max(0.0f, servo.get_percentage() - 1.0f));
   } else {
-    servo.set_percentage(std::min(100, servo.get_percentage() + 1));
+    servo.set_percentage(std::min(100.0f, servo.get_percentage() + 1.0f));
   }
   print_help(servos);
   return 0;

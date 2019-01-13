@@ -35,7 +35,7 @@ void ServoBq::loop() {
       auto servo_index = message.servo_indices.at(i);
       auto target_radian = message.target_radians.at(i);
       assert (servo_index < servos.size());
-      servos.at(servo_index).set_angle(target_radian);
+      servos.at(servo_index).set_angle_radians(target_radian);
     }
   }
 }

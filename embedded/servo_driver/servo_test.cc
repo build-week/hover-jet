@@ -14,15 +14,15 @@ int main() {
 
   // Sweep through servos and set to -max_angle, 0, max_angle
   for (auto &servo : servos) {
-    servo.set_angle(-20.0f);
+    servo.set_angle_radians(-20.0f);
   }
   usleep(1000000);
   for (auto &servo : servos) {
-    servo.set_angle(-0.f);
+    servo.set_angle_radians(-0.f);
   }
   usleep(1000000);
   for (auto &servo : servos) {
-    servo.set_angle(20.f);
+    servo.set_angle_radians(20.f);
   }
   return 0;
 }

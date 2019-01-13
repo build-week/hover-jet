@@ -25,7 +25,7 @@ constexpr int PWM_FREQUENCY = 330;
 void SingleServoCommandBq::init(int argc, char *argv[]) {
   assert(argc == 3);
   int servo_index = atoi(argv[1]);
-  float target_radian = (float)(atoi(argv[2]));
+  float target_radian = (float)(std::stof(argv[2]));
 
   const std::string channel_name = "servo_command_channel";
   std::cout << "channel name " << channel_name << std::endl;
