@@ -42,7 +42,7 @@ void SingleServoCommandBq::init(int argc, char *argv[]) {
   std::cout << "enter to send command" << std::endl;
   std::cin.ignore();
   publisher_->publish(set_servo_message);
-  exit(0); // What's the right way to shutdown a bq?
+  exit(0);  // What's the right way to shutdown a bq?
 }
 
 void SingleServoCommandBq::loop() {

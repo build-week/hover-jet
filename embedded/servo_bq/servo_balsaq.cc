@@ -33,7 +33,7 @@ void ServoBq::loop() {
     for (int i = 0; i < message.servo_indices.size(); i++) {
       auto servo_index = message.servo_indices.at(i);
       auto target_radian = message.target_radians.at(i);
-      assert (servo_index < servos.size());
+      assert(servo_index < servos.size());
       servos.at(servo_index).set_angle_radians(target_radian);
     }
   }

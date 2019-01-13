@@ -1,6 +1,7 @@
 //%deps(yaml-cpp)
 
 #include "embedded/servo_driver/servo_driver.hh"  // driver library
+#include <math.h>                                 // M_PI
 #include <string.h>                               // memset
 #include <unistd.h>                               // usleep
 #include <yaml-cpp/yaml.h>
@@ -8,7 +9,6 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <math.h> // M_PI
 
 namespace {
 // 850 to 2150 microseconds for the PWM width, specified by the servo
@@ -21,7 +21,7 @@ float rad_to_deg(float radians) {
 }  // namespace
 
 ServoDriver::ServoDriver(const std::string &config_path) : config_path_(config_path) {
-  int i2cHandle = i2c_open("/dev/i2c-1"); // TODO make configurable
+  int i2cHandle = i2c_open("/dev/i2c-1");  // TODO make configurable
   if (i2cHandle == -1) {
     std::string err = std::string("Failed to open i2c") + config_path_;
     throw std::runtime_error(err);
@@ -47,13 +47,12 @@ ServoDriver::ServoDriver(const std::string &config_path) : config_path_(config_p
   set_percentage(percentage_);
 }
 
-
-
 void ServoDriver::set_percentage(float unchecked_percentage) {
   if (unchecked_percentage > 100 || unchecked_percentage < 0) {
-    std::cout << "Desired servo percentage out of range: " << unchecked_percentage << std::endl;
+    std::cout << "Desired servo percentage out of range: " << unchecked_percentage
+              << std::endl;
   }
-  percentage_ = std::max( std::min( 100.0f, unchecked_percentage), 0.0f);
+  percentage_ = std::max(std::min(100.0f, unchecked_percentage), 0.0f);
 
   const float counts_range = MAX_COUNTS - MIN_COUNTS;
   int counts = round(counts_range * percentage_ / 100 + MIN_COUNTS);
@@ -68,7 +67,8 @@ int ServoDriver::get_servo_index() const {
   return servo_index_;
 }
 
-void ServoDriver::set_angle_radians(float angle_radians) {  // TODO noble to give units to angle
+void ServoDriver::set_angle_radians(
+    float angle_radians) {  // TODO noble to give units to angle
   float angle_degrees = rad_to_deg(angle_radians);
   float angleFraction = static_cast<float>(angle_degrees) / max_angle_;
   float half_range = (calibrated_max_ - calibrated_center_);
