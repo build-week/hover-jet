@@ -1,5 +1,3 @@
-#pragma once
-
 #include "control/servo_interface.hh"
 
 namespace jet {
