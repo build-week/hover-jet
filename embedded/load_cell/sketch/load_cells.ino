@@ -1,6 +1,7 @@
 //
 // Load-Cell Sketch
 //
+
 #include "HX711.h"
 
 #define DEFAULT_GAIN_VALUE 128
@@ -13,10 +14,7 @@ HX711 X1(31, 30, DEFAULT_GAIN_VALUE);
 HX711 Z1(32, 33, DEFAULT_GAIN_VALUE);
 
 void setup() {
-  Serial.begin();
-
-  //scale_1.set_scale(CALIBRATION_20KG_SCALE_1);
-  //scale_1.tare(); //Assuming there is no weight on the scale at start up, reset the scale to 0
+  Serial.begin(38400);
 }
 
 void loop() {
@@ -34,15 +32,10 @@ void loop() {
   byte * X1_byte_rep = (byte *) &X1_read;
   byte * Z1_byte_rep = (byte *) &Z1_read;
   
-
   Serial.print("SENSOR0,"); Serial.write(X0_byte_rep, 4); Serial.println(";");
   Serial.print("SENSOR1,"); Serial.write(Y0_byte_rep, 4); Serial.println(";");
   Serial.print("SENSOR2,"); Serial.write(Y1_byte_rep, 4); Serial.println(";");
   Serial.print("SENSOR3,"); Serial.write(Z0_byte_rep, 4); Serial.println(";");
   Serial.print("SENSOR4,"); Serial.write(X1_byte_rep, 4); Serial.println(";");
   Serial.print("SENSOR5,"); Serial.write(Z1_byte_rep, 4); Serial.println(";");
-  
-  
-  //Serial.print("SENSOR0,"); Serial.print(Y1_read); Serial.println(";");
-
 }
