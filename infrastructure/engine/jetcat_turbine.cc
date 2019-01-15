@@ -17,12 +17,16 @@ namespace {
 
 JetCatTurbine::JetCatTurbine(const std::string& serial_port_path)
     : serial_port_path_(serial_port_path) {
-  if (sp_get_port_by_name("/dev/ttyUSB0", &serial_port_ptr_) == SP_OK)
+  if (sp_get_port_by_name("/dev/ttySAC2", &serial_port_ptr_) == SP_OK)
   {
     sp_open(serial_port_ptr_, SP_MODE_READ_WRITE);
     sp_port_config *config = 0;
     sp_new_config(&config);
     sp_set_config_baudrate(config, SERIAL_BAUD_RATE);
+    sp_set_parity(serial_port_ptr_, SP_PARITY_NONE);
+    sp_set_parity(serial_port_ptr_, SP_PARITY_NONE);
+    sp_set_stopbits(serial_port_ptr_, 1);
+    sp_set_bits(serial_port_ptr_, 8);
     sp_set_config(serial_port_ptr_, config);
   } else {
     std::cerr << "Could not open serial port to turbine." << std::endl;
@@ -148,7 +152,6 @@ std::optional<JetCat::LiveValues> JetCatTurbine::get_live_values() const {
 
   std::string data(100, ' ');
   sp_blocking_read(serial_port_ptr_, &data[0], 100, SERIAL_TIMEOUT_MS);
-
 
   std::vector<std::string> tokens;
   tokenize(data, tokens, ',');

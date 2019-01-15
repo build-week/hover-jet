@@ -95,6 +95,7 @@ void TurbineInterfaceBQ::loop() {
     state_message.turbine_state = live_values->turbine_state;
     state_message.throttle_position_percent = live_values->throttle_position_percent;
     turbine_state_publisher_->publish(state_message);
+    std::cout << "RPM: " << state_message.turbine_rpm << " egt: " << state_message.exhaust_gas_temperature_c << std::endl;
   }
 }
 

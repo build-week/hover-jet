@@ -1,4 +1,4 @@
-
+//%bin(message_logger_bq_main)
 //%deps(balsa_queue)
 //%deps(message)
 
