@@ -28,7 +28,14 @@ void ServoBq::init(int argc, char* argv[]) {
 
 void ServoBq::loop() {
   SetServoMessage message;
-  if (subscriber->read(message, 1)) {
+
+  // subscribe_latest proxy
+  bool got_msg = false;
+  while (subscriber->read(message, 1)) {
+    got_msg = true;
+  }
+
+  if (got_msg) {
     for (int i = 0; i < message.servo_indices.size(); i++) {
       auto servo_index = message.servo_indices.at(i);
       auto target_radian = message.target_radians.at(i);
