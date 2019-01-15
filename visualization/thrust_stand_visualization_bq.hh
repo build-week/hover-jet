@@ -14,7 +14,7 @@ namespace visualization {
 
 class ThrustStandVisualizerBq : public BalsaQ {
  public:
-  const static uint loop_delay_microseconds = 50000;
+  const static uint loop_delay_microseconds = 1000;
 
   ThrustStandVisualizerBq() = default;
   void init(int argc, char *argv[]) override;

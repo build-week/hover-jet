@@ -28,7 +28,13 @@ void ThrustStandVisualizerBq::loop() {
   const control::QuadraframeConfiguration qframe_cfg = {};
 
   SetServoMessage servo_message;
-  if (servo_sub_->read(servo_message, 1)) {
+
+  // subscribe_latest proxy
+  bool got_msg = false;
+  while (servo_sub_->read(servo_message, 1)) {
+    got_msg = true;
+  }
+  if (got_msg) {
     const control::QuadraframeStatus qframe_status =
         control::create_quadraframe_status(servo_message);
     put_quadraframe(*geo_, qframe_status, qframe_cfg, vane_cfg);
