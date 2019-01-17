@@ -3,7 +3,7 @@ from functools import partial
 import os
 
 
-MAX_ANGLE_RAD = 0.2268
+MAX_SERVO_ANGLE_RAD = 1.1
 MS_PER_TICK = 25
 SEC_PER_MS = 1e-3
 LENGTH_TICKS = 1000
@@ -48,7 +48,7 @@ def sine_wave_all(freq_hz, scaling_factor=np.array([1.0, 1.0, 1.0, 1.0])):
 
     angular_freq_radps = freq_hz * (2.0 * np.pi)
 
-    result = MAX_ANGLE_RAD * np.vstack([
+    result = MAX_SERVO_ANGLE_RAD * np.vstack([
         np.sin(angular_freq_radps * seconds),
         np.sin(angular_freq_radps * seconds),
         np.sin(angular_freq_radps * seconds),
@@ -79,8 +79,8 @@ if __name__ == '__main__':
         "13_symmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([0.0, 1.0, 0.0, 1.0])),
         "02_antisymmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([1.0, 0.0, -1.0, 0.0])),
         "13_antisymmetric": sine_wave_all(freq_hz=0.1, scaling_factor=np.array([0.0, 1.0, 0.0, -1.0])),
-        "all_max": all_hold(target_angle=MAX_ANGLE_RAD),
-        "all_min": all_hold(target_angle=-MAX_ANGLE_RAD),
+        "all_max": all_hold(target_angle=MAX_SERVO_ANGLE_RAD),
+        "all_min": all_hold(target_angle=-MAX_SERVO_ANGLE_RAD),
     }
 
     for test_name, command_sequence in tests.items():
@@ -91,7 +91,7 @@ if __name__ == '__main__':
             for servo_index in range(4):
                 plt.plot(tt_seconds, command_sequence[:, servo_index], label='Angle: {}'.format(servo_index))
 
-            plt.ylim(np.array([-MAX_ANGLE_RAD, MAX_ANGLE_RAD]) * 1.1)
+            plt.ylim(np.array([-MAX_SERVO_ANGLE_RAD, MAX_SERVO_ANGLE_RAD]) * 1.1)
             plt.xlabel("Time From Start (Seconds)")
             plt.ylabel("Servo Angle (Radians)")
             plt.title("Command sequence for {}".format(test_name))
