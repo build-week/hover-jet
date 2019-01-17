@@ -2,8 +2,7 @@
 
 #include "third_party/experiments/eigen_helpers.hh"
 
-// TODO
-#include <iostream>
+#include <string>
 
 namespace jet {
 namespace control {
@@ -44,9 +43,12 @@ Wrench wrench_in_frame(const SE3& frame_2_from_frame_1, const Wrench& wrench_fra
   });
 }
 
-void print_wrench(const Wrench& wrench) {
-  std::cout << wrench.force_N.transpose() << "; " << wrench.torque_Nm.transpose()
-            << std::endl;
+std::string print_wrench(const Wrench& wrench) {
+  std::string result = "";
+  result += wrench.force_N.transpose();
+  result += "; ";
+  result += wrench.torque_Nm.transpose();
+  return result;
 }
 
 Wrench operator+(const Wrench& wrench_a, const Wrench& wrench_b) {

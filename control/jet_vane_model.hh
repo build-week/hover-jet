@@ -13,16 +13,20 @@ namespace control {
 namespace detail {
 
 // This expresses the transform from a zeroed vane to the jet vane unit's frame
-SE3 compute_T_vane_unit_from_aerodynamic_frame();
+SE3 compute_T_vane_unit_from_vane_default();
 
 }  // namespace detail
 
 // Vane static configuration
 struct VaneConfiguration {
-  SE3 T_vane_unit_from_zero = detail::compute_T_vane_unit_from_aerodynamic_frame();
+  // Vane default means the vane is pointed "down"; where servo_angle = 0.0 rad
+  // TODO(Jake): replace this with the CAD
+  SE3 T_vane_unit_from_vane_default = detail::compute_T_vane_unit_from_vane_default();
   double offset_vane_from_servo_rad = 0.0;
 
   double gear_ratio_servo_from_vane = 5.33;
+  double max_servo_angle_rad = 1.116;
+  double min_servo_angle_rad = -1.116;
 
   double vane_area_m2 = 20e-3 * 15e-3;
 
@@ -55,14 +59,17 @@ struct JetStatus {
 // @returns A wrench in the jet vane unit frame [2]
 // Arguments:
 //
-// @param commanded_servo_angle_rad: The servo angle commanded to this vane/jet configuration
+// @param commanded_servo_angle_rad: The servo angle commanded to this vane/jet
+// configuration
 // @param jet_status The current state of the jet itself
 // @param vane_cfg The fixed configuration of a servo
 // @param jet_cfg The fixed configuration of the jet
 //
 // NOTE:
-// [1] https://github.com/build-week/hover-jet/blob/feature/start-design-scripts/design-scripts/jet_vane_design.ipynb
-// [2] https://cad.onshape.com/documents/eeb6df3e4d498ea4a465e30e/w/d46924a08f4a895c0ee963f0/e/28184c7ca5583574775fb500
+// [1]
+// https://github.com/build-week/hover-jet/blob/feature/start-design-scripts/design-scripts/jet_vane_design.ipynb
+// [2]
+// https://cad.onshape.com/documents/eeb6df3e4d498ea4a465e30e/w/d46924a08f4a895c0ee963f0/e/28184c7ca5583574775fb500
 Wrench vane_unit_wrench(const double commanded_servo_angle_rad,
                         const JetStatus& jet_status,
                         const VaneConfiguration& vane_cfg,

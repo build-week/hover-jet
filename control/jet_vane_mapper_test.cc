@@ -5,6 +5,7 @@ namespace control {
 
 void go() {
   JetVaneMapper mapper;
+  // Randomly chosen wrench; verifying that it actually produces the desired wrench
   const Wrench wrench({.force_N = jcc::Vec3(2.92087, 1.11022e-16, -2.53459),
                        .torque_Nm = jcc::Vec3(-0.00415546, -0.0277483, -0.0487785)});
 
