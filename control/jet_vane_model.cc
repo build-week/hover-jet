@@ -6,7 +6,7 @@ namespace jet {
 namespace control {
 
 namespace detail {
-SE3 compute_T_vane_unit_from_aerodynamic_frame() {
+SE3 compute_T_vane_unit_from_vane_default() {
   const jcc::Vec3 vane_center_of_pressure_vane_unit_frame = jcc::Vec3(0.0, -0.030, 0.0);
 
   const SO3 R_intermediate_from_aerodynamic_frame =
@@ -52,7 +52,7 @@ Wrench vane_unit_wrench(const double commanded_servo_angle_rad,
   const double lift_force_at_vane_N =
       dynamic_pressure_Pa * lift_coeff * vane_cfg.vane_area_m2;
 
-  const double drag_coeff = vane_cfg.cd0 + (4.0 * M_PI * M_PI * vane_cfg.k *
+  const double drag_coeff = vane_cfg.cd0 + (4.0 * M_PI * M_PI * vane_cfg.induced_drag_param *
                                             (angle_of_attack_rad * angle_of_attack_rad));
   const double drag_force_N = dynamic_pressure_Pa * drag_coeff * vane_cfg.vane_area_m2;
   // TODO: Come up with a strategy for verifying at runtime that we don't compute a

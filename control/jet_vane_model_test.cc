@@ -13,7 +13,7 @@ void test_force_monotonic_in_throttle() {
   //
 
   VaneConfiguration vane_cfg;
-  vane_cfg.T_vane_unit_from_default = SE3();
+  vane_cfg.T_vane_unit_from_vane_default = SE3();
 
   const JetConfiguration jet_cfg;
   const double commanded_servo_angle_rad = 0.0;
@@ -64,7 +64,7 @@ void test_force_monotonic_in_throttle_finite_angle_of_attack() {
   //
 
   VaneConfiguration vane_cfg;
-  vane_cfg.T_vane_unit_from_default = SE3();
+  vane_cfg.T_vane_unit_from_vane_default = SE3();
 
   const JetConfiguration jet_cfg;
   // (This corresponds to a positive angle of attack)
@@ -123,7 +123,7 @@ void test_torque_non_identity_offset() {
   //
 
   VaneConfiguration vane_cfg;
-  vane_cfg.T_vane_unit_from_default = SE3(SO3(), jcc::Vec3(0.0, 0.0, -1.0));
+  vane_cfg.T_vane_unit_from_vane_default = SE3(SO3(), jcc::Vec3(0.0, 0.0, -1.0));
 
   const JetConfiguration jet_cfg;
   // (This corresponds to a positive angle of attack)
