@@ -26,7 +26,13 @@ struct VaneConfiguration {
 
   double vane_area_m2 = 20e-3 * 15e-3;
 
-  double k = 1.0 / 3.0;
+  // Dimensionless parameter for induced drag coefficient.
+  // It relates the induced drag coefficient to the lift coefficient
+  //    C_{Di} = (induced_drag_parameter) C_L^2
+  // A value of 1/3 is a reasonable guess for a low-aspect ratio surface such as the vane.
+  double induced_drag_param = 1.0 / 3.0;
+  // Form & friction drag coefficient $C_{D0}$
+  // The value of 0.05 is a conservative guess (likely overestimates the drag)
   double cd0 = 0.05;
 };
 
