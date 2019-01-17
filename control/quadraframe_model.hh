@@ -2,7 +2,7 @@
 
 #include "control/jet_vane_model.hh"
 #include "control/wrench.hh"
-#include "control/vanes.hh"
+#include "control/vanes_generated.hh"
 
 
 namespace jet {

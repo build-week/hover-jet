@@ -1,7 +1,7 @@
 #pragma once
 
 #include "control/quadraframe_model.hh"
-#include "control/vanes.hh"
+#include "control/vanes_generated.hh"
 #include "control/wrench.hh"
 
 namespace jet {
