@@ -165,11 +165,8 @@ void put_thrust_stand(viewer::SimpleGeometry& geo,
                       const ThrustStandStatus& stand_status) {
   ThrustStandModel stand_model;
 
-  // const SE3 SECOND_FROM_FIRST = jcc::exp_z(M_PI * 0.5);
-
-  // const SE3 THIRD_FROM_SECOND = jcc::exp_y(M_PI);
-
-  // const SE3 quadraframe_from_stand = THIRD_FROM_SECOND * SECOND_FROM_FIRST;
+  // This translation is a visualization-specific transform between the
+  // thrust stand frame and the quadraframe
   const SE3 quadraframe_from_stand(SO3(), jcc::Vec3(0.2, 0.0, 0.5));
 
   geo.add_line({quadraframe_from_stand * stand_model.locations_stand_frame_m.at("X-0"),

@@ -28,12 +28,10 @@ void ThrustStandVisualizerBq::loop() {
   const control::VaneConfiguration vane_cfg = {};
   const control::QuadraframeConfiguration qframe_cfg = {};
 
-  bool got_load_cell_msg = false;
   ForceSensorMessage load_cell_message;
   while (load_cell_sub_->read(load_cell_message, 1)) {
     thrust_stand_status_.load_cell_value_from_id[load_cell_message.id] =
         load_cell_message.value;
-    got_load_cell_msg = true;
   }
 
   put_thrust_stand(*force_geo_, thrust_stand_status_);
