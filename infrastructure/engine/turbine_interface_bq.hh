@@ -15,7 +15,8 @@ class TurbineInterfaceBQ : public BalsaQ {
 
   void start_turbine();
   void shutdown_turbine();
-  void set_turbine_throttle(uint32_t throttle_percent);
+  void set_thrust_percent(uint8_t thrust_percent);
+  void set_target_rpm(uint32_t target_rpm);
 
  private:
   std::unique_ptr<JetCatTurbine> turbine_ptr_;
