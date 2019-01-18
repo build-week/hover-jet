@@ -75,42 +75,47 @@ void MqttSubscriber::connect() {
   connecting_ = false;
 }
 
-bool MqttSubscriber::read(Message& message, const Duration& timeout) {
+bool MqttSubscriber::get_mqtt_message(mqtt::const_message_ptr& mqtt_message_ptr, const Duration& timeout) {
   if (!mqtt_client_->is_connected() || connecting_) {
     std::cerr << "Not connected. Skipping read." << std::endl;
     connect();
     return false;
   }
 
-  mqtt::const_message_ptr mqtt_message_ptr;
-  bool error_code = mqtt_client_->try_consume_message_for(
+  bool success = mqtt_client_->try_consume_message_for(
       &mqtt_message_ptr, std::chrono::nanoseconds(timeout));
-  if (!error_code) {
-    return error_code;
+  if (!success) {
+    return success;
   } else if (!mqtt_message_ptr) {
     return false;
-  } else {
-    message.deserialize(mqtt_message_ptr->get_payload_str());
   }
-  return error_code;
+  return true;
+}
+
+bool MqttSubscriber::read(Message& message, const Duration& timeout) {
+  mqtt::const_message_ptr mqtt_message_ptr;
+  if (!get_mqtt_message(mqtt_message_ptr, timeout)) {
+    return false;
+  }
+  message.deserialize(mqtt_message_ptr->get_payload_str());
+  return true;
 }
 
 bool MqttSubscriber::read_raw(std::string& message_data, const Duration& timeout) {
-  if (!mqtt_client_->is_connected()) {
-    std::cerr << "Not connected. Skipping read." << std::endl;
-    connect();
+  mqtt::const_message_ptr mqtt_message_ptr;
+  if (!get_mqtt_message(mqtt_message_ptr, timeout)) {
     return false;
   }
+  message_data = mqtt_message_ptr->get_payload_str();
+  return true;
+}
 
-  mqtt::const_message_ptr mqtt_message_ptr;
-  bool error_code = mqtt_client_->try_consume_message_for(
-      &mqtt_message_ptr, std::chrono::nanoseconds(timeout));
-  if (!error_code) {
-    return error_code;
-  } else {
-    message_data = mqtt_message_ptr->get_payload_str();
+bool MqttSubscriber::read_latest(Message& message, const Duration& timeout) {
+  bool message_found = false;
+  while (read(message, timeout)) {
+    continue;
   }
-  return error_code;
+  return message_found;
 }
 
 }  // namespace jet

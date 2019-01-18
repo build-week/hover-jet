@@ -13,6 +13,7 @@ class Subscriber {
   Subscriber(const std::string& channel_name) : channel_name_(channel_name){};
   virtual bool read(Message& message, const Duration& timeout) = 0;
   virtual bool read_raw(std::string& message_data, const Duration& timeout) = 0;
+  virtual bool read_latest(Message& message, const Duration& timeout) = 0;
 
  protected:
   const std::string channel_name_;
