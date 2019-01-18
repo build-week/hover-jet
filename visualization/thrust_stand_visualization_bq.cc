@@ -39,13 +39,16 @@ void ThrustStandVisualizerBq::loop() {
   put_thrust_stand(*force_geo_, thrust_stand_status_);
   force_geo_->flip();
 
-  std::cout << "--\n\n" << std::endl;
-  std::cout << "0: " << thrust_stand_status_.load_cell_value_from_id[0] << std::endl;
-  std::cout << "1: " << thrust_stand_status_.load_cell_value_from_id[1] << std::endl;
-  std::cout << "2: " << thrust_stand_status_.load_cell_value_from_id[2] << std::endl;
-  std::cout << "3: " << thrust_stand_status_.load_cell_value_from_id[3] << std::endl;
-  std::cout << "4: " << thrust_stand_status_.load_cell_value_from_id[4] << std::endl;
-  std::cout << "5: " << thrust_stand_status_.load_cell_value_from_id[5] << std::endl;
+  // Print thrust stand values in a structured way
+  if (print_thrust_stand_values_) {
+    std::cout << "--\n\n" << std::endl;
+    std::cout << "0: " << thrust_stand_status_.load_cell_value_from_id[0] << std::endl;
+    std::cout << "1: " << thrust_stand_status_.load_cell_value_from_id[1] << std::endl;
+    std::cout << "2: " << thrust_stand_status_.load_cell_value_from_id[2] << std::endl;
+    std::cout << "3: " << thrust_stand_status_.load_cell_value_from_id[3] << std::endl;
+    std::cout << "4: " << thrust_stand_status_.load_cell_value_from_id[4] << std::endl;
+    std::cout << "5: " << thrust_stand_status_.load_cell_value_from_id[5] << std::endl;
+  }
 
   SetServoMessage servo_message;
   bool got_servo_msg = false;

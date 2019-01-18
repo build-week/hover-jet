@@ -32,6 +32,8 @@ class ThrustStandVisualizerBq : public BalsaQ {
   std::shared_ptr<viewer::SimpleGeometry> force_geo_;
 
   std::shared_ptr<viewer::Window3D> view_;
+
+  bool print_thrust_stand_values_ = true;
 };
 
 }  // namespace visualization
