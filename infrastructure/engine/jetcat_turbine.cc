@@ -91,7 +91,7 @@ void JetCatTurbine::set_serial_control_mode(bool on) const {
       << ",HS,OK\r";  // Ex: "1,WSM,1\r1,HS,OK\r" or "1,WSM,0\r1,HS,OK\r"
 }
 
-bool JetCatTurbine::set_rpm(uint32_t target_rpm) const {
+bool JetCatTurbine::set_target_rpm(uint32_t target_rpm) const {
   empty_the_buffer();
   std::ostringstream command_stream;
   command_stream << turbine_slave_address_ << ",WRP," << target_rpm << "\r";
@@ -103,6 +103,26 @@ bool JetCatTurbine::set_rpm(uint32_t target_rpm) const {
   std::ostringstream expected_response_stream;
   expected_response_stream << command_stream.str() << turbine_slave_address_
                            << ",HS,OK\r";  // Ex: "1,WRP,10000\r1,HS,OK\r"
+
+  if (!handle_command_response(expected_response_stream.str(), handshake_resp)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool JetCatTurbine::set_thrust_percent(uint16_t thrust_percent) const {
+  empty_the_buffer();
+  std::ostringstream command_stream;
+  command_stream << turbine_slave_address_ << ",WPE," << thrust_percent << "\r";
+
+  sp_blocking_write(serial_port_ptr_, &(command_stream.str()[0]), command_stream.str().size(), SERIAL_TIMEOUT_MS);
+  std::string handshake_resp(command_stream.str().size(), ' ');
+  sp_blocking_read(serial_port_ptr_, &handshake_resp[0], command_stream.str().size(), SERIAL_TIMEOUT_MS);
+
+  std::ostringstream expected_response_stream;
+  expected_response_stream << command_stream.str() << turbine_slave_address_
+                           << ",HS,OK\r";  // Ex: "1,WPE,55\r1,HS,OK\r"
 
   if (!handle_command_response(expected_response_stream.str(), handshake_resp)) {
     return false;

@@ -54,10 +54,24 @@ void TurbineInterfaceBQ::shutdown_turbine() {
   }
 }
 
-void TurbineInterfaceBQ::set_turbine_throttle(uint32_t throttle_percent) {
-  std::cout << "Received turbine throttle command! Setting throttle to: "
-            << throttle_percent << std::endl;
-  turbine_ptr_->set_rpm(throttle_percent);
+void TurbineInterfaceBQ::set_thrust_percent(uint8_t thrust_percent) {
+  std::cout << "Received turbine thrust command! Setting thrust to: "
+            << thrust_percent << "%" << std::endl;
+  if (!turbine_ptr_->set_thrust_percent(thrust_percent)) {
+    std::cerr << "Failed to set thrust." << std::endl;
+  } else {
+    std::cout << "Successfully set turbine thrust!" << std::endl;
+  }
+}
+
+void TurbineInterfaceBQ::set_target_rpm(uint32_t target_rpm) {
+  std::cout << "Received turbine thrust command! Setting target RPM to: "
+            << target_rpm << "RPM" << std::endl;
+  if (!turbine_ptr_->set_target_rpm(target_rpm)) {
+    std::cerr << "Failed to set target RPM." << std::endl;
+  } else {
+    std::cout << "Successfully set turbine RPM!" << std::endl;
+  }
 }
 
 void TurbineInterfaceBQ::loop() {
@@ -81,7 +95,7 @@ void TurbineInterfaceBQ::loop() {
     throttle_command_found = true;
   }
   if (throttle_command_found) {
-    set_turbine_throttle(throttle_command_message.throttle_percent);
+    set_thrust_percent(throttle_command_message.throttle_percent);
   }
 
   std::optional<JetCat::LiveValues> live_values = turbine_ptr_->get_live_values();

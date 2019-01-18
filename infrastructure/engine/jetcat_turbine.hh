@@ -16,7 +16,8 @@ class JetCatTurbine {
   bool start_engine() const;
   bool stop_engine() const;
   void set_serial_control_mode(bool on) const;
-  bool set_rpm(uint32_t target_rpm) const;
+  bool set_target_rpm(uint32_t target_rpm) const;
+  bool set_thrust_percent(uint16_t thrust_percent) const;
 
   std::optional<JetCat::SystemStatus> get_system_status() const;
   std::optional<JetCat::LiveValues> get_live_values() const;
