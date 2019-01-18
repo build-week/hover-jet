@@ -7,6 +7,7 @@ Usage: jet build
 Builds a new jet docker image for your host's architecture.
 
 -h| --help           Show this message
+pull| --pull         Pull the most recent version of the hoverjet/jet docker image
 -p| --push           Push this image to dockerhub on build completion
 --latest             Tag the image as "latest" on build completion
 --no-cache           Run a clean build of the image, reperforming every cached step
@@ -21,6 +22,10 @@ while test $# -gt 0; do
                 -h|--help)
                         help
                         exit 0
+                        ;;
+                --pull|pull*)
+                        PULL=1
+                        shift
                         ;;
                 -p|--push*)
                         PUSH=1
@@ -54,9 +59,17 @@ if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
     IMAGE_NAME="jet-arm"
 fi
 
+FULL_IMAGE_NAME="hoverjet/$IMAGE_NAME"
+
+if [[ $PULL -ne 0 ]]; then
+    echo "Pulling $FULL_IMAGE_NAME:latest"
+    docker pull $FULL_IMAGE_NAME:latest
+    exit 0
+fi
+
 DATE=`date +%Y.%m.%d-%H.%M.%S`
 
-FULL_IMAGE_NAME_TAG="hoverjet/$IMAGE_NAME:$DATE"
+FULL_IMAGE_NAME_TAG="$FULL_IMAGE_NAME:$DATE"
 
 echo Building image: $FULL_IMAGE_NAME_TAG
 docker build $NO_CACHE $JET_REPO_PATH/infrastructure/scripts/docker/ -t $FULL_IMAGE_NAME_TAG
