@@ -4,9 +4,6 @@
 #include "visualization/thrust_stand_visualization_bq.hh"
 #include "visualization/thrust_stand_visualizer.hh"
 
-// REVISIT
-#include <iostream>
-
 namespace jet {
 namespace visualization {
 
