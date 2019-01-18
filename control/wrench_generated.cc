@@ -12,15 +12,16 @@ VecNd<6> WrenchDelta::to_vector(const WrenchDelta &in_grp) {
   return out;
 }
 WrenchDelta WrenchDelta::from_vector(const VecNd<6> &in_vec) {
-  const VecNd<3> anon_dfb3dc =
+  const VecNd<3> anon_04b186 =
       (VecNd<3>() << (in_vec[0]), (in_vec[1]), (in_vec[2])).finished();
-  const VecNd<3> anon_3bdc57 =
+  const VecNd<3> anon_f8f0d7 =
       (VecNd<3>() << (in_vec[3]), (in_vec[4]), (in_vec[5])).finished();
-  const WrenchDelta out = WrenchDelta{anon_dfb3dc, anon_3bdc57};
+  const WrenchDelta out = WrenchDelta{anon_04b186, anon_f8f0d7};
   return out;
 }
 Wrench operator-(const Wrench &a, const Wrench &b) {
-  const Wrench difference = Wrench{((a.force_N) - (b.force_N)), ((a.torque_Nm) - (b.torque_Nm))};
+  const Wrench difference =
+      Wrench{((a.force_N) - (b.force_N)), ((a.torque_Nm) - (b.torque_Nm))};
   return difference;
 }
 Wrench operator+(const Wrench &a, const WrenchDelta &grp_b) {

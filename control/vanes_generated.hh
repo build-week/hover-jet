@@ -6,19 +6,19 @@
 namespace jet {
 namespace control {
 struct QuadraframeStatusDelta {
-  double servo_0_angle_error = 0.0;
-  double servo_1_angle_error = 0.0;
-  double servo_2_angle_error = 0.0;
-  double servo_3_angle_error = 0.0;
+  double servo_0_angle_rad_error = 0.0;
+  double servo_1_angle_rad_error = 0.0;
+  double servo_2_angle_rad_error = 0.0;
+  double servo_3_angle_rad_error = 0.0;
   static constexpr int DIM = 4;
   static VecNd<4> to_vector(const QuadraframeStatusDelta &in_grp);
   static QuadraframeStatusDelta from_vector(const VecNd<4> &in_vec);
 };
 struct QuadraframeStatus {
-  double servo_0_angle = 0.0;
-  double servo_1_angle = 0.0;
-  double servo_2_angle = 0.0;
-  double servo_3_angle = 0.0;
+  double servo_0_angle_rad = 0.0;
+  double servo_1_angle_rad = 0.0;
+  double servo_2_angle_rad = 0.0;
+  double servo_3_angle_rad = 0.0;
   static constexpr int DIM = 4;
   static VecNd<4> compute_delta(const QuadraframeStatus &a,
                                 const QuadraframeStatus &b);

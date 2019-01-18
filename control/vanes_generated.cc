@@ -6,8 +6,9 @@ namespace control {
 VecNd<4>
 QuadraframeStatusDelta::to_vector(const QuadraframeStatusDelta &in_grp) {
   const VecNd<4> out =
-      (VecNd<4>() << (in_grp.servo_0_angle_error), (in_grp.servo_1_angle_error),
-       (in_grp.servo_2_angle_error), (in_grp.servo_3_angle_error))
+      (VecNd<4>() << (in_grp.servo_0_angle_rad_error),
+       (in_grp.servo_1_angle_rad_error), (in_grp.servo_2_angle_rad_error),
+       (in_grp.servo_3_angle_rad_error))
           .finished();
   return out;
 }
@@ -20,31 +21,31 @@ QuadraframeStatusDelta::from_vector(const VecNd<4> &in_vec) {
 QuadraframeStatus operator-(const QuadraframeStatus &a,
                             const QuadraframeStatus &b) {
   const QuadraframeStatus difference =
-      QuadraframeStatus{((a.servo_0_angle) - (b.servo_0_angle)),
-                        ((a.servo_1_angle) - (b.servo_1_angle)),
-                        ((a.servo_2_angle) - (b.servo_2_angle)),
-                        ((a.servo_3_angle) - (b.servo_3_angle))};
+      QuadraframeStatus{((a.servo_0_angle_rad) - (b.servo_0_angle_rad)),
+                        ((a.servo_1_angle_rad) - (b.servo_1_angle_rad)),
+                        ((a.servo_2_angle_rad) - (b.servo_2_angle_rad)),
+                        ((a.servo_3_angle_rad) - (b.servo_3_angle_rad))};
   return difference;
 }
 QuadraframeStatus operator+(const QuadraframeStatus &a,
                             const QuadraframeStatusDelta &grp_b) {
-  const QuadraframeStatus out =
-      QuadraframeStatus{((a.servo_0_angle) + (grp_b.servo_0_angle_error)),
-                        ((a.servo_1_angle) + (grp_b.servo_1_angle_error)),
-                        ((a.servo_2_angle) + (grp_b.servo_2_angle_error)),
-                        ((a.servo_3_angle) + (grp_b.servo_3_angle_error))};
+  const QuadraframeStatus out = QuadraframeStatus{
+      ((a.servo_0_angle_rad) + (grp_b.servo_0_angle_rad_error)),
+      ((a.servo_1_angle_rad) + (grp_b.servo_1_angle_rad_error)),
+      ((a.servo_2_angle_rad) + (grp_b.servo_2_angle_rad_error)),
+      ((a.servo_3_angle_rad) + (grp_b.servo_3_angle_rad_error))};
   return out;
 }
 VecNd<4> QuadraframeStatus::compute_delta(const QuadraframeStatus &a,
                                           const QuadraframeStatus &b) {
   const QuadraframeStatus difference = a - b;
-  const double servo_2_angle_error = difference.servo_2_angle;
-  const double servo_0_angle_error = difference.servo_0_angle;
-  const double servo_1_angle_error = difference.servo_1_angle;
-  const double servo_3_angle_error = difference.servo_3_angle;
+  const double servo_3_angle_rad_error = difference.servo_3_angle_rad;
+  const double servo_2_angle_rad_error = difference.servo_2_angle_rad;
+  const double servo_0_angle_rad_error = difference.servo_0_angle_rad;
+  const double servo_1_angle_rad_error = difference.servo_1_angle_rad;
   const QuadraframeStatusDelta delta =
-      QuadraframeStatusDelta{servo_0_angle_error, servo_1_angle_error,
-                             servo_2_angle_error, servo_3_angle_error};
+      QuadraframeStatusDelta{servo_0_angle_rad_error, servo_1_angle_rad_error,
+                             servo_2_angle_rad_error, servo_3_angle_rad_error};
   const VecNd<4> out_vec = QuadraframeStatusDelta::to_vector(delta);
   return out_vec;
 }

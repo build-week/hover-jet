@@ -1,7 +1,6 @@
 // %deps(scene_tree)
 #include "third_party/experiments/viewer/primitives/scene_tree.hh"
 
-#include "control/servo_interface.hh"
 #include "visualization/thrust_stand_visualizer.hh"
 
 namespace jet {
@@ -63,7 +62,7 @@ void put_plane(viewer::SimpleGeometry& geo,
 
 SE3 vane_unit_from_vane(const double angle, const VaneConfiguration& cfg) {
   const SE3 zero_from_angle = jcc::exp_z(angle);
-  return cfg.T_vane_unit_from_zero * zero_from_angle;
+  return cfg.T_vane_unit_from_vane_default * zero_from_angle;
 }
 }  // namespace
 
