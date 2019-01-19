@@ -19,6 +19,7 @@ class CameraBq : public BalsaQ {
   void shutdown();
 
  private:
+  static const int CAMERA_FPS = 10;
   PublisherPtr publisher_;
   cv::VideoCapture cap;
 };
