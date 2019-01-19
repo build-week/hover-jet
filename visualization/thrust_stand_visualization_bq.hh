@@ -8,6 +8,7 @@
 
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
+#include "visualization/thrust_stand_visualizer.hh"
 
 namespace jet {
 namespace visualization {
@@ -23,8 +24,16 @@ class ThrustStandVisualizerBq : public BalsaQ {
 
  private:
   SubscriberPtr servo_sub_;
-  std::shared_ptr<viewer::SimpleGeometry> geo_;
+  SubscriberPtr load_cell_sub_;
+
+  ThrustStandStatus thrust_stand_status_;
+
+  std::shared_ptr<viewer::SimpleGeometry> servo_geo_;
+  std::shared_ptr<viewer::SimpleGeometry> force_geo_;
+
   std::shared_ptr<viewer::Window3D> view_;
+
+  bool print_thrust_stand_values_ = true;
 };
 
 }  // namespace visualization

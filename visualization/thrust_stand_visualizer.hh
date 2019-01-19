@@ -13,11 +13,17 @@
 namespace jet {
 namespace visualization {
 
+struct ThrustStandStatus {
+  std::map<int, double> load_cell_value_from_id;
+};
+
 void setup_view(const std::string& viewer_name);
 
 void put_quadraframe(viewer::SimpleGeometry& geo,
                      const control::QuadraframeStatus& status,
                      const control::QuadraframeConfiguration& quad_cfg,
                      const control::VaneConfiguration& vane_cfg);
+
+void put_thrust_stand(viewer::SimpleGeometry& geo, const ThrustStandStatus& stand_status);
 }  // namespace visualization
 }  // namespace jet
