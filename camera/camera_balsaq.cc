@@ -18,6 +18,7 @@ void CameraBq::init(int argc, char *argv[]) {
   cap = cv::VideoCapture(0);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+  cap.set(cv::CAP_PROP_FPS, CAMERA_FPS);
   // 0 is the id of video device.0 if you have only one camera.
   publisher_ = make_publisher("camera_image_channel");
 }
