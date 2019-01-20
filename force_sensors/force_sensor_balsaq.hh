@@ -7,6 +7,8 @@
 
 #include "embedded/load_cell/load_cell.hh"
 
+#include <ctime>
+
 namespace jet {
 
 class ForceSensorBq : public BalsaQ {
