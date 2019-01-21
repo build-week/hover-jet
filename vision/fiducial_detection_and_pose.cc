@@ -29,8 +29,7 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   cv::Mat tvec;
 
   const int num_fiducials_detected_on_board =
-      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(), camera_matrix,
-                                   distortion_coefficients, rvec, tvec);
+      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(), camera_matrix, distortion_coefficients, rvec, tvec);
   (void)num_fiducials_detected_on_board;
 
   if (tvec.size().height > 0) {
@@ -38,10 +37,9 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
     // marker coordinate system to the camera coordinate system. The marker
     // corrdinate system is centered on the middle of the marker, with the Z axis
     // perpendicular to the marker plane.
-    const SE3 camera_from_marker_center = SE3(
-        SO3::exp(jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1),
-                           tvec.at<double>(0, 2))),
-        jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1), tvec.at<double>(0, 2)));
+    const SE3 camera_from_marker_center =
+        SE3(SO3::exp(jcc::Vec3(rvec.at<double>(0, 0), rvec.at<double>(0, 1), rvec.at<double>(0, 2))),
+            jcc::Vec3(tvec.at<double>(0, 0), tvec.at<double>(0, 1), tvec.at<double>(0, 2)));
     const SE3 marker_center_from_camera = camera_from_marker_center.inverse();
 
     return {marker_center_from_camera};
