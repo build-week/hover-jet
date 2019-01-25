@@ -21,6 +21,7 @@ LoggedMessagePlayerBQ::LoggedMessagePlayerBQ() {
 }
 
 void LoggedMessagePlayerBQ::init(int argc, char *argv[]) {
+  loop_delay_microseconds = 100;
   std::string log_path;
   if (const char* env_log_path = std::getenv("LOG_PATH")) {
       log_path = env_log_path;
