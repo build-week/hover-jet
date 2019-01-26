@@ -1,4 +1,4 @@
-//%bin(timesync_client_bq)
+//%bin(timesync_client_bq_main)
 //%deps(balsa_queue)
 //%deps(message)
 
