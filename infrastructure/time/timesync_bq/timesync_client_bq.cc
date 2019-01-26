@@ -11,6 +11,8 @@
 
 #include "infrastructure/time/time_utils.hh"
 
+#include <iostream>
+
 namespace jet {
 
 
@@ -28,6 +30,12 @@ void TimesyncClientBq::loop() {
     // TODO capture potential error here - gethostname will return 0 if successful, SOCKET_ERROR otherwise
     gethostname(client_message.hostname, HOST_NAME_MAX);
     publisher_->publish(client_message);
+    std::cout << "cl_name:" << client_message.hostname 
+    << " m_ts:" << client_message.master_timestamp 
+    << " m_sq:" << client_message.master_seq_number 
+    << " cl_ts:" << client_message.header.timestamp_ns
+    << " cl_sq:" << client_message.header.sequence_number
+    << " offset:" << (client_message.header.timestamp_ns - client_message.master_timestamp) << std::endl;
   }
 }
 
