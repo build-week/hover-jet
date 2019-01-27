@@ -1,0 +1,280 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+
+from generate_cmake.log import Log
+from generate_cmake.file_system import get_files, resolve_include
+from generate_cmake.parse import parse_text, has_annotations, should_ignore
+from generate_cmake.cmake import build_cmakes
+
+
+def get_src_path(file, src):
+    fpath = os.path.dirname(file)
+    return os.path.join(fpath, src)
+
+
+def recurse_header_only_deps(file, lib, all_tree, repo_path):
+    if not lib.get('header_only', False):
+        return [lib['target']]
+
+    recursed_deps = []
+    re_resolved = all_tree[file]
+
+    for sub_lib in re_resolved['include']:
+        # Ignore system headers
+        if sub_lib['type'] == 'system':
+            continue
+
+        dep_path = sub_lib['given_path']
+        resolved_dep_path = resolve_include(file, dep_path, [repo_path])
+
+        if resolved_dep_path not in all_tree:
+            # TODO Jake, do something more intelligent
+            # This happens when a header-only library includes a file that is ignored
+            continue
+
+        mini_libs = all_tree[resolved_dep_path]['lib']
+        for mini_lib in mini_libs:
+            new_deps = recurse_header_only_deps(resolved_dep_path, mini_lib, all_tree, repo_path)
+            recursed_deps.extend(new_deps)
+    return recursed_deps
+
+
+def compute_deps_from_includes(elements):
+    external_includes_mapping = {
+        "opencv2/opencv.hpp": 'opencv',
+        "assimp/*": 'assimp',
+        "GLFW/glfw3.h": 'glfw',
+        "GL/glew.h": 'opengl',
+    }
+
+    new_deps = []
+    for include in elements['include']:
+        if include['type'] != 'system':
+            continue
+        if include['given_path'] in external_includes_mapping:
+            new_deps.append(external_includes_mapping[include['given_path']])
+    return new_deps
+
+
+def what_libs(file, elements, all_tree, known_libs, repo_path):
+    '''Determine what libs are required for this thing.'''
+    external_libs_remapping = {
+        'assimp': '${ASSIMP_LIBRARIES}',
+        'opencv': '${OpenCV_LIBS}',
+        'glfw': '${GLFW_LIBRARIES}',
+        'glew': '${GLEW_LIBRARIES}',
+        'opengl': '${OPENGL_LIBRARIES}',
+        'pthread': 'pthread',
+    }
+
+    # TODO: How to detect that opengl must be linked to?
+    "GL/glew.h"
+    "opencv2/opencv.hpp"
+    "GLFW/glfw3.h"
+    "assimp/"
+
+    required_libs = []
+    # Obviated dependencies
+    estimated_deps = elements['deps'] + compute_deps_from_includes(elements)
+    for dep in estimated_deps:
+        if dep in known_libs:
+            required_libs.append(dep)
+        elif dep.lower() in external_libs_remapping.keys():
+            required_libs.append(external_libs_remapping[dep.lower()])
+        else:
+            Log.warn("  no lib: {}, still attempting to use".format(dep))
+            required_libs.append(dep)
+
+    for lib in elements['lib']:
+        if lib.get('header_only', False):
+            continue
+
+        for src in lib['srcs']:
+            resolved = get_src_path(file, src)
+            src_libs = set(what_libs(resolved, all_tree[resolved], all_tree, known_libs, repo_path))
+
+            # HACK: Don't depend on self
+            src_libs = src_libs.difference({lib['target']})
+            required_libs.extend(src_libs)
+
+    # Inferred dependencies
+    for include in elements['include']:
+        if include['type'] != 'system':
+            resolved = resolve_include(file, include['given_path'], available_include_paths=[repo_path])
+            available = resolved in all_tree.keys()
+
+            if available:
+                inferred_libs = all_tree[resolved]['lib']
+                for lib in inferred_libs:
+                    if lib.get('header_only', False):
+                        required_libs.extend(recurse_header_only_deps(resolved, lib, all_tree, repo_path))
+                    else:
+                        required_libs.append(lib['target'])
+
+    return required_libs
+
+
+def discover_unlabelled_bins(tree):
+    '''Does mutation in place.'''
+
+    for file, elements in tree.items():
+        raw_name, extension = os.path.splitext(file)
+        _, name = os.path.split(raw_name)
+
+        if extension == '.cc':
+            if 'has_main' in elements['flags']:
+                Log.debug("Inferring bin (existence of main): {} ".format(name))
+
+                if has_annotations(elements):
+                    Log.debug("Inferred binary has annotations: {}".format(raw_name))
+
+                if len(elements['bin']) == 0:
+                    src_file = name + '.cc'
+                    elements['bin'].append({
+                        'target': name,
+                        'srcs': [src_file]
+                    })
+
+            if 'is_test' in elements['flags']:
+                Log.debug("Inferring bin (test): {}".format(name))
+                src_file = name + '.cc'
+                elements['bin'].append({
+                    'target': name,
+                    'srcs': [src_file],
+                    'flags': ['test'],
+                })
+
+
+def discover_unlabelled_libs(tree):
+    '''Does mutation in place.'''
+    pairs = []
+
+    for file, elements in tree.items():
+        raw_name, extension = os.path.splitext(file)
+        _, name = os.path.split(raw_name)
+
+        if extension == '.hh':
+            hdr_file = name + '.hh'
+            if raw_name + '.cc' in tree.keys():
+                Log.debug("Inferring Lib (Header Pair): {} ".format(name))
+                pairs.append((file, raw_name + '.cc'))
+
+                if has_annotations(elements):
+                    Log.debug("Header pair has annotations: {}".format(raw_name))
+
+                if should_ignore(elements) or should_ignore(tree[raw_name + '.cc']):
+                    continue
+
+                src_file = name + '.cc'
+                elements['lib'].append({
+                    'target': name,
+                    'srcs': [src_file],
+                    'hdrs': [hdr_file]
+                })
+            else:
+                elements['lib'].append({
+                    'target': name,
+                    'hdrs': [hdr_file],
+                    'header_only': True
+                })
+
+
+def build_dependency_table(all_tree, repo_path):
+    discover_unlabelled_bins(all_tree)
+    discover_unlabelled_libs(all_tree)
+
+    libs = []
+    for file, elements in all_tree.items():
+        for lib in elements['lib']:
+            libs.append(lib)
+
+    to_build = {}
+    for file, elements in all_tree.items():
+        if not has_annotations(elements):
+            continue
+
+        if should_ignore(elements):
+            Log.info("Ignoring: {}".format(file))
+            continue
+
+        Log.debug("In: {}".format(file))
+        required_libs = what_libs(file, elements, all_tree, libs, repo_path)
+        if len(required_libs):
+            Log.debug('  needs: {}'.format(required_libs))
+
+        location = os.path.dirname(file)
+
+        for binary in elements['bin']:
+            to_build[binary['target']] = {
+                'target': binary['target'],
+                'srcs': [file],
+                'deps': required_libs,
+                'kind': 'binary',
+                'flags': elements['flags'],
+                'location': location
+            }
+
+        for lib in elements['lib']:
+            if lib.get('header_only', False):
+                continue
+
+            to_build[lib['target']] = {
+                'target': lib['target'],
+                'srcs': lib['srcs'],
+                'deps': required_libs,
+                'kind': 'lib',
+                'flags': elements['flags'],
+                'location': location
+            }
+
+    return to_build
+
+
+def parse_file(path):
+    with open(path) as file:
+        text = file.read()
+
+    Log.debug('Parsing: {} '.format(path))
+    parse_result = parse_text(text)
+    return {path: parse_result}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path", type=str)
+    parser.add_argument(
+        "-v",
+        "--verbosity",
+        type=str,
+        choices=Log.get_verbosities(),
+        default='info'
+    )
+    args = parser.parse_args()
+    Log.set_verbosity(args.verbosity)
+
+    here = os.path.dirname(os.path.realpath(__file__))
+
+    if args.path is None:
+        path = os.getcwdu()
+    else:
+        path = args.path
+
+    Log.info("Parsing: ", path)
+    files = []
+    if os.path.isfile(path):
+        files.append(path)
+    else:
+        recursed_files = get_files(path, ignores_path=here)
+        files.extend(recursed_files)
+
+    parsed_file_tree = {}
+    for file in files:
+        parsed_file_tree.update(parse_file(file))
+    to_build = build_dependency_table(parsed_file_tree, path)
+    build_cmakes(to_build, path)
+
+
+if __name__ == '__main__':
+    main()
