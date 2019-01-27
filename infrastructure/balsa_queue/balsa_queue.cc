@@ -36,10 +36,8 @@ std::unique_ptr<Subscriber> BalsaQ::make_subscriber(const std::string& channel_n
   return comms_factory_->make_subscriber(channel_name);
 }
 
-Timestamp BalsaQ::get_current_time() {
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(
-             std::chrono::high_resolution_clock::now().time_since_epoch())
-      .count();
+Timestamp BalsaQ::get_current_time() const {
+  return Timestamp::current_time();
 }
 
 }  // namespace jet
