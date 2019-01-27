@@ -1,6 +1,5 @@
 //%bin(fiducial_detection_balsaq_main)
 //%deps(balsa_queue)
-//%deps(image_message)
 
 #include "vision/fiducial_detection_balsaq.hh"
 #include "camera/camera_image_message.hh"
