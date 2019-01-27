@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source jet_functions
+
 function help () {
 cat <<-END
 Usage: jet build
@@ -51,15 +53,7 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
-CPU_INFO=$(lscpu)
-if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "x86_64" ]]; then
-    IMAGE_NAME="jet"
-fi
-if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
-    IMAGE_NAME="jet-arm"
-fi
-
-FULL_IMAGE_NAME="hoverjet/$IMAGE_NAME"
+FULL_IMAGE_NAME=$(get_image_name)
 
 if [[ $PULL -ne 0 ]]; then
     echo "Pulling $FULL_IMAGE_NAME:latest"
