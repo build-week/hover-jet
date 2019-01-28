@@ -16,6 +16,8 @@ class SingleServoCommandBq : public BalsaQ {
 
  private:
   PublisherPtr publisher_;
+  int servo_index;
+  float target_angle;
 };
 
 }  // namespace jet

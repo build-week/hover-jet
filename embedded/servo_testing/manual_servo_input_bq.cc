@@ -18,29 +18,26 @@ SingleServoCommandBq::SingleServoCommandBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-namespace {
-constexpr int PWM_FREQUENCY = 330;
-}
-
 void SingleServoCommandBq::init(int argc, char *argv[]) {
   assert(argc == 3);
-  int servo_index = atoi(argv[1]);
-  float target_angle = (float)(atoi(argv[2]));
+  servo_index = atoi(argv[1]);
+  target_angle = (float)(atoi(argv[2]));
 
   const std::string channel_name = "servo_channel_" + std::to_string(servo_index);
   std::cout << "channel name " << channel_name << std::endl;
   publisher_ = make_publisher(channel_name);
-  SetServoMessage set_servo_message;
-  set_servo_message.target_angle = target_angle;
-  std::cout << "enter to send command" << std::endl;
-  std::cin.ignore();
-  publisher_->publish(set_servo_message);
-  exit(0); // What's the right way to shutdown a bq?
+
 }
 
 void SingleServoCommandBq::loop() {
+  SetServoMessage set_servo_message;
+  set_servo_message.target_angle = target_angle;
+  publisher_->publish(set_servo_message);
+  shutdown();
+
 }
 void SingleServoCommandBq::shutdown() {
+  exit(0);
 }
 
 }  // namespace jet
