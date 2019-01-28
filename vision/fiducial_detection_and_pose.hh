@@ -28,12 +28,12 @@ std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_i
 
 std::optional<SE3> detect_board(const cv::Mat& input_image);
 
-constexpr float FIDUCIAL_WIDTH_METERS = 30.25 / 1000;
-constexpr float FIDUCIAL_GAP_WIDTH_METERS = 22.98 / 1000;
+constexpr float FIDUCIAL_WIDTH_METERS = 31.0 / 1000;
+constexpr float FIDUCIAL_GAP_WIDTH_METERS = 23.5 / 1000;
 
 
 inline cv::Ptr<cv::aruco::Dictionary> get_aruco_dictionary(){
-    return cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_250);
+    return cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 }
 
 

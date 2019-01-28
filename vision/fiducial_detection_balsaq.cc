@@ -1,6 +1,5 @@
 //%bin(fiducial_detection_balsaq_main)
 //%deps(balsa_queue)
-//%deps(message)
 
 #include "vision/fiducial_detection_balsaq.hh"
 #include "camera/camera_image_message.hh"
@@ -19,12 +18,19 @@ void FidicualDetectionBq::init(int argc, char *argv[]) {
 }
 
 void FidicualDetectionBq::loop() {
-  CameraImageMessage message;
-  if (subscriber_->read(message, 1)) {
-    const cv::Mat camera_frame = get_image_mat(message);
+  CameraImageMessage image_message;
+
+  // Wait until we have the latest image_message
+  bool got_msg = false;
+  while (subscriber_->read(image_message, 1)) {
+    got_msg = true;
+  }
+
+  if (got_msg) {
+    const cv::Mat camera_frame = get_image_mat(image_message);
     const std::optional<SE3> board_from_camera = detect_board(camera_frame);
     if (board_from_camera) {
-      // publish a message using *board_from_camera
+      // publish a fiducial message using *board_from_camera
       FiducialDetectionMessage detection_message;
       const jcc::Vec6 log_fiducial_from_camera = board_from_camera->log();
       detection_message.fiducial_from_camera_log[0] = log_fiducial_from_camera[0];
@@ -33,6 +39,9 @@ void FidicualDetectionBq::loop() {
       detection_message.fiducial_from_camera_log[3] = log_fiducial_from_camera[3];
       detection_message.fiducial_from_camera_log[4] = log_fiducial_from_camera[4];
       detection_message.fiducial_from_camera_log[5] = log_fiducial_from_camera[5];
+
+      detection_message.timestamp = image_message.timestamp;
+
       publisher_->publish(detection_message);
       // reconstruct with eg
       // board_from_camera = SE3::exp(Eigen::Map<jcc::Vec6>>(array));
@@ -41,11 +50,11 @@ void FidicualDetectionBq::loop() {
     // respectively. They can be provided in any unit, having in mind that the estimated
     // pose for this board will be measured in the same units (in general, meters are
     // used).
-    cv::Mat board_image;
-    get_aruco_board()->draw(cv::Size(900, 900), board_image, 50, 1);
     if (OPEN_DEBUG_WINDOWS) {
+      cv::Mat board_image;
+      get_aruco_board()->draw(cv::Size(900, 900), board_image, 50, 1);
       cv::imshow("board image", board_image);
-      cv::waitKey(2);
+      cv::waitKey(1);
 
       cv::imshow("camera image", camera_frame);
       cv::waitKey(1);
