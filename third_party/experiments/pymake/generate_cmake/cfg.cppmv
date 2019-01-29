@@ -1,0 +1,3 @@
+add_path(experiments)
+add_ext_path(experiments/third_party/eigen3)
+add_ext_path(experiments/third_party/Sophus)
