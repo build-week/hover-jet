@@ -49,7 +49,7 @@ RUN pip install --upgrade pip
 RUN apt install libfreetype6-dev -y
 RUN pip install matplotlib
 RUN pip install colorama
-RUN pip install generate-cmake 
+RUN pip install generate-cmake
 RUN apt install python-tk -y
 
 #
