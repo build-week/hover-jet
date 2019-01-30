@@ -24,6 +24,7 @@ class BalsaQ {
   std::unique_ptr<Publisher> make_publisher(const std::string& channel_name);
   std::unique_ptr<Subscriber> make_subscriber(const std::string& channel_name);
   Timestamp get_current_time();
+  GoNoGo gonogo = new GoNoGo;
 
  private:
   std::unique_ptr<CommsFactory> comms_factory_;
