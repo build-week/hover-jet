@@ -2,7 +2,7 @@
 
 #include "infrastructure/comms/comms_factory.hh"
 #include "infrastructure/time/timestamp.hh"
-#include "infrastructure/balsa_queue/gonogo/gonogo.hh"
+#include "infrastructure/gonogo/gonogo.hh"
 
 #include <stdint.h>
 #include <memory>
