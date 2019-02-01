@@ -93,7 +93,7 @@ RUN rm -r paho.mqtt.cpp
 #
 
 RUN apt install uuid-dev -y
-RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; mkdir build; cd build; cmake ..; make install
+RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; git reset --hard 0f2753174c914bc561504b14c963d179283fe829; mkdir build; cd build; cmake ..; make install
 RUN rm -r crossguid
 
 
@@ -124,18 +124,6 @@ RUN ldconfig
 # Opencv
 #
 
-RUN cd /
-RUN apt install libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev -y
+RUN cd /; apt install libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev -y
 RUN git clone https://github.com/opencv/opencv_contrib.git --depth=1
-RUN cd opencv_contrib
-RUN CONTRIB_PATH=$PWD
-RUN git reset --hard a17185c6dc7aa554591ad1be38923232472f8001
-RUN cd ..
-RUN git clone https://github.com/opencv/opencv.git --depth=1
-RUN cd opencv
-RUN git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484
-RUN mkdir build
-RUN cd build
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..
-RUN make -j3
-RUN make install
+RUN cd opencv_contrib; CONTRIB_PATH=$PWD; git reset --hard a17185c6dc7aa554591ad1be38923232472f8001; cd ..; git clone https://github.com/opencv/opencv.git --depth=1; cd opencv; git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..; make -j3; make install
