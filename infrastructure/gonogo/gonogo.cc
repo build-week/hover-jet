@@ -3,36 +3,27 @@
 namespace jet {
 
 GoNoGo::GoNoGo() {
-    ready_ = false;
-    statusMessage_ = "";
+    gonogomessage.ready_ = false;
+    gonogomessage.status_message_ = "";
     comms_factory_ = std::move(std::make_unique<jet::MqttCommsFactory>());
     publisher_ = comms_factory_->make_publisher("GoNoGo");
 }
 
 void GoNoGo::go() {
-    ready_ = true;
-    publishStatus();
+    gonogomessage.ready_ = true;
+    // for now this is an empty message because the message type won't compile with an optional string
+    gonogomessage.status_message_ = "";
+    publish_status();
 }
 
-void GoNoGo::nogo(std::string statusMessage) {
-    ready_ = false;
-    statusMessage_ = statusMessage;
-    publishStatus();
+void GoNoGo::nogo(const std::string &status_message) {
+    gonogomessage.ready_ = false;
+    gonogomessage.status_message_ = status_message;
+    publish_status();
 }
 
-bool GoNoGo::isReady() {
-    return ready_;
-}
-
-std::string GoNoGo::getStatusMessage() {
-    return statusMessage_.value_or("empty");
-}
-
-void GoNoGo::publishStatus() {
-    GoNoGoMessage message;
-    message.ready = ready_;
-    message.statusMessage = statusMessage_.value_or("empty");
-    publisher_->publish(message);
+void GoNoGo::publish_status() {
+    publisher_->publish(gonogomessage);
 }
 
 } // namespace jet

@@ -2,6 +2,7 @@
 
 #include "infrastructure/comms/schemas/message.hh"
 
+
 #include <string>
 
 namespace jet {
@@ -9,12 +10,13 @@ namespace jet {
 // A message for balsaqs to publish containing:
 // 
 struct GoNoGoMessage : Message {
-  bool ready = false;
-  std::string statusMessage = "";
+  bool ready_ = false;
+  std::string status_message_ = "";
+  // std::optional<std::string> status_message_ = "";
 
   MESSAGE(GoNoGoMessage,
-          ready,
-          statusMessage
+          ready_,
+          status_message_
   );
 };
 

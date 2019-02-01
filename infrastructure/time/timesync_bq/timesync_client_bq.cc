@@ -27,8 +27,12 @@ void TimesyncClientBq::loop() {
     ClientTimesyncMessage client_message;
     client_message.master_timestamp = master_message.header.timestamp_ns;
     client_message.master_seq_number = master_message.header.sequence_number;
-    // TODO capture potential error here - gethostname will return 0 if successful, SOCKET_ERROR otherwise
-    gethostname(client_message.hostname, HOST_NAME_MAX);
+    // gethostname will return 0 if successful, SOCKET_ERROR otherwise
+    if (gethostname(client_message.hostname, HOST_NAME_MAX) != 0) {
+      gonogo.nogo("Socket Error getting hostname");
+    } else {
+      gonogo.go();
+    }
     publisher_->publish(client_message);
     std::cout << "cl_name:" << client_message.hostname 
     << " m_ts:" << client_message.master_timestamp 

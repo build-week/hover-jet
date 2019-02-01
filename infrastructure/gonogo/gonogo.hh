@@ -12,16 +12,13 @@ class GoNoGo {
   public: 
    GoNoGo();
    void go();
-   void nogo(std::string statusMessage);
-   bool isReady();
-   std::string getStatusMessage();
+   void nogo(const std::string &status_message);
 
-  private: 
-   bool ready_;
-   std::optional<std::string> statusMessage_;
+  private:
+   GoNoGoMessage gonogomessage;
    PublisherPtr publisher_;
    std::unique_ptr<CommsFactory> comms_factory_;
-   void publishStatus();
+   void publish_status();
 };
 
 } // namespace jet
