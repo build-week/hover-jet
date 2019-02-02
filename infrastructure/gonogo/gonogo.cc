@@ -1,12 +1,19 @@
 #include "infrastructure/gonogo/gonogo.hh"
 
+#include <string>
+
 namespace jet {
 
 GoNoGo::GoNoGo() {
+    gonogomessage.bq_name = "";
     gonogomessage.ready_ = false;
     gonogomessage.status_message_ = "";
     comms_factory_ = std::move(std::make_unique<jet::MqttCommsFactory>());
     publisher_ = comms_factory_->make_publisher("GoNoGo");
+}
+
+void GoNoGo::setName(std::string name) {
+    gonogomessage.bq_name = name;
 }
 
 void GoNoGo::go() {

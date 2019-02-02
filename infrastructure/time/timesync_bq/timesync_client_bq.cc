@@ -29,9 +29,9 @@ void TimesyncClientBq::loop() {
     client_message.master_seq_number = master_message.header.sequence_number;
     // gethostname will return 0 if successful, SOCKET_ERROR otherwise
     if (gethostname(client_message.hostname, HOST_NAME_MAX) != 0) {
-      gonogo.nogo("Socket Error getting hostname");
+      gonogo_.nogo("Socket Error getting hostname");
     } else {
-      gonogo.go();
+      gonogo_.go();
     }
     publisher_->publish(client_message);
     std::cout << "cl_name:" << client_message.hostname 

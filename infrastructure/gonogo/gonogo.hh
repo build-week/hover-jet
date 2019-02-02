@@ -5,12 +5,14 @@
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 
 #include <string>
+#include <iostream>
 
 namespace jet {
 
 class GoNoGo {
   public: 
    GoNoGo();
+   void setName(std::string name);
    void go();
    void nogo(const std::string &status_message);
 
