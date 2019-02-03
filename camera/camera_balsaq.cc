@@ -1,6 +1,7 @@
 //%bin(camera_balsaq_main)
 #include "camera/camera_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
+#include "camera/calibration_manager.hh"
 
 #include <chrono>
 #include <cstddef>
