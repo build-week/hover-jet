@@ -21,6 +21,12 @@
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
 
+//%deps(interpolator)
+#include "third_party/experiments/geometry/spatial/interpolator.hh"
+
+//%deps(fit_ellipse)
+#include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
+
 //
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
@@ -79,6 +85,7 @@ class Calibrator {
     }
     // if (timestamp > earliest_camera_time_) {
     if (true) {
+      // std::cout << "Accel:"  << uint64_t(msg.timestamp) << std::endl;
       estimation::jet_filter::AccelMeasurement accel_meas;
       const jcc::Vec3 accel_mpss(msg.accel_mpss_x, msg.accel_mpss_y, msg.accel_mpss_z);
       last_accel_ = accel_mpss;
@@ -88,17 +95,17 @@ class Calibrator {
       jf_.measure_imu(accel_meas, time_of_validity);
       jet_opt_.measure_imu(accel_meas, time_of_validity);
 
+      accel_meas_.push_back({accel_meas, time_of_validity});
+
       // const jcc::Vec3 gyro_radps(msg.gyro_radps_x, msg.gyro_radps_y, msg.gyro_radps_z);
       // estimation::jet_filter::GyroMeasurement gyro_meas;
       // gyro_meas.observed_w = gyro_radps;
       // jf_.measure_gyro(gyro_meas, time_of_validity + estimation::to_duration(0.0001));
-      // jet_opt_.measure_gyro(gyro_meas,
-      //                      time_of_validity + estimation::to_duration(0.0001));
+      // jet_opt_.measure_gyro(gyro_meas, time_of_validity + estimation::to_duration(0.0001));
 
       const jcc::Vec3 mag_utesla(msg.mag_utesla_x, msg.mag_utesla_y, msg.mag_utesla_z);
-
-      const jcc::Vec3 offset_mag_utesla(-32.5, 14.1875, -32.5625);
-      geo_->add_point({(mag_utesla - offset_mag_utesla) * 0.1});
+      mag_utesla_.push_back({mag_utesla, time_of_validity});
+      geo_->add_point({(mag_utesla)});
       geo_->flush();
     }
     // Otherwise, ignore it
@@ -115,7 +122,7 @@ class Calibrator {
 
       earliest_camera_time_ = time_of_validity;
     }
-    std::cout << "cam: " << uint64_t(ts) << std::endl;
+    // std::cout << "cam: " << uint64_t(ts) << std::endl;
     if (estimation::to_seconds(time_of_validity - earliest_camera_time_) > 25.0) {
       return;
     }
@@ -127,10 +134,11 @@ class Calibrator {
 
     jf_.measure_fiducial(fiducial_meas, time_of_validity);
     jet_opt_.measure_fiducial(fiducial_meas, time_of_validity);
+    fiducial_meas_.push_back({fiducial_meas, time_of_validity});
 
+    // geo_->add_axes({world_from_camera, 0.025, 0.1});
     if (got_imu_) {
       got_imu_ = false;
-      geo_->add_axes({world_from_camera, 0.1});
 
       const SE3 imu_from_vehicle = jf_.parameters().T_imu_from_vehicle;
 
@@ -141,14 +149,110 @@ class Calibrator {
       const jcc::Vec3 accel_world = world_from_imu * last_accel_;
       // geo_->add_line({world_from_imu.translation(), accel_world});
       // geo_->add_line({jcc::Vec3::Zero(), world_from_imu.so3() * last_accel_});
-      geo_->flush();
+    }
+    const auto view = viewer::get_window3d("Filter Debug");
 
-      // const auto view = viewer::get_window3d("Filter Debug");
-      // view->spin_until_step();
+    geo_->flush();
+  }
+
+  geometry::spatial::LinearInterpolator fit_mag(const estimation::TimePoint& start_t) const {
+    std::vector<jcc::Vec3> measurements;
+    const auto view = viewer::get_window3d("Filter Debug");
+    for (const auto& pt : mag_utesla_) {
+      measurements.push_back(pt.first);
+    }
+
+    const auto ell_geo = view->add_primitive<viewer::SimpleGeometry>();
+    const auto visitor = [&ell_geo, &view](const geometry::shapes::EllipseFit& fit) {
+      ell_geo->add_ellipsoid({fit.ellipse, jcc::Vec4(0.4, 0.6, 0.4, 0.7), 2.0});
+      ell_geo->flip();
+      view->spin_until_step();
+    };
+    const auto result = geometry::shapes::fit_ellipse(measurements, visitor);
+
+    ell_geo->add_ellipsoid({result.ellipse, jcc::Vec4(0.2, 1.0, 0.2, 1.0), 4.0});
+    ell_geo->flip();
+    view->spin_until_step();
+
+    std::vector<geometry::spatial::ControlPoint> control_points;
+    for (const auto& pt : mag_utesla_) {
+      const auto pt_time = pt.second;
+      const double delta_t = estimation::to_seconds(pt_time - start_t);
+
+      const jcc::Vec3 pt_mag_utesla = pt.first;
+
+      const jcc::Vec3 pt_mag_corrected =
+          (result.ellipse.cholesky_factor.transpose().inverse() * (pt_mag_utesla - result.ellipse.p0));
+
+      control_points.push_back({delta_t, pt_mag_corrected});
+    }
+
+    const geometry::spatial::LinearInterpolator interpolator(control_points);
+    return interpolator;
+  }
+
+  geometry::spatial::LinearInterpolator make_accel_interpolator() const {
+    std::vector<geometry::spatial::ControlPoint> points;
+    const auto first_time = accel_meas_.front().second;
+    for (const auto& measurement : accel_meas_) {
+      const double delta_t = estimation::to_seconds(measurement.second - first_time);
+      points.push_back({delta_t, measurement.first.observed_acceleration});
+    }
+    const geometry::spatial::LinearInterpolator interp(sort_control_points(points));
+    return interp;
+  }
+
+  void prepare() {
+    const auto view = viewer::get_window3d("Filter Debug");
+    const auto first_time = accel_meas_.front().second;
+
+    const auto mag_interpolator = fit_mag(first_time);
+    const auto accel_interpolator = make_accel_interpolator();
+
+    const SE3 imu_from_vehicle = jf_.parameters().T_imu_from_vehicle;
+
+    for (const auto& fiducial_meas : fiducial_meas_) {
+      const SE3 world_from_vehicle = fiducial_meas.first.T_fiducial_from_camera;
+      const SE3 imu_from_world = imu_from_vehicle * world_from_vehicle.inverse();
+
+      // geo_->add_axes({imu_from_world.inverse(), 0.01});
+
+      const double t = estimation::to_seconds(fiducial_meas.second - first_time);
+
+      const auto maybe_interp_at_t = accel_interpolator(t);
+      if (!maybe_interp_at_t) {
+        std::cout << "Failed at " << t << std::endl;
+        continue;
+      }
+      const jcc::Vec3 accel_meas_imu_at_t = *maybe_interp_at_t;
+      const jcc::Vec3 accel_meas_vehicle_frame = imu_from_vehicle.so3().inverse() * accel_meas_imu_at_t;
+
+      const jcc::Vec3 mag_meas_vehicle_frame = imu_from_vehicle.so3().inverse() * (*mag_interpolator(t));
+
+      constexpr double M_PER_MPSS = 0.01;
+      const jcc::Vec4 imu_obs_color(0.1, 0.7, 0.7, 0.4);
+      // geo_->add_line({world_from_vehicle.translation(), world_from_vehicle * (accel_meas_vehicle_frame * M_PER_MPSS),
+      // imu_obs_color});
+
+      const jcc::Vec3 g_vehicle_frame = (world_from_vehicle.so3().inverse() * (jcc::Vec3::UnitZ() * 9.81));
+      const jcc::Vec3 accel_g_subtracted_vehicle = accel_meas_vehicle_frame - g_vehicle_frame;
+
+      const jcc::Vec3 direction = world_from_vehicle.so3() * (accel_g_subtracted_vehicle).normalized();
+      const double length = accel_g_subtracted_vehicle.norm() * M_PER_MPSS;
+      geo_->add_ray({world_from_vehicle.translation(), direction, length, imu_obs_color, 3.0});
+
+      const jcc::Vec4 mag_obs_color(1.0, 0.3, 0.3, 0.4);
+      geo_->add_ray({world_from_vehicle.translation(), world_from_vehicle.so3() * mag_meas_vehicle_frame.normalized(), 1.0,
+                     mag_obs_color, 3.0});
+
+      view->spin_until_step();
+      geo_->flush();
     }
   }
 
   void run() {
+    prepare();
+
     std::vector<estimation::jet_filter::State> est_states;
     const auto view = viewer::get_window3d("Filter Debug");
 
@@ -157,9 +261,6 @@ class Calibrator {
       if (!xx) {
         break;
       }
-      // geo_->add_axes({xx->T_body_from_world.inverse(), 0.1, 3.0});
-      // geo_->flush();
-      // view->spin_until_step();
       est_states.push_back(*xx);
     }
 
@@ -190,6 +291,12 @@ class Calibrator {
   estimation::TimePoint earliest_camera_time_ = estimation::TimePoint::max();
   bool got_camera_ = false;
 
+  std::vector<std::pair<estimation::jet_filter::AccelMeasurement, estimation::TimePoint>> accel_meas_;
+  std::vector<std::pair<estimation::jet_filter::FiducialMeasurement, estimation::TimePoint>> fiducial_meas_;
+  // std::vector<std::Pair<GyroMeasurement, estimation::TimePoint>> gyro_meas_;
+
+  std::vector<std::pair<jcc::Vec3, estimation::TimePoint>> mag_utesla_;
+
   estimation::jet_filter::JetFilter jf_;
   estimation::jet_filter::JetOptimizer jet_opt_;
 
@@ -204,49 +311,97 @@ void go() {
   const auto view = viewer::get_window3d("Filter Debug");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
   const std::vector<std::string> channel_names = {"imu", "fiducial_detection_channel", "camera_image_channel"};
-  // const std::string path = "/jet/logs/20190110065258";
-  // const std::string path = "/jet/logs/20190111021022";
-  // const std::string path = "/jet/logs/20190111022616";
-  // const std::string path = "/jet/logs/20190111043642";
 
-  // const std::string path = "/jet/logs/20190111045557";
-  // const std::string path = "/jet/logs/20190111071808";
-  const std::string path = "/jet/logs/calibration-log-jan26-1";
+  // const std::string path = "/jet/logs/calibration-log-jan26-1";
+  const std::string path = "/jet/logs/calibration-log-jan31-1";
 
   Calibrator calibrator;
   jet::LogReader reader(path, channel_names);
 
+  bool accepted_any = false;
+  SE3 last_world_from_camera;
+  // const uint64_t start_t = 1548989056740894609;
+  // const uint64_t end_t = 1548989075101073423;
+
+  const uint64_t start_t = 1548989056142134014;
+  const uint64_t end_t = 1548989091635950250;
+
+  constexpr bool USE_CAMERA_IMAGES = true;
+  constexpr bool USE_FIDUCIAL_DETECTIONS = false;
+
+  int imu_ct = 0;
   for (int k = 0; k < 3000; ++k) {
-    ImuMessage imu_msg;
-    if (reader.read_next_message("imu", imu_msg)) {
-      calibrator.maybe_add_imu(imu_msg);
-    } else {
-      std::cout << "Breaking at : " << k << std::endl;
-      break;
-    }
-
-    CameraImageMessage cam_msg;
-    if (reader.read_next_message("camera_image_channel", cam_msg)) {
-      const auto image = get_image_mat(cam_msg);
-
-      const auto result = detect_board(image);
-      if (result) {
-        const SE3 world_from_camera = *result;
-        calibrator.add_fiducial(cam_msg.timestamp, world_from_camera);
+    {
+      ImuMessage imu_msg;
+      if (reader.read_next_message("imu", imu_msg)) {
+        imu_ct++;
+        if (imu_ct % 1 == 0) {
+          const uint64_t ts = imu_msg.timestamp;
+          if (((ts > start_t) && (ts < end_t))) {
+            calibrator.maybe_add_imu(imu_msg);
+          }
+        }
+      } else {
+        std::cout << "Breaking at : " << k << std::endl;
+        break;
       }
     }
 
-    FiducialDetectionMessage fiducial_msg;
-    if (reader.read_next_message("fiducial_detection_channel", fiducial_msg)) {
-      const Eigen::Map<double, 6, 1> fid_log(fiducial_msg.fiducial_from_camera_log.data());
-      const SE3 world_from_camera SE3::exp(fid_log);
-      calibrator.add_fiducial(cam_msg.timestamp, world_from_camera);
-      }
+    if (USE_CAMERA_IMAGES) {
+      CameraImageMessage cam_msg;
+      if (reader.read_next_message("camera_image_channel", cam_msg)) {
+        const auto image = get_image_mat(cam_msg);
 
-      // cv::imshow("Image", image);
-      // cv::waitKey(0);
+        const uint64_t ts = cam_msg.timestamp;
+        if (!((ts > start_t) && (ts < end_t))) {
+          continue;
+        }
+
+        const auto result = detect_board(image);
+        if (result) {
+          const SE3 world_from_camera = *result;
+
+          if (accepted_any) {
+            const SE3 camera_from_last_camera = world_from_camera.inverse() * last_world_from_camera;
+            constexpr double MAX_OUTLIER_DIST_M = 0.7;
+            if (camera_from_last_camera.translation().norm() > MAX_OUTLIER_DIST_M) {
+              continue;
+            }
+          }
+
+          accepted_any = true;
+          last_world_from_camera = world_from_camera;
+
+          calibrator.add_fiducial(cam_msg.timestamp, world_from_camera);
+        }
+      }
     }
+
+    if (USE_FIDUCIAL_DETECTIONS) {
+      FiducialDetectionMessage fiducial_msg;
+      if (reader.read_next_message("fiducial_detection_channel", fiducial_msg)) {
+        const SE3 world_from_camera = fiducial_msg.fiducial_from_camera();
+
+        if (accepted_any) {
+          const SE3 camera_from_last_camera = world_from_camera.inverse() * last_world_from_camera;
+          constexpr double MAX_OUTLIER_DIST_M = 0.7;
+          if (camera_from_last_camera.translation().norm() > MAX_OUTLIER_DIST_M) {
+            continue;
+          }
+        }
+
+        const uint64_t ts = fiducial_msg.timestamp;
+        if (((ts > start_t) && (ts < end_t))) {
+          calibrator.add_fiducial(fiducial_msg.timestamp, world_from_camera);
+          accepted_any = true;
+          last_world_from_camera = world_from_camera;
+        }
+      }
+    }
+    // cv::imshow("Image", image);
+    // cv::waitKey(0);
   }
+
   geo->flush();
   view->spin_until_step();
   std::cout << "Done, preparing to calibrate" << std::endl;
@@ -254,6 +409,7 @@ void go() {
   calibrator.run();
   view->spin_until_step();
 }
+
 }  // namespace filtering
 }  // namespace jet
 

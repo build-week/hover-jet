@@ -45,9 +45,6 @@ void FidicualDetectionBq::loop() {
       publisher_->publish(detection_message);
       // reconstruct with eg
       // board_from_camera = SE3::exp(Eigen::Map<jcc::Vec6>>(array));
-
-      std::cout << "detection: " << board_from_camera->translation().transpose()
-                << std::endl;
     }
     // The third and fourth parameters are the marker length and the marker separation
     // respectively. They can be provided in any unit, having in mind that the estimated
@@ -60,7 +57,7 @@ void FidicualDetectionBq::loop() {
       cv::waitKey(1);
 
       cv::imshow("camera image", camera_frame);
-      cv::waitKey(2);
+      cv::waitKey(1);
     }
   }
 }
