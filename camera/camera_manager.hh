@@ -11,18 +11,24 @@
 
 namespace jet {
 
-struct CameraCalibration {
+struct Calibration {
     cv::Mat camera_matrix;
     cv::Mat distortion_coefficients;
 };
+struct Camera {
+    std::string v4l_path;
+    int video_index;
+    Calibration calibration;
+};
 
-class CalibrationManager {
+class CameraManager {
     public:
-        CalibrationManager();
-        CameraCalibration get_camera_calibration(int camera_number);
+        CameraManager();
+        static Camera get_camera(int camera_number);
     private:
-        std::map<int, CameraCalibration> camera_calibration_dict_;
+        std::map<int, Camera> camera_map_;
         void parse_config(YAML::Node cfg);
+        int follow_v4l_path(std::string path);
 };
 
 } // namespace jet

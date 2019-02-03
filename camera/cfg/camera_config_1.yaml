@@ -1,4 +1,5 @@
-v4l_path: usb-046d_Logitech_Webcam_C930e_5CFD076E-video-index0
+v4l_path: usb-046d_Logitech_Webcam_C930e_31E7DB5E-video-index0
+note: these cal values were copied from camera 0
 camera_matrix: [499.7749869454186, 0, 309.3792706235992, 0, 
                496.9300965132637, 241.6934416030273, 0, 0, 1]
 distortion_coefficients: [0.003861115403120386,  0.09541932181851349, 0.001898991151152847,
