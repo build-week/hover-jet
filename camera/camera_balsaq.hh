@@ -22,6 +22,7 @@ class CameraBq : public BalsaQ {
   static const int CAMERA_FPS = 10;
   PublisherPtr publisher_;
   cv::VideoCapture cap;
+  int camera_number;
 };
 
 }  // namespace jet

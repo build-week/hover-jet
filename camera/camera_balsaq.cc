@@ -3,8 +3,8 @@
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/time/duration.hh"
 #include "camera/calibration_manager.hh"
+// #include "camera/camera_manager.hh"
 
-#include <chrono>
 #include <cstddef>
 #include <iostream>
 #include <sstream>
@@ -48,6 +48,7 @@ void CameraBq::loop() {
     message.timestamp = current_time;
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
+    message.camera_number = camera_number;
     publisher_->publish(message);
     std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " "
               << message.height << std::endl;
