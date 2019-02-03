@@ -2,6 +2,7 @@
 #include "camera/camera_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/time/duration.hh"
+#include "camera/calibration_manager.hh"
 
 #include <chrono>
 #include <cstddef>
