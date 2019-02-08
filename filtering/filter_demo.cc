@@ -136,7 +136,7 @@ class Calibrator {
     jet_opt_.measure_fiducial(fiducial_meas, time_of_validity);
     fiducial_meas_.push_back({fiducial_meas, time_of_validity});
 
-    // geo_->add_axes({world_from_camera, 0.025, 0.1});
+    geo_->add_axes({world_from_camera, 0.025, 3.0});
     if (got_imu_) {
       got_imu_ = false;
 

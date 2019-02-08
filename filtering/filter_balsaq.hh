@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <queue>
 #include <memory>
 
 #include "embedded/imu_driver/imu_driver.hh"
@@ -20,7 +21,7 @@ class FilterBq : public BalsaQ {
   void shutdown();
 
   // Every millisecond
-  const static uint loop_delay_microseconds = 1000;
+  const static uint loop_delay_microseconds = 10000;
 
  private:
   SubscriberPtr fiducial_sub_;
@@ -29,6 +30,15 @@ class FilterBq : public BalsaQ {
 
   std::shared_ptr<viewer::SimpleGeometry> geo_;
   std::shared_ptr<viewer::SimpleGeometry> persistent_;
+
+  struct AccelStuff {
+    jcc::Vec3 accel_mpss;
+    jcc::Vec3 gyro_radps;
+    jcc::Vec3 mag_utesla;
+  };
+  std::deque<AccelStuff> accel_history_;
+  std::deque<SE3> fiducial_history_;
+  std::deque<jcc::Vec3> mag_utesla_;
 };
 
 }  // namespace embedded
