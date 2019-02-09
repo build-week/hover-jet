@@ -16,6 +16,7 @@ class MqttSubscriber : public Subscriber {
   ~MqttSubscriber();
   bool read(Message& message, const Duration& timeout);
   bool read_raw(std::string& message_data, const Duration& timeout);
+  bool read_latest(Message& message, const Duration& timeout);
 
  private:
   std::string mqtt_server_address_;
@@ -26,6 +27,7 @@ class MqttSubscriber : public Subscriber {
 
   void async_connect();
   void connect();
+  bool get_mqtt_message(mqtt::const_message_ptr& mqtt_message_ptr, const Duration& timeout);
 };
 
 }  // namespace jet
