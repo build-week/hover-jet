@@ -22,6 +22,7 @@ void signal_handler(int s) {
     bq_type balsa_queue = bq_type();                                     \
     balsa_queue.bq_name_ = #bq_type;                                     \
     balsa_queue.gonogo_.setName(#bq_type);                               \
+    balsa_queue.gonogo_.nogo("init");                                    \
     balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
     balsa_queue.init(argc, argv);                                        \
     while (!shutdown) {                                                  \
