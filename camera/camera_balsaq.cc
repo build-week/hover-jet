@@ -19,7 +19,7 @@ void CameraBq::init(int argc, char *argv[]) {
   if (argc == 1)
     std::cout << "Using default camera intrinsics" << std::endl;
   else if (argc == 2)
-    camera = CameraManager::get_camera(argv[0]);
+    camera = CameraManager::get_camera(argv[1]);
   else
     assert(argc < 3);
   camera_serial_number_ = camera.serial_number;
