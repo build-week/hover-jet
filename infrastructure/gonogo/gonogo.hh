@@ -17,7 +17,7 @@ class GoNoGo {
    void nogo(const std::string &status_message);
 
   private:
-   GoNoGoMessage gonogomessage;
+   GoNoGoMessage gonogomessage_;
    PublisherPtr publisher_;
    std::unique_ptr<CommsFactory> comms_factory_;
    void publish_status();

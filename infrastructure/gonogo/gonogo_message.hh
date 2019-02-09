@@ -11,14 +11,13 @@ namespace jet {
 // 
 struct GoNoGoMessage : Message {
   std::string bq_name = "";
-  bool ready_ = false;
-  std::string status_message_ = "";
-  // std::optional<std::string> status_message_ = "";
+  bool ready = false;
+  std::string status_message = "";
 
   MESSAGE(GoNoGoMessage,
           bq_name,
-          ready_,
-          status_message_
+          ready,
+          status_message
   );
 };
 
