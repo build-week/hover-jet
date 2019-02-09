@@ -32,6 +32,8 @@ void CameraBq::loop() {
   cap.set(cv::CAP_PROP_EXPOSURE, WEBCAM_EXPOSURE);
 
   if (cap.read(camera_frame)) {
+    gonogo_.go();
+    last_msg_recvd_timestamp_ = get_current_time();
     CameraImageMessage message;
     const std::size_t n_elements = camera_frame.rows * camera_frame.cols * 3u;
     message.image_data.resize(n_elements);
@@ -46,7 +48,9 @@ void CameraBq::loop() {
     publisher_->publish(message);
     std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " "
               << message.height << std::endl;
-  } else {
+  }
+  if (last_msg_recvd_timestamp_ < get_current_time() - Timestamp(1000000000)) {
+    gonogo_.nogo("More than 1 second since last camera frame");
   }
 }
 void CameraBq::shutdown() {
