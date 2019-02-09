@@ -21,8 +21,8 @@
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
 
-//%deps(interpolator)
-#include "third_party/experiments/geometry/spatial/interpolator.hh"
+//%deps(time_interpolator)
+#include "third_party/experiments/geometry/spatial/time_interpolator.hh"
 
 //%deps(fit_ellipse)
 #include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
@@ -65,6 +65,7 @@ void setup() {
   background->add_plane({ground, 0.1});
   background->flip();
 }
+
 estimation::TimePoint to_time_point(const Timestamp& ts) {
   const auto epoch_offset = std::chrono::nanoseconds(uint64_t(ts));
   const estimation::TimePoint time_point = estimation::TimePoint{} + epoch_offset;
@@ -86,22 +87,16 @@ class Calibrator {
     // if (timestamp > earliest_camera_time_) {
     if (true) {
       // std::cout << "Accel:"  << uint64_t(msg.timestamp) << std::endl;
-      estimation::jet_filter::AccelMeasurement accel_meas;
       const jcc::Vec3 accel_mpss(msg.accel_mpss_x, msg.accel_mpss_y, msg.accel_mpss_z);
-      last_accel_ = accel_mpss;
-      got_imu_ = true;
 
+      estimation::jet_filter::AccelMeasurement accel_meas;
       accel_meas.observed_acceleration = accel_mpss;
-      jf_.measure_imu(accel_meas, time_of_validity);
-      jet_opt_.measure_imu(accel_meas, time_of_validity);
-
       accel_meas_.push_back({accel_meas, time_of_validity});
 
-      // const jcc::Vec3 gyro_radps(msg.gyro_radps_x, msg.gyro_radps_y, msg.gyro_radps_z);
-      // estimation::jet_filter::GyroMeasurement gyro_meas;
-      // gyro_meas.observed_w = gyro_radps;
-      // jf_.measure_gyro(gyro_meas, time_of_validity + estimation::to_duration(0.0001));
-      // jet_opt_.measure_gyro(gyro_meas, time_of_validity + estimation::to_duration(0.0001));
+      const jcc::Vec3 gyro_radps(msg.gyro_radps_x, msg.gyro_radps_y, msg.gyro_radps_z);
+      estimation::jet_filter::GyroMeasurement gyro_meas;
+      gyro_meas.observed_w = gyro_radps;
+      gyro_meas_.push_back({gyro_meas, time_of_validity + estimation::to_duration(0.000001)});
 
       const jcc::Vec3 mag_utesla(msg.mag_utesla_x, msg.mag_utesla_y, msg.mag_utesla_z);
       mag_utesla_.push_back({mag_utesla, time_of_validity});
@@ -132,30 +127,18 @@ class Calibrator {
     estimation::jet_filter::FiducialMeasurement fiducial_meas;
     fiducial_meas.T_fiducial_from_camera = world_from_camera;
 
-    jf_.measure_fiducial(fiducial_meas, time_of_validity);
-    jet_opt_.measure_fiducial(fiducial_meas, time_of_validity);
+    // jf_.measure_fiducial(fiducial_meas, time_of_validity);
+    // jet_opt_.measure_fiducial(fiducial_meas, time_of_validity);
     fiducial_meas_.push_back({fiducial_meas, time_of_validity});
 
     geo_->add_axes({world_from_camera, 0.025, 3.0});
-    if (got_imu_) {
-      got_imu_ = false;
 
-      const SE3 imu_from_vehicle = jf_.parameters().T_imu_from_vehicle;
-
-      const SE3 T_camera_from_body = SE3();
-      const SE3 world_from_body = world_from_camera * T_camera_from_body;
-
-      const SE3 world_from_imu = world_from_body * imu_from_vehicle.inverse();
-      const jcc::Vec3 accel_world = world_from_imu * last_accel_;
-      // geo_->add_line({world_from_imu.translation(), accel_world});
-      // geo_->add_line({jcc::Vec3::Zero(), world_from_imu.so3() * last_accel_});
-    }
     const auto view = viewer::get_window3d("Filter Debug");
 
     geo_->flush();
   }
 
-  geometry::spatial::LinearInterpolator fit_mag(const estimation::TimePoint& start_t) const {
+  geometry::spatial::TimeInterpolator fit_mag() const {
     std::vector<jcc::Vec3> measurements;
     const auto view = viewer::get_window3d("Filter Debug");
     for (const auto& pt : mag_utesla_) {
@@ -166,7 +149,6 @@ class Calibrator {
     const auto visitor = [&ell_geo, &view](const geometry::shapes::EllipseFit& fit) {
       ell_geo->add_ellipsoid({fit.ellipse, jcc::Vec4(0.4, 0.6, 0.4, 0.7), 2.0});
       ell_geo->flip();
-      view->spin_until_step();
     };
     const auto result = geometry::shapes::fit_ellipse(measurements, visitor);
 
@@ -174,39 +156,48 @@ class Calibrator {
     ell_geo->flip();
     view->spin_until_step();
 
-    std::vector<geometry::spatial::ControlPoint> control_points;
+    std::vector<geometry::spatial::TimeControlPoint> control_points;
     for (const auto& pt : mag_utesla_) {
       const auto pt_time = pt.second;
-      const double delta_t = estimation::to_seconds(pt_time - start_t);
 
       const jcc::Vec3 pt_mag_utesla = pt.first;
 
       const jcc::Vec3 pt_mag_corrected =
           (result.ellipse.cholesky_factor.transpose().inverse() * (pt_mag_utesla - result.ellipse.p0));
 
-      control_points.push_back({delta_t, pt_mag_corrected});
+      ell_geo->add_point({pt_mag_corrected, jcc::Vec4(1.0, 0.2, 0.3, 1.0)});
+
+      control_points.push_back({pt_time, pt_mag_corrected});
     }
 
-    const geometry::spatial::LinearInterpolator interpolator(control_points);
+    ell_geo->flip();
+
+    const geometry::spatial::TimeInterpolator interpolator(control_points);
     return interpolator;
   }
 
-  geometry::spatial::LinearInterpolator make_accel_interpolator() const {
-    std::vector<geometry::spatial::ControlPoint> points;
-    const auto first_time = accel_meas_.front().second;
+  geometry::spatial::TimeInterpolator make_accel_interpolator() const {
+    std::vector<geometry::spatial::TimeControlPoint> points;
     for (const auto& measurement : accel_meas_) {
-      const double delta_t = estimation::to_seconds(measurement.second - first_time);
-      points.push_back({delta_t, measurement.first.observed_acceleration});
+      points.push_back({measurement.second, measurement.first.observed_acceleration});
     }
-    const geometry::spatial::LinearInterpolator interp(sort_control_points(points));
+    const geometry::spatial::TimeInterpolator interp(points);
+    return interp;
+  }
+
+  geometry::spatial::TimeInterpolator make_gyro_interpolator() const {
+    std::vector<geometry::spatial::TimeControlPoint> points;
+    for (const auto& measurement : gyro_meas_) {
+      points.push_back({measurement.second, measurement.first.observed_w});
+    }
+    const geometry::spatial::TimeInterpolator interp(points);
     return interp;
   }
 
   void prepare() {
     const auto view = viewer::get_window3d("Filter Debug");
-    const auto first_time = accel_meas_.front().second;
 
-    const auto mag_interpolator = fit_mag(first_time);
+    const auto mag_interpolator = fit_mag();
     const auto accel_interpolator = make_accel_interpolator();
 
     const SE3 imu_from_vehicle = jf_.parameters().T_imu_from_vehicle;
@@ -217,41 +208,132 @@ class Calibrator {
 
       // geo_->add_axes({imu_from_world.inverse(), 0.01});
 
-      const double t = estimation::to_seconds(fiducial_meas.second - first_time);
+      const auto fiducial_measurement_t = fiducial_meas.second;
 
-      const auto maybe_interp_at_t = accel_interpolator(t);
+      const auto maybe_interp_at_t = accel_interpolator(fiducial_measurement_t);
       if (!maybe_interp_at_t) {
-        std::cout << "Failed at " << t << std::endl;
+        std::cout << "Failed";
         continue;
       }
       const jcc::Vec3 accel_meas_imu_at_t = *maybe_interp_at_t;
       const jcc::Vec3 accel_meas_vehicle_frame = imu_from_vehicle.so3().inverse() * accel_meas_imu_at_t;
 
-      const jcc::Vec3 mag_meas_vehicle_frame = imu_from_vehicle.so3().inverse() * (*mag_interpolator(t));
+      const jcc::Vec3 mag_meas_vehicle_frame = imu_from_vehicle.so3() * (*mag_interpolator(fiducial_measurement_t));
 
       constexpr double M_PER_MPSS = 0.01;
       const jcc::Vec4 imu_obs_color(0.1, 0.7, 0.7, 0.4);
-      // geo_->add_line({world_from_vehicle.translation(), world_from_vehicle * (accel_meas_vehicle_frame * M_PER_MPSS),
-      // imu_obs_color});
+      geo_->add_line({world_from_vehicle.translation(), world_from_vehicle * (accel_meas_vehicle_frame * M_PER_MPSS),
+                      imu_obs_color});
 
+      /*
       const jcc::Vec3 g_vehicle_frame = (world_from_vehicle.so3().inverse() * (jcc::Vec3::UnitZ() * 9.81));
       const jcc::Vec3 accel_g_subtracted_vehicle = accel_meas_vehicle_frame - g_vehicle_frame;
-
-      const jcc::Vec3 direction = world_from_vehicle.so3() * (accel_g_subtracted_vehicle).normalized();
-      const double length = accel_g_subtracted_vehicle.norm() * M_PER_MPSS;
-      geo_->add_ray({world_from_vehicle.translation(), direction, length, imu_obs_color, 3.0});
+      const jcc::Vec3 imu_direction = world_from_vehicle.so3() * (accel_g_subtracted_vehicle).normalized();
+      const double accel_norm_no_g = accel_g_subtracted_vehicle.norm() * M_PER_MPSS;
+      geo_->add_ray({world_from_vehicle.translation(), imu_direction, accel_norm_no_g, imu_obs_color, 3.0});
+      */
 
       const jcc::Vec4 mag_obs_color(1.0, 0.3, 0.3, 0.4);
-      geo_->add_ray({world_from_vehicle.translation(), world_from_vehicle.so3() * mag_meas_vehicle_frame.normalized(), 1.0,
-                     mag_obs_color, 3.0});
+      geo_->add_ray({world_from_vehicle.translation(), world_from_vehicle.so3() * mag_meas_vehicle_frame.normalized(),
+                     1.0, mag_obs_color, 3.0});
 
-      view->spin_until_step();
+      const double cos_angle_grav_bfield =
+          accel_meas_vehicle_frame.normalized().dot(mag_meas_vehicle_frame.normalized());
+
+      // geo_->add_ray(
+      // {jcc::Vec3::Zero(), world_from_vehicle.so3() * mag_meas_vehicle_frame.normalized(), 1.0, mag_obs_color, 3.0});
+    }
+    view->spin_until_step();
+    geo_->flush();
+  }
+
+  std::vector<estimation::jet_filter::State> test_filter() {
+    const auto view = viewer::get_window3d("Filter Debug");
+    const auto accel_interpolator = make_accel_interpolator();
+    const auto gyro_interpolator = make_gyro_interpolator();
+
+    const SE3 imu_from_vehicle = jf_.parameters().T_imu_from_vehicle;
+
+    std::vector<estimation::jet_filter::State> est_states;
+    geo_->clear();
+
+    const auto first_t = fiducial_meas_.front().second;
+    for (const auto& fiducial_meas : fiducial_meas_) {
+      const estimation::TimePoint t = fiducial_meas.second;
+      jf_.measure_fiducial(fiducial_meas.first, t);
+
+      geo_->add_axes({fiducial_meas.first.T_fiducial_from_camera, 0.001, 3.0});
+    }
+
+    for (const auto& accel_meas : accel_meas_) {
+      const estimation::TimePoint t = accel_meas.second;
+      if (t <= (first_t + estimation::to_duration(3.0))) {
+        std::cout << "Skipping" << std::endl;
+        continue;
+      }
+      jf_.measure_imu(accel_meas.first, t);
+    }
+
+    estimation::TimePoint prev_time;
+
+    while (true) {
+      std::cout << "\n" << std::endl;
+      const auto maybe_state = jf_.next_measurement();
+      if (!maybe_state) {
+        break;
+      }
+
+      const auto state = jf_.state().x;
+      const auto t = jf_.state().time_of_validity;
+
+      std::cout << "dt: " << estimation::to_seconds(t - prev_time) << std::endl;
+      prev_time = t;
+
+      const SE3 T_world_from_body = state.T_body_from_world.inverse();
+
+      constexpr double M_PER_MPSS = 0.01;
+
+      const jcc::Vec3 meas_accel_imu_t = *accel_interpolator(t);
+      const jcc::Vec3 expected_accel_imu = observe_accel(state, jf_.parameters()).observed_acceleration;
+
+      const jcc::Vec3 meas_gyro_imu_t = *gyro_interpolator(t);
+      const jcc::Vec3 expected_gyro_imu = observe_gyro(state, jf_.parameters()).observed_w;
+      /*
+            geo_->add_line({T_world_from_body.translation(), T_world_from_body * (meas_accel_imu_t * M_PER_MPSS),
+                            jcc::Vec4(1.0, 0.0, 0.0, 0.8)});
+
+            geo_->add_line({T_world_from_body.translation(), T_world_from_body * (expected_accel_imu * M_PER_MPSS),
+                            jcc::Vec4(0.0, 1.0, 0.0, 0.8)});
+      */
+      const jcc::Vec3 g_world = jcc::Vec3::UnitZ() * 9.81;
+      const jcc::Vec3 g_vehicle_frame = (T_world_from_body.so3().inverse() * g_world);
+
+      // const jcc::Vec3 accel_g_subtracted_vehicle = meas_accel_imu_t - g_vehicle_frame;
+      const jcc::Vec3 g_imu = imu_from_vehicle.so3() * T_world_from_body.so3().inverse() * g_world;
+
+      std::cout << "\n" << std::endl;
+      // std::cout << "g_body:" << g_vehicle_frame.transpose() << std::endl;
+      std::cout << "g_imu:      " << g_imu.transpose() << std::endl;
+      // std::cout << "accel     : " << accel_g_subtracted_vehicle.transpose() << std::endl;
+      std::cout << "meas accel: " << meas_accel_imu_t.transpose() << std::endl;
+      std::cout << "exp accel:  " << expected_accel_imu.transpose() << std::endl;
+      std::cout << "meas gyro:  " << meas_gyro_imu_t.transpose() << std::endl;
+      std::cout << "exp gyro:   " << expected_gyro_imu.transpose() << std::endl;
+
+      std::cout << "accel_bias: " << state.accel_bias.transpose() << std::endl;
+      std::cout << "eps_ddot:   " << state.eps_ddot.transpose() << std::endl;
+      std::cout << "eps_dot:    " << state.eps_dot.transpose() << std::endl;
+
+      geo_->add_axes({T_world_from_body, 0.01, 1.0, true});
+
       geo_->flush();
+      view->spin_until_step();
     }
   }
 
   void run() {
     prepare();
+    test_filter();
 
     std::vector<estimation::jet_filter::State> est_states;
     const auto view = viewer::get_window3d("Filter Debug");
@@ -285,15 +367,12 @@ class Calibrator {
     return visitor;
   }
 
-  bool got_imu_ = false;
-  jcc::Vec3 last_accel_ = jcc::Vec3::Zero();
-
   estimation::TimePoint earliest_camera_time_ = estimation::TimePoint::max();
   bool got_camera_ = false;
 
   std::vector<std::pair<estimation::jet_filter::AccelMeasurement, estimation::TimePoint>> accel_meas_;
   std::vector<std::pair<estimation::jet_filter::FiducialMeasurement, estimation::TimePoint>> fiducial_meas_;
-  // std::vector<std::Pair<GyroMeasurement, estimation::TimePoint>> gyro_meas_;
+  std::vector<std::pair<estimation::jet_filter::GyroMeasurement, estimation::TimePoint>> gyro_meas_;
 
   std::vector<std::pair<jcc::Vec3, estimation::TimePoint>> mag_utesla_;
 
@@ -335,7 +414,8 @@ void go() {
       ImuMessage imu_msg;
       if (reader.read_next_message("imu", imu_msg)) {
         imu_ct++;
-        if (imu_ct % 1 == 0) {
+        // if (imu_ct % 3 == 0) {
+        if (imu_ct) {
           const uint64_t ts = imu_msg.timestamp;
           if (((ts > start_t) && (ts < end_t))) {
             calibrator.maybe_add_imu(imu_msg);
