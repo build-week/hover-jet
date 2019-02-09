@@ -7,6 +7,7 @@
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
+#include "infrastructure/time/duration.hh"
 
 #include <iostream>
 
@@ -62,7 +63,7 @@ void FidicualDetectionBq::loop() {
       cv::waitKey(1);
     }
   }
-  if (last_msg_recvd_timestamp_ < get_current_time() - Timestamp(1000000000)) {
+  if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo_.nogo("More than 1 second since last image message");
   }
 }

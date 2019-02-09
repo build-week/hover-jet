@@ -1,6 +1,7 @@
 //%bin(camera_balsaq_main)
 #include "camera/camera_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
+#include "infrastructure/time/duration.hh"
 
 #include <chrono>
 #include <cstddef>
@@ -49,7 +50,7 @@ void CameraBq::loop() {
     std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " "
               << message.height << std::endl;
   }
-  if (last_msg_recvd_timestamp_ < get_current_time() - Timestamp(1000000000)) {
+  if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo_.nogo("More than 1 second since last camera frame");
   }
 }
