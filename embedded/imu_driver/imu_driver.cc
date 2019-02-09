@@ -32,7 +32,7 @@ void ImuDriver::initialize() {
     // TODO
     std::cout << "Attempting to reconnect to bno" << std::endl;
     ++tries;
-  } while (!bno_->begin() && (tries < MAX_TRIES));
+  } while (!bno_->begin(adafruit_bno055_opmode_t::OPERATION_MODE_AMG) && (tries < MAX_TRIES));
 
   if (tries >= MAX_TRIES) {
     throw std::runtime_error("Failed to connect to the IMU");

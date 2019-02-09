@@ -23,6 +23,7 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   //     (cv::Mat1d(1, 5) << 0.003861115403120386, 0.09541932181851349, 0.001898991151152847,
   //      -0.003082742498836169, -0.2932184860155891);
 
+  // These are Jake's intrinsic parameters
   const cv::Mat camera_matrix =
       (cv::Mat1d(3, 3) << 526.7461628084227, 0, 309.0543237010663, 0, 523.8973942941677, 263.6234496235897, 0, 0, 1);
 
