@@ -2,6 +2,7 @@
 
 #include "infrastructure/comms/comms_factory.hh"
 #include "infrastructure/time/timestamp.hh"
+#include "infrastructure/gonogo/gonogo.hh"
 
 #include <stdint.h>
 #include <memory>
@@ -13,11 +14,13 @@ namespace jet {
 class BalsaQ {
  public:
   uint loop_delay_microseconds = 10000;
+  std::string bq_name_;
   BalsaQ() = default;
   virtual void init(int argc, char *argv[]) = 0;
   virtual void loop() = 0;
   virtual void shutdown() = 0;
 
+  GoNoGo gonogo_ = GoNoGo();
   void set_comms_factory(std::unique_ptr<CommsFactory> comms_factory);
 
  protected:
