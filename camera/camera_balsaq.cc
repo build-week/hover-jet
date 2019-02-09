@@ -19,7 +19,7 @@ constexpr double WEBCAM_EXPOSURE = 0.01;
 void CameraBq::init(const Config& config) {
   cap = cv::VideoCapture(0);
   Camera camera;
-  camera = CameraManager::get_camera(argv[0]);
+  camera = CameraManager::get_camera(argv[1]);
   camera_serial_number_ = camera.serial_number;
   cap = cv::VideoCapture(camera.video_index);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
