@@ -3,6 +3,7 @@
 #include <infrastructure/balsa_queue/balsa_queue.hh>
 
 #include "infrastructure/engine/jetcat_turbine.hh"
+#include "infrastructure/gonogo/gonogo_message.hh"
 
 namespace jet {
 
@@ -22,7 +23,10 @@ class TurbineInterfaceBQ : public BalsaQ {
   std::unique_ptr<JetCatTurbine> turbine_ptr_;
   SubscriberPtr turbine_ignition_subscriber_;
   SubscriberPtr turbine_throttle_setting_subscriber_;
+  SubscriberPtr go_no_go_subscriber_;
   PublisherPtr turbine_state_publisher_;
+
+  GoNoGoMessage go_nogo_message_;
 
   Timestamp last_turbine_read_time_{0};
 };
