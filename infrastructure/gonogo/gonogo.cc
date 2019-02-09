@@ -28,6 +28,7 @@ void GoNoGo::nogo(const std::string &status_message) {
 }
 
 void GoNoGo::publish_status() {
+    std::cout << gonogomessage_.bq_name << ": go=" << gonogomessage_.ready << ", msg=" << gonogomessage_.status_message << std::endl;
     publisher_->publish(gonogomessage_);
 }
 
