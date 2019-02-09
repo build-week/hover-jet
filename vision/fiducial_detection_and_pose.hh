@@ -8,6 +8,7 @@
 
 #include "third_party/experiments/eigen.hh"
 #include "third_party/experiments/sophus.hh"
+#include "camera/camera_manager.hh"
 
 namespace jet {
 
@@ -26,7 +27,7 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& mat);
 std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image,
                                                          const SE3& world_from_camera);
 
-std::optional<SE3> detect_board(const cv::Mat& input_image);
+std::optional<SE3> detect_board(const cv::Mat& input_image, const Calibration& calibration);
 
 constexpr float FIDUCIAL_WIDTH_METERS = 31.0 / 1000;
 constexpr float FIDUCIAL_GAP_WIDTH_METERS = 23.5 / 1000;

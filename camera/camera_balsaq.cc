@@ -15,10 +15,15 @@ namespace jet {
 constexpr double WEBCAM_EXPOSURE = 0.01;
 
 void CameraBq::init(int argc, char *argv[]) {
-  assert(argc == 1);
-  // camera_number = argv[0] - '0';
-  // Camera camera = CameraManager.get_camera(camera_number)
-  cap = cv::VideoCapture(0);
+  Camera camera;
+  if (argc == 1)
+    std::cout << "Using default camera intrinsics" << std::endl;
+  else if (argc == 2)
+    camera = CameraManager::get_camera(argv[0]);
+  else
+    assert(argc < 3);
+  camera_serial_number_ = camera.serial_number;
+  cap = cv::VideoCapture(camera.video_index);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
   cap.set(cv::CAP_PROP_FPS, CAMERA_FPS);
@@ -45,7 +50,7 @@ void CameraBq::loop() {
     }
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
-    message.camera_number = camera_number;
+    message.camera_serial_number = camera_serial_number_;
     publisher_->publish(message);
     std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " "
               << message.height << std::endl;

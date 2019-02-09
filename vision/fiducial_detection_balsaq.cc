@@ -7,6 +7,7 @@
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
+#include "camera/camera_manager.hh"
 
 #include <iostream>
 
@@ -27,8 +28,9 @@ void FidicualDetectionBq::loop() {
   }
 
   if (got_msg) {
+    Calibration camera_calibration = CameraManager::get_camera(image_message.camera_serial_number).calibration;
     const cv::Mat camera_frame = get_image_mat(image_message);
-    const std::optional<SE3> board_from_camera = detect_board(camera_frame);
+    const std::optional<SE3> board_from_camera = detect_board(camera_frame, camera_calibration);
     if (board_from_camera) {
       // publish a fiducial message using *board_from_camera
       FiducialDetectionMessage detection_message;
@@ -40,7 +42,7 @@ void FidicualDetectionBq::loop() {
       detection_message.fiducial_from_camera_log[4] = log_fiducial_from_camera[4];
       detection_message.fiducial_from_camera_log[5] = log_fiducial_from_camera[5];
 
-      detection_message.timestamp = image_message.timestamp;
+      detection_message.timestamp = image_message.header.timestamp_ns;
 
       publisher_->publish(detection_message);
       // reconstruct with eg

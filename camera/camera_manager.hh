@@ -16,17 +16,18 @@ struct Calibration {
     cv::Mat distortion_coefficients;
 };
 struct Camera {
+    std::string serial_number = "5CFD076E";
     std::string v4l_path;
-    int video_index;
+    int video_index = 0;
     Calibration calibration;
 };
 
 class CameraManager {
     public:
         CameraManager();
-        static Camera get_camera(int camera_number);
+        static Camera get_camera(std::string serial_number);
     private:
-        std::map<int, Camera> camera_map_;
+        std::map<std::string, Camera> camera_map_;
         void parse_config(YAML::Node cfg);
         int follow_v4l_path(std::string path);
 };
