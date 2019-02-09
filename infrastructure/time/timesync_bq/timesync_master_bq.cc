@@ -15,6 +15,7 @@ namespace jet {
 
 void TimesyncMasterBq::init(int argc, char *argv[]) {
   publisher_ = make_publisher("timesync_master");
+  gonogo_.go();
 }
 
 void TimesyncMasterBq::loop() {
@@ -24,7 +25,7 @@ void TimesyncMasterBq::loop() {
 }
 
 void TimesyncMasterBq::shutdown() {
-  std::cout << "Shutting down!" << std::endl;
+  std::cout << "Timesync master shutting down!" << std::endl;
 }
 
 }  // namespace jet

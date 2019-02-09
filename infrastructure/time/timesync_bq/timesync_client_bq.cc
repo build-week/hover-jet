@@ -43,7 +43,7 @@ void TimesyncClientBq::loop() {
 }
 
 void TimesyncClientBq::shutdown() {
-  std::cout << "Shutting down!" << std::endl;
+  std::cout << "Timesync client shutting down!" << std::endl;
 }
 
 }  // namespace jet
