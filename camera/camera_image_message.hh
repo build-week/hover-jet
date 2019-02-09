@@ -10,13 +10,14 @@ namespace jet {
 
 struct CameraImageMessage : Message {
   std::vector<uchar> image_data;
-  uint width, height, camera_number;
+  uint width, height;
+  std::string camera_serial_number;
 
   MESSAGE(CameraImageMessage, 
           image_data, 
           width, 
           height,
-          camera_number);
+          camera_serial_number);
 };
 
 cv::Mat get_image_mat(CameraImageMessage message);

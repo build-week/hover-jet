@@ -8,6 +8,7 @@
 
 #include "third_party/experiments/eigen.hh"
 #include "third_party/experiments/sophus.hh"
+#include "camera/camera_manager.hh"
 
 #include "infrastructure/comms/serialization/serialization_macros.hh"
 
@@ -70,7 +71,11 @@ std::vector<MarkerDetection> detect_markers(const cv::Mat& mat);
 
 std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image, const SE3& world_from_camera);
 
+<<<<<<< HEAD
 std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat& input_image);
+=======
+std::optional<SE3> detect_board(const cv::Mat& input_image, const Calibration& calibration);
+>>>>>>> changed camera manager to take in serial number, added camera manager usage to fiducial detection
 
 std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const cv::Mat& input_image);
 
