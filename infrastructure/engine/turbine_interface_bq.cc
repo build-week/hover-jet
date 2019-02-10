@@ -30,7 +30,7 @@ void TurbineInterfaceBQ::init(int argc, char* argv[]) {
   turbine_ignition_subscriber_ = make_subscriber("turbine_ignition");
   turbine_throttle_setting_subscriber_ = make_subscriber("turbine_set_throttle");
   turbine_state_publisher_ = make_publisher("turbine_state");
-  go_no_go_subscriber_ = make_subscriber("GoNoGo/output");
+  go_no_go_subscriber_ = make_subscriber("GoNoGo_output");
 
   turbine_ptr_ = std::make_unique<JetCatTurbine>(SERIAL_PORT_PATH);
 }

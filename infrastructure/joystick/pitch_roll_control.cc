@@ -14,8 +14,8 @@ std::vector<std::string> devices{"/dev/input/js0", "/dev/input/js1", "/dev/input
 
 int main(int argc, char* argv[]) {
   auto comms_factory = std::make_unique<jet::MqttCommsFactory>();
-  auto pitch_publisher = comms_factory->make_publisher("/joystick/pitch");
-  auto roll_publisher = comms_factory->make_publisher("/joystick/roll");
+  auto pitch_publisher = comms_factory->make_publisher("joystick_pitch");
+  auto roll_publisher = comms_factory->make_publisher("joystick_roll");
 
   std::unique_ptr<jet::Joystick> joystick;
 
