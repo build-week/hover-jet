@@ -4,7 +4,6 @@
 #include <memory>
 #include <queue>
 
-#include "embedded/imu_driver/imu_driver.hh"
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 
@@ -16,12 +15,14 @@
 namespace jet {
 namespace embedded {
 
-class FilterBq : public BalsaQ {
+class FilterVizBq : public BalsaQ {
  public:
-  FilterBq();
+  FilterVizBq();
   void init(int argc, char *argv[]);
   void loop();
   void shutdown();
+
+  void draw_sensors();
 
   // Every millisecond
   const static uint loop_delay_microseconds = 10000;
@@ -29,7 +30,7 @@ class FilterBq : public BalsaQ {
  private:
   SubscriberPtr fiducial_sub_;
   SubscriberPtr imu_sub_;
-  ImuDriver imu_driver_;
+  SubscriberPtr pose_sub_;
 
   std::shared_ptr<viewer::SimpleGeometry> geo_;
   std::shared_ptr<viewer::SimpleGeometry> persistent_;
