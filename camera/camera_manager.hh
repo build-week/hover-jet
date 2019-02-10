@@ -16,7 +16,7 @@ struct Calibration {
     cv::Mat distortion_coefficients;
 };
 struct Camera {
-    std::string serial_number = "5CFD076E";
+    std::string serial_number = "CA38DB5E";
     std::string v4l_path;
     int video_index = 0;
     Calibration calibration;

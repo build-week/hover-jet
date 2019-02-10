@@ -40,9 +40,9 @@ void CameraManager::parse_config(YAML::Node cfg) {
         return;
     // calibration values
     std::vector<double> camera_matrix_values = cfg["camera_matrix"].as<std::vector<double>>();
-    camera.calibration.camera_matrix = cv::Mat(3, 3, CV_64F, &camera_matrix_values[0]);
+    camera.calibration.camera_matrix = cv::Mat(3, 3, CV_64F, camera_matrix_values.data()).clone();
     std::vector<double> distortion_coefficient_values = cfg["distortion_coefficients"].as<std::vector<double>>();
-    camera.calibration.distortion_coefficients = cv::Mat(1, 5, CV_64F, &distortion_coefficient_values[0]);
+    camera.calibration.distortion_coefficients = cv::Mat(1, 5, CV_64F, distortion_coefficient_values.data()).clone();
 
     camera_map_[camera.serial_number] = camera;
 }
@@ -60,7 +60,7 @@ int CameraManager::follow_v4l_path(std::string path) {
 
 Camera CameraManager::get_camera(std::string serial_number) {
     CameraManager instance = CameraManager();
-    return instance.camera_map_[serial_number];
+    return instance.camera_map_.at(serial_number);
 }
 
 } // namespace jet
