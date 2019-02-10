@@ -59,8 +59,7 @@ int CameraManager::follow_v4l_path(std::string path) {
 }
 
 Camera CameraManager::get_camera(std::string serial_number) {
-    CameraManager instance = CameraManager();
-    return instance.camera_map_.at(serial_number);
+    return camera_map_.at(serial_number);
 }
 
 } // namespace jet
