@@ -4,6 +4,7 @@
 #include <infrastructure/balsa_queue/balsa_queue.hh>
 #include "camera/camera_image_message.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
+#include "camera/camera_manager.hh"
 
 //%deps(opencv)
 #include <opencv2/aruco.hpp>
@@ -23,6 +24,7 @@ class CameraBq : public BalsaQ {
   PublisherPtr publisher_;
   cv::VideoCapture cap;
   std::string camera_serial_number_;
+  CameraManager camera_manager_ = CameraManager();
 };
 
 }  // namespace jet

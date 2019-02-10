@@ -25,7 +25,7 @@ struct Camera {
 class CameraManager {
     public:
         CameraManager();
-        static Camera get_camera(std::string serial_number);
+        Camera get_camera(std::string serial_number);
     private:
         std::map<std::string, Camera> camera_map_;
         void parse_config(YAML::Node cfg);

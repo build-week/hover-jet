@@ -15,13 +15,8 @@ namespace jet {
 constexpr double WEBCAM_EXPOSURE = 0.01;
 
 void CameraBq::init(int argc, char *argv[]) {
-  Camera camera;
-  if (argc == 1)
-    std::cout << "Using default camera intrinsics" << std::endl;
-  else if (argc == 2)
-    camera = CameraManager::get_camera(argv[1]);
-  else
-    assert(argc < 3);
+  assert(argc == 2);
+  Camera camera = camera_manager_.get_camera(argv[1]);
   camera_serial_number_ = camera.serial_number;
   cap = cv::VideoCapture(camera.video_index);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
