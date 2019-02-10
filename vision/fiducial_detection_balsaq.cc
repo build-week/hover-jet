@@ -8,6 +8,7 @@
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
 #include "infrastructure/time/duration.hh"
+#include "config/fiducial_map/read_fiducial_map.hh"
 
 #include <iostream>
 
