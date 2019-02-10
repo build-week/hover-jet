@@ -38,7 +38,8 @@ void FilterBq::init(int argc, char* argv[]) {
   std::cout << "Advertising Pose" << std::endl;
   pose_pub_ = make_publisher("pose");
 
-  camera_from_vehicle_ = get_camera_extrinsics().camera_from_frame;
+  camera_from_vehicle_ = get_camera_extrinsics().camera_from_frame.inverse();
+  tag_from_world_ = get_fiducial_pose().tag_from_world;
 
   std::cout << "Filter starting" << std::endl;
 }
@@ -49,7 +50,9 @@ void FilterBq::loop() {
   std::cout << "Reading fiducial" << std::endl;
   if (fiducial_sub_->read(detection_msg, 1)) {
     estimation::jet_filter::FiducialMeasurement fiducial_meas;
-    fiducial_meas.T_fiducial_from_camera = detection_msg.fiducial_from_camera();
+    const SE3 fiducial_from_camera = detection_msg.fiducial_from_camera();
+    const SE3 world_from_camera = tag_from_world_.inverse() * fiducial_from_camera;
+    fiducial_meas.T_fiducial_from_camera = world_from_camera * camera_from_vehicle_;
 
     const auto fiducial_time_of_validity = to_time_point(detection_msg.timestamp);
 
@@ -79,17 +82,28 @@ void FilterBq::loop() {
     std::cout << "Generating view" << std::endl;
     const auto state = jf_.view(current_time);
 
-    std::cout << "Distance: " << state.T_body_from_world.inverse().translation().norm() << std::endl;
     std::cout << "eps_dot: " << state.eps_dot.transpose() << std::endl;
 
     Pose pose;
     {
-      const SE3 body_from_camera = camera_from_vehicle_;
+      const SE3 vehicle_real_from_vehicle_filtered;
+      pose.world_from_jet = (vehicle_real_from_vehicle_filtered * state.T_body_from_world).inverse();
 
-      pose.world_from_jet = (body_from_camera * state.T_body_from_world).inverse();
+      const jcc::Vec3 log_translation_world_from_vehicle = pose.world_from_jet.translation();
+      const jcc::Vec3 log_rotation_world_from_vehicle = pose.world_from_jet.so3().log();
 
-      pose.v_world_frame = (body_from_camera.so3() * state.T_body_from_world.so3()).inverse() * state.eps_dot.head<3>();
-      pose.w_world_frame = (body_from_camera.so3() * state.T_body_from_world.so3()).inverse() * state.eps_dot.tail<3>();
+      std::cout << "log_translation_world_from_vehicle: [" << log_translation_world_from_vehicle[0] << ", "
+                << log_translation_world_from_vehicle[1] << ", " << log_translation_world_from_vehicle[2] << "] "
+                << std::endl;
+
+      std::cout << "log_rotation_world_from_vehicle: [" << log_rotation_world_from_vehicle[0] << ", "
+                << log_rotation_world_from_vehicle[1] << ", " << log_rotation_world_from_vehicle[2] << "] "
+                << std::endl;
+
+      pose.v_world_frame = (vehicle_real_from_vehicle_filtered.so3() * state.T_body_from_world.so3()).inverse() *
+                           state.eps_dot.head<3>();
+      pose.w_world_frame = (vehicle_real_from_vehicle_filtered.so3() * state.T_body_from_world.so3()).inverse() *
+                           state.eps_dot.tail<3>();
       pose.timestamp = imu_msg.timestamp;
     }
 

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <iostream>
 
+#include "control/control_utilities.hh"
 #include "control/jet_vane_mapper.hh"
 #include "control/servo_interface.hh"
 #include "filtering/pose_message.hh"
@@ -31,10 +32,8 @@ jcc::Vec3 sigmoid(const jcc::Vec3& v) {
   return interp_value * v.normalized();
 }
 
-QuadraframeStatus generate_control(const Pose& pose, const JetStatus& jet_status) {
+QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pose, const JetStatus& jet_status) {
   JetVaneMapper mapper_;
-
-  const SO3 world_from_target;  // Identity! Orient up!
 
   //
   // Compute the current expected jet force (All servos zero'd)
@@ -80,13 +79,13 @@ ControllerBq::ControllerBq() {
 
 void ControllerBq::init(int argc, char* argv[]) {
   std::cout << "Subscribing Roll" << std::endl;
-  roll_sub_ = make_subscriber("roll");
+  roll_sub_ = make_subscriber("joystick_roll");
 
   std::cout << "Subscribing Pitch" << std::endl;
-  pitch_sub_ = make_subscriber("pitch");
+  pitch_sub_ = make_subscriber("joystick_pitch");
 
   std::cout << "Subscribing Yaw" << std::endl;
-  yaw_sub_ = make_subscriber("Yaw");
+  yaw_sub_ = make_subscriber("joystick_yaw");
 
   std::cout << "Subscribing pose" << std::endl;
   pose_sub_ = make_subscriber("pose");
@@ -109,6 +108,8 @@ void ControllerBq::loop() {
     got_turbine_status_ = true;
   }
 
+  const auto target_from_world = target_from_joy(joy_pitch_, joy_roll_, joy_yaw_);
+
   // TODO
   got_turbine_status_ = true;
   jet_status_.throttle = 0.5;
@@ -120,7 +121,7 @@ void ControllerBq::loop() {
 
   if (got_pose_msg && got_turbine_status_) {
     const Pose pose = pose_msg.to_pose();
-    const auto target_qframe_status = generate_control(pose, jet_status_);
+    const auto target_qframe_status = generate_control(target_from_world, pose, jet_status_);
     SetServoMessage servo_message = create_servo_command(target_qframe_status);
     servo_pub_->publish(servo_message);
   }

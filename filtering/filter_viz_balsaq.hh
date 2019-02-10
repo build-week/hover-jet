@@ -33,6 +33,9 @@ class FilterVizBq : public BalsaQ {
   SubscriberPtr imu_sub_;
   SubscriberPtr pose_sub_;
 
+  SE3 tag_from_world_;
+  SE3 camera_from_body_;
+
   std::shared_ptr<viewer::SimpleGeometry> geo_;
   std::shared_ptr<viewer::SimpleGeometry> persistent_;
 

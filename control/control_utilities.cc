@@ -3,7 +3,7 @@
 namespace jet {
 namespace control {
 
-inline SO3 target_from_joy(double joy_pitch_axis, double joy_roll_axis, double joy_yaw_axis) {
+SO3 target_from_joy(double joy_pitch_axis, double joy_roll_axis, double joy_yaw_axis) {
   double y_gain = 0.1;
   double x_gain = 0.1;
   double z_gain = 1.0;

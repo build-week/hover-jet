@@ -22,6 +22,9 @@ class ControllerBq : public BalsaQ {
   SubscriberPtr roll_sub_;
   SubscriberPtr pitch_sub_;
   SubscriberPtr yaw_sub_;
+  double joy_roll_ = 0.0;
+  double joy_pitch_ = 0.0;
+  double joy_yaw_ = 0.0;
 
   SubscriberPtr pose_sub_;
 
