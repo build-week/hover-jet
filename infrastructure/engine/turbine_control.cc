@@ -58,7 +58,9 @@ int main(int argc, char* argv[]) {
         }
         case jet::EventType::AXIS: {
           if (throttle_event->axis_id == THROTTLE_AXIS_ID) {
-            uint32_t throttle_percent = 100 - 100 * ((*throttle_event->axis_value) + INT16_MAX) / (INT16_MAX * 2);
+            uint32_t throttle_percent =
+                100 - 100 * ((*throttle_event->axis_value) + std::numeric_limits<int16_t>::max()) /
+                          (std::numeric_limits<int16_t>::max() * 2);
             jet::ThrottleCommandMessage throttle_command_message;
             throttle_command_message.throttle_percent = throttle_percent;
             throttle_publisher->publish(throttle_command_message);

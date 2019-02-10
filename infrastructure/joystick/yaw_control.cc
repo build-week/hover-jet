@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     if (pedal_event) {
       if (pedal_event->event_type == jet::EventType::AXIS) {
         if (pedal_event->axis_id == YAW_AXIS_ID) {
-          double yaw = ((double)(*pedal_event->axis_value)) / (INT16_MAX);
+          double yaw = (static_cast<double>(*pedal_event->axis_value)) / (std::numeric_limits<int16_t>::max());
           jet::JoystickCommandMessage joystick_command_message;
           joystick_command_message.command = yaw;
           yaw_publisher->publish(joystick_command_message);

@@ -3,7 +3,6 @@
 
 int main(int argc, char *argv[]) {
   jet::Joystick joystick("/dev/input/js2");
-  // jet::Joystick joystick("/dev/input/by-id/usb-Thustmaster_Joystick_-_HOTAS_Warthog-joystick");
   while (true) {
     auto event = joystick.read_event();
     if (!event) {

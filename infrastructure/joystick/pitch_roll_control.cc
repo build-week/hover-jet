@@ -35,14 +35,15 @@ int main(int argc, char* argv[]) {
     if (joystick_event) {
       if (joystick_event->event_type == jet::EventType::AXIS) {
         if (joystick_event->axis_id == PITCH_AXIS_ID) {
-          double pitch = -1 * ((double)(*joystick_event->axis_value)) / (INT16_MAX);
+          double pitch =
+              -1 * (static_cast<double>(*joystick_event->axis_value)) / (std::numeric_limits<int16_t>::max());
           jet::JoystickCommandMessage joystick_command_message;
           joystick_command_message.command = pitch;
           pitch_publisher->publish(joystick_command_message);
           std::cout << "Pitch set to " << pitch << std::endl;
         }
         if (joystick_event->axis_id == ROLL_AXIS_ID) {
-          double roll = ((double)(*joystick_event->axis_value)) / (INT16_MAX);
+          double roll = (static_cast<double>(*joystick_event->axis_value)) / (std::numeric_limits<int16_t>::max());
           jet::JoystickCommandMessage joystick_command_message;
           joystick_command_message.command = roll;
           roll_publisher->publish(joystick_command_message);
