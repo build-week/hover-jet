@@ -278,8 +278,8 @@ class Calibrator {
         std::cout << "Skipping" << std::endl;
         continue;
       }
-      jf_.measure_imu(accel_meas.first, t);
-      jet_opt_.measure_imu(accel_meas.first, t);
+      // jf_.measure_imu(accel_meas.first, t);
+      // jet_opt_.measure_imu(accel_meas.first, t);
     }
 
     estimation::TimePoint prev_time;
@@ -293,6 +293,11 @@ class Calibrator {
 
       const auto state = jf_.state().x;
       est_states.push_back(state);
+
+      const auto cov = jf_.state().P;
+      const Eigen::LLT<MatNd<3, 3>> P_llt(
+          cov.block<3, 3>(estimation::jet_filter::StateDelta::T_body_from_world_error_log_ind,
+                          estimation::jet_filter::StateDelta::T_body_from_world_error_log_ind));
 
       const auto t = jf_.state().time_of_validity;
 
@@ -338,10 +343,11 @@ class Calibrator {
       std::cout << "eps_ddot:   " << state.eps_ddot.transpose() << std::endl;
       std::cout << "eps_dot:    " << state.eps_dot.transpose() << std::endl;
 
-      // geo_->add_axes({T_world_from_body, 0.01, 1.0, true});
+      geo_->add_axes({T_world_from_body, 0.01, 1.0, true});
+      geo_->add_ellipsoid({geometry::shapes::Ellipse{P_llt.matrixU(), T_world_from_body.translation()}});
 
       geo_->flush();
-      // view->spin_until_step();
+      view->spin_until_step();
     }
     return est_states;
   }
