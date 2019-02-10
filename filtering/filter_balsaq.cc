@@ -75,10 +75,17 @@ void FilterBq::loop() {
     mag_utesla_.pop_front();
   }
 
-  for (int k = 0; k < static_cast<int>(fiducial_history_.size()); ++k) {
-    const double fraction = static_cast<double>(fiducial_history_.size() - k) / fiducial_history_.size();
-    const SE3 world_from_camera = fiducial_history_.at(k);
-    geo_->add_axes({world_from_camera, fraction * 1.0, 3.0});
+  // for (int k = 0; k < static_cast<int>(fiducial_history_.size()); ++k) {
+  //   const double fraction = static_cast<double>(fiducial_history_.size() - k) / fiducial_history_.size();
+  //   const SE3 world_from_camera = fiducial_history_.at(k);
+  //   geo_->add_axes({world_from_camera, fraction * 1.0, 3.0});
+
+  // }
+
+  if (!fiducial_history_.empty()) {
+    const SE3 world_from_camera = fiducial_history_.back();
+    geo_->add_axes({world_from_camera, 0.1, 3.0});
+    std::cout << world_from_camera.translation().norm() << std::endl;
   }
 
   const auto visitor = [this](const geometry::shapes::EllipseFit& fit) {

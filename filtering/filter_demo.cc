@@ -212,7 +212,7 @@ class Calibrator {
 
       const auto maybe_interp_at_t = accel_interpolator(fiducial_measurement_t);
       if (!maybe_interp_at_t) {
-        std::cout << "Failed";
+        std::cout << "Failed" << std::endl;
         continue;
       }
       const jcc::Vec3 accel_meas_imu_at_t = *maybe_interp_at_t;
@@ -260,7 +260,14 @@ class Calibrator {
     const auto first_t = fiducial_meas_.front().second;
     for (const auto& fiducial_meas : fiducial_meas_) {
       const estimation::TimePoint t = fiducial_meas.second;
+      if (t < first_t + estimation::to_duration(0.5)) {
+        continue;
+      }
       jf_.measure_fiducial(fiducial_meas.first, t);
+      jet_opt_.measure_fiducial(fiducial_meas.first, t);
+
+      std::cout << "Camera Location: " << fiducial_meas.first.T_fiducial_from_camera.translation().transpose()
+                << std::endl;
 
       geo_->add_axes({fiducial_meas.first.T_fiducial_from_camera, 0.001, 3.0});
     }
@@ -272,6 +279,7 @@ class Calibrator {
         continue;
       }
       jf_.measure_imu(accel_meas.first, t);
+      jet_opt_.measure_imu(accel_meas.first, t);
     }
 
     estimation::TimePoint prev_time;
@@ -284,6 +292,8 @@ class Calibrator {
       }
 
       const auto state = jf_.state().x;
+      est_states.push_back(state);
+
       const auto t = jf_.state().time_of_validity;
 
       std::cout << "dt: " << estimation::to_seconds(t - prev_time) << std::endl;
@@ -317,6 +327,10 @@ class Calibrator {
       // std::cout << "accel     : " << accel_g_subtracted_vehicle.transpose() << std::endl;
       std::cout << "meas accel: " << meas_accel_imu_t.transpose() << std::endl;
       std::cout << "exp accel:  " << expected_accel_imu.transpose() << std::endl;
+
+      std::cout << "meas sp f: " << (meas_accel_imu_t - g_imu).transpose() << std::endl;
+      std::cout << "exp sp f: " << (expected_accel_imu - g_imu).transpose() << std::endl;
+
       std::cout << "meas gyro:  " << meas_gyro_imu_t.transpose() << std::endl;
       std::cout << "exp gyro:   " << expected_gyro_imu.transpose() << std::endl;
 
@@ -324,27 +338,19 @@ class Calibrator {
       std::cout << "eps_ddot:   " << state.eps_ddot.transpose() << std::endl;
       std::cout << "eps_dot:    " << state.eps_dot.transpose() << std::endl;
 
-      geo_->add_axes({T_world_from_body, 0.01, 1.0, true});
+      // geo_->add_axes({T_world_from_body, 0.01, 1.0, true});
 
       geo_->flush();
-      view->spin_until_step();
+      // view->spin_until_step();
     }
+    return est_states;
   }
 
   void run() {
     prepare();
-    test_filter();
+    const std::vector<estimation::jet_filter::State> est_states = test_filter();
 
-    std::vector<estimation::jet_filter::State> est_states;
     const auto view = viewer::get_window3d("Filter Debug");
-
-    while (true) {
-      const auto xx = jf_.next_measurement();
-      if (!xx) {
-        break;
-      }
-      est_states.push_back(*xx);
-    }
 
     std::cout << "Calibrating" << std::endl;
     const auto visitor = make_visitor();
@@ -393,20 +399,17 @@ void go() {
 
   // const std::string path = "/jet/logs/calibration-log-jan26-1";
   const std::string path = "/jet/logs/calibration-log-jan31-1";
+  // const std::string path = "/jet/logs/calibration-log-feb9-1";
+  // const std::string path = "/jet/logs/calibration-log-feb9-2";
 
   Calibrator calibrator;
   jet::LogReader reader(path, channel_names);
 
   bool accepted_any = false;
   SE3 last_world_from_camera;
-  // const uint64_t start_t = 1548989056740894609;
-  // const uint64_t end_t = 1548989075101073423;
 
-  const uint64_t start_t = 1548989056142134014;
-  const uint64_t end_t = 1548989091635950250;
-
-  constexpr bool USE_CAMERA_IMAGES = true;
-  constexpr bool USE_FIDUCIAL_DETECTIONS = false;
+  constexpr bool USE_CAMERA_IMAGES = false;
+  constexpr bool USE_FIDUCIAL_DETECTIONS = true;
 
   int imu_ct = 0;
   for (int k = 0; k < 3000; ++k) {
@@ -414,12 +417,9 @@ void go() {
       ImuMessage imu_msg;
       if (reader.read_next_message("imu", imu_msg)) {
         imu_ct++;
-        // if (imu_ct % 3 == 0) {
+        // if (imu_ct % 1 == 0) {
         if (imu_ct) {
-          const uint64_t ts = imu_msg.timestamp;
-          if (((ts > start_t) && (ts < end_t))) {
-            calibrator.maybe_add_imu(imu_msg);
-          }
+          calibrator.maybe_add_imu(imu_msg);
         }
       } else {
         std::cout << "Breaking at : " << k << std::endl;
@@ -431,11 +431,6 @@ void go() {
       CameraImageMessage cam_msg;
       if (reader.read_next_message("camera_image_channel", cam_msg)) {
         const auto image = get_image_mat(cam_msg);
-
-        const uint64_t ts = cam_msg.timestamp;
-        if (!((ts > start_t) && (ts < end_t))) {
-          continue;
-        }
 
         const auto result = detect_board(image);
         if (result) {
@@ -462,20 +457,17 @@ void go() {
       if (reader.read_next_message("fiducial_detection_channel", fiducial_msg)) {
         const SE3 world_from_camera = fiducial_msg.fiducial_from_camera();
 
-        if (accepted_any) {
-          const SE3 camera_from_last_camera = world_from_camera.inverse() * last_world_from_camera;
-          constexpr double MAX_OUTLIER_DIST_M = 0.7;
-          if (camera_from_last_camera.translation().norm() > MAX_OUTLIER_DIST_M) {
-            continue;
-          }
-        }
+        // if (accepted_any) {
+        //   const SE3 camera_from_last_camera = world_from_camera.inverse() * last_world_from_camera;
+        //   constexpr double MAX_OUTLIER_DIST_M = 0.7;
+        //   if (camera_from_last_camera.translation().norm() > MAX_OUTLIER_DIST_M) {
+        //     continue;
+        //   }
+        // }
 
-        const uint64_t ts = fiducial_msg.timestamp;
-        if (((ts > start_t) && (ts < end_t))) {
-          calibrator.add_fiducial(fiducial_msg.timestamp, world_from_camera);
-          accepted_any = true;
-          last_world_from_camera = world_from_camera;
-        }
+        calibrator.add_fiducial(fiducial_msg.timestamp, world_from_camera);
+        accepted_any = true;
+        last_world_from_camera = world_from_camera;
       }
     }
     // cv::imshow("Image", image);
