@@ -52,6 +52,7 @@ QuadraframeStatus generate_control(const Pose& pose, const JetStatus& jet_status
 
   const auto result = mapper_.map_wrench(target_wrench, jet_status);
 
+  std::cout << "\n" << std::endl;
   std::cout << "Want (Torque Nm): " << target_wrench.torque_Nm.transpose() << std::endl;
   std::cout << "Want (Force N): " << target_wrench.force_N.transpose() << std::endl;
   std::cout << "Got (Torque Nm) : " << result.achieved_wrench.torque_Nm.transpose() << std::endl;
