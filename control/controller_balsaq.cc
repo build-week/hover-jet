@@ -23,6 +23,14 @@ estimation::TimePoint to_time_point(const Timestamp& ts) {
   return time_point;
 }
 
+jcc::Vec3 sigmoid(const jcc::Vec3& v) {
+  const double v_nrm = v.norm();
+
+  const double interp_value = (1.0 / (1.0 + std::exp(-v_nrm)));
+
+  return interp_value * v.normalized();
+}
+
 QuadraframeStatus generate_control(const Pose& pose, const JetStatus& jet_status) {
   JetVaneMapper mapper_;
 
@@ -44,7 +52,7 @@ QuadraframeStatus generate_control(const Pose& pose, const JetStatus& jet_status
 
   const double gain_p = 0.1;
   const SO3 target_from_jet = world_from_target.inverse() * pose.world_from_jet.so3();
-  const jcc::Vec3 desired_torque_jet_frame = gain_p * target_from_jet.log();
+  const jcc::Vec3 desired_torque_jet_frame = gain_p * sigmoid(target_from_jet.log());
 
   Wrench target_wrench;
   target_wrench.torque_Nm = desired_torque_jet_frame;
