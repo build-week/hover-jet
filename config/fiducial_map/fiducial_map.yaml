@@ -1,0 +1,14 @@
+fiducial_4x4:
+  artag_squares:   4
+  dict_num: 250
+  log_translation_tag_from_world: [1, 1, 1]
+  log_rotation_tag_from_world:    [1, 1, 1]
+  artag_width_mm:  99.0 # measured by Matt  feb 10 2019
+  artag_gap_mm:    50.0  # measured by Matt  feb 10 2019
+fiducial_5x5:
+  artag_squares:   5
+  dict_num: 250
+  log_translation_tag_from_world: [1, 1, 1]
+  log_rotation_tag_from_world:    [1, 1, 1]
+  artag_width_mm:  100.0 # measured by Matt  feb 10 2019
+  artag_gap_mm:    50.0  # measured by Matt  feb 10 2019
