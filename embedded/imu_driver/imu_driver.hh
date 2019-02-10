@@ -23,7 +23,7 @@ class ImuDriver {
 
   // This function
   // WARNING: Must be called before sampling from the IMU
-  void initialize();
+  bool initialize();
 
   // Sampling more frequently than this will provide no new measurements
   int sample_period_ms() const;

@@ -7,6 +7,7 @@
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
+#include "infrastructure/time/duration.hh"
 
 #include <iostream>
 
@@ -27,6 +28,8 @@ void FidicualDetectionBq::loop() {
   }
 
   if (got_msg) {
+    gonogo_.go();
+    last_msg_recvd_timestamp_ = get_current_time();
     const cv::Mat camera_frame = get_image_mat(image_message);
     const std::optional<SE3> board_from_camera = detect_board(camera_frame);
     if (board_from_camera) {
@@ -59,6 +62,9 @@ void FidicualDetectionBq::loop() {
       cv::imshow("camera image", camera_frame);
       cv::waitKey(1);
     }
+  }
+  if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
+    gonogo_.nogo("More than 1 second since last image message");
   }
 }
 
