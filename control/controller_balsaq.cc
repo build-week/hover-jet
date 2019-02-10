@@ -58,6 +58,10 @@ QuadraframeStatus generate_control(const Pose& pose, const JetStatus& jet_status
   std::cout << "Got (Torque Nm) : " << result.achieved_wrench.torque_Nm.transpose() << std::endl;
   std::cout << "Got (Force N) : " << result.achieved_wrench.force_N.transpose() << std::endl;
 
+  const auto qframe_status = result.optimal_status;
+  std::cout << qframe_status.servo_0_angle_rad << ", " << qframe_status.servo_1_angle_rad << ", "
+            << qframe_status.servo_2_angle_rad << ", " << qframe_status.servo_3_angle_rad << ", " << std::endl;
+
   return result.optimal_status;
 }
 }  // namespace
