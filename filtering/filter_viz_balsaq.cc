@@ -2,21 +2,20 @@
 #include "filtering/filter_viz_balsaq.hh"
 
 #include "embedded/imu_driver/imu_message.hh"
+#include "filtering/pose_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "vision/fiducial_detection_message.hh"
 
 #include <cstddef>
 #include <iostream>
 
-#include "third_party/experiments/estimation/time_point.hh"
-
 // %deps(simple_geometry)
 // %deps(window_3d)
+//%deps(fit_ellipse)
+#include "third_party/experiments/estimation/time_point.hh"
+#include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
-
-//%deps(fit_ellipse)
-#include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
 
 namespace jet {
 namespace embedded {
@@ -90,7 +89,6 @@ void FilterVizBq::draw_sensors() {
   if (!fiducial_history_.empty()) {
     const SE3 world_from_camera = fiducial_history_.back();
     geo_->add_axes({world_from_camera, 0.0025, 3.0});
-    std::cout << world_from_camera.translation().norm() << std::endl;
   }
 
   if (!accel_history_.empty()) {
@@ -100,7 +98,7 @@ void FilterVizBq::draw_sensors() {
   geo_->add_sphere({jcc::Vec3::Zero(), 9.81});
 }
 
-void draw_pose() {
+void FilterVizBq::draw_pose() {
   PoseMessage pose_msg;
   bool got_pose_msg = false;
   while (pose_sub_->read(pose_msg, 1)) {
@@ -108,7 +106,9 @@ void draw_pose() {
   }
 
   if (got_pose_msg) {
-    geo_->add_axes({world_from_camera, 0.0055, 3.0, true});
+    const Pose pose = pose_msg.to_pose();
+    std::cout << "Got pose message" << std::endl;
+    geo_->add_axes({pose.world_from_jet, 0.0055, 3.0, true});
   }
 }
 

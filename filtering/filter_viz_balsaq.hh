@@ -23,6 +23,7 @@ class FilterVizBq : public BalsaQ {
   void shutdown();
 
   void draw_sensors();
+  void draw_pose();
 
   // Every millisecond
   const static uint loop_delay_microseconds = 10000;

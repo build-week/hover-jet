@@ -42,6 +42,8 @@ void FilterBq::init(int argc, char* argv[]) {
 
 void FilterBq::loop() {
   FiducialDetectionMessage detection_msg;
+
+  std::cout << "Reading fiducial" << std::endl;
   if (fiducial_sub_->read(detection_msg, 1)) {
     estimation::jet_filter::FiducialMeasurement fiducial_meas;
     fiducial_meas.T_fiducial_from_camera = detection_msg.fiducial_from_camera();
@@ -56,17 +58,22 @@ void FilterBq::loop() {
       jf_.reset(xp0);
     }
 
+    std::cout << "Free-running" << std::endl;
     jf_.measure_fiducial(fiducial_meas, fiducial_time_of_validity);
     jf_.free_run();
     const auto state = jf_.state().x;
   }
 
   ImuMessage imu_msg;
+  bool got_imu_msg = false;
+  std::cout << "Reading old imu messages" << std::endl;
   while (imu_sub_->read(imu_msg, 1)) {
+    got_imu_msg = true;
   }
 
-  if (jf_.initialized()) {
+  if (jf_.initialized() && got_imu_msg) {
     const auto current_time = to_time_point(imu_msg.timestamp);
+    std::cout << "Generating view" << std::endl;
     const auto state = jf_.view(current_time);
 
     std::cout << "Distance: " << state.T_body_from_world.inverse().translation().norm() << std::endl;
@@ -74,14 +81,19 @@ void FilterBq::loop() {
 
     Pose pose;
     {
-      pose.world_from_jet = state.T_body_from_world.inverse();
+      const SE3 body_from_camera = jcc::exp_z(-M_PI * 0.5) * jcc::exp_x(-M_PI * 0.5);
+      pose.world_from_jet = (body_from_camera * state.T_body_from_world).inverse();
+
       pose.v_world_frame = state.T_body_from_world.so3().inverse() * state.eps_dot.head<3>();
       pose.w_world_frame = state.T_body_from_world.so3().inverse() * state.eps_dot.tail<3>();
       pose.timestamp = imu_msg.timestamp;
     }
 
     PoseMessage pose_msg = PoseMessage::from_pose(pose);
+    std::cout << "Transmitting" << std::endl;
     pose_pub_->publish(pose_msg);
+  } else {
+    std::cout << "No means to queue time" << std::endl;
   }
 }
 

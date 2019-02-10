@@ -53,7 +53,9 @@ QuadraframeStatus generate_control(const Pose& pose, const JetStatus& jet_status
   const auto result = mapper_.map_wrench(target_wrench, jet_status);
 
   std::cout << "Want (Torque Nm): " << target_wrench.torque_Nm.transpose() << std::endl;
+  std::cout << "Want (Force N): " << target_wrench.force_N.transpose() << std::endl;
   std::cout << "Got (Torque Nm) : " << result.achieved_wrench.torque_Nm.transpose() << std::endl;
+  std::cout << "Got (Force N) : " << result.achieved_wrench.force_N.transpose() << std::endl;
 
   return result.optimal_status;
 }
@@ -93,6 +95,10 @@ void ControllerBq::loop() {
     jet_status_.throttle = static_cast<double>(turbine_msg.throttle_position_percent) * 0.01;
     got_turbine_status_ = true;
   }
+
+  // TODO
+  got_turbine_status_ = true;
+  jet_status_.throttle = 0.5;
 
   bool got_pose_msg = false;
   while (pose_sub_->read(pose_msg, 1)) {
