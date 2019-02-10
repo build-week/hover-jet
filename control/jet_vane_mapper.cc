@@ -5,6 +5,11 @@
 namespace jet {
 namespace control {
 
+Wrench JetVaneMapper::wrench_for_status(const QuadraframeStatus& qframe_status,
+                                        const JetStatus& current_jet_status) const {
+  return total_wrench_com_frame(current_jet_status, qframe_status, vane_cfg_, jet_cfg_, qframe_cfg_);
+}
+
 MappingResult JetVaneMapper::map_wrench(const Wrench& target_wrench, const JetStatus& current_jet_status) const {
   using InformationMat = MatNd<QuadraframeStatus::DIM, QuadraframeStatus::DIM>;
   using JacobianMat = MatNd<Wrench::DIM, QuadraframeStatus::DIM>;

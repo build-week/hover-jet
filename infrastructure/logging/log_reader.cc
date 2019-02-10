@@ -67,7 +67,7 @@ bool LogReader::read_next_message(const std::string& channel_name, Message& mess
     file.read(&message_data[0], message_length);
     if (!file) {
       // TODO: Check to see if there's another log file after this one before assuming we've reached the end of the log.
-      std::cerr << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
+      // std::cerr << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
       return false;
     }
     message.deserialize(message_data);
@@ -88,7 +88,7 @@ bool LogReader::read_next_message_raw(const std::string& channel_name, std::stri
     file.read(&message_data[0], message_length);
     if (!file) {
       // TODO: Check to see if there's another log file after this one before assuming we've reached the end of the log.
-      std::cerr << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
+      // std::cerr << "Failed to read from file for channel: " << channel_name << ". Reached end of file." <<  std::endl;
       return false;
     }
     return true;
