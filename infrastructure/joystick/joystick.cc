@@ -18,8 +18,8 @@ Joystick::~Joystick() {
 }
 
 std::optional<JoystickEvent> Joystick::read_event() {
-  size_t bytes = read(joystick_fd_, &event_buffer_, sizeof(&event_buffer_));
-  if (bytes == sizeof(&event_buffer_)) {
+  size_t bytes = read(joystick_fd_, &event_buffer_, sizeof(event_buffer_));
+  if (bytes == sizeof(event_buffer_)) {
     JoystickEvent event;
     event.timestamp_ms = event_buffer_.time;
     if (!int_to_enum(event_buffer_.type, event.event_type)) {
