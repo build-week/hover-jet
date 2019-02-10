@@ -5,7 +5,6 @@
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 #include "infrastructure/comms/mqtt_comms_factory.hh"
-#include "infrastructure/comms/schemas/demo_message.hh"
 
 #include <iostream>
 
