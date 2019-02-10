@@ -13,7 +13,7 @@ std::vector<std::string> devices{"/dev/input/js0", "/dev/input/js1", "/dev/input
 
 int main(int argc, char* argv[]) {
   auto comms_factory = std::make_unique<jet::MqttCommsFactory>();
-  auto yaw_publisher = comms_factory->make_publisher("/joystick/yaw");
+  auto yaw_publisher = comms_factory->make_publisher("joystick_yaw");
 
   std::unique_ptr<jet::Joystick> pedals;
 

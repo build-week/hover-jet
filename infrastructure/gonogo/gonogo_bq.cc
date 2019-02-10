@@ -13,7 +13,7 @@ namespace jet {
 void GoNoGoBQ::init(int argc, char *argv[]) {
   loop_delay_microseconds = 10000;
   gonogo_subscriber_ = make_subscriber("GoNoGo");
-  gonogo_state_publisher_ = make_publisher("GoNoGo/output");
+  gonogo_state_publisher_ = make_publisher("GoNoGo_output");
 }
 
 void GoNoGoBQ::loop() {
