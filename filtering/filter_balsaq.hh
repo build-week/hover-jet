@@ -29,6 +29,7 @@ class FilterBq : public BalsaQ {
 
   PublisherPtr pose_pub_;
 
+  SE3 camera_from_vehicle_;
   estimation::jet_filter::JetFilter jf_;
 };
 

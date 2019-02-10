@@ -4,6 +4,7 @@
 #include "embedded/imu_driver/imu_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
+#include "config/fiducial_map/read_fiducial_map.hh"
 #include "filtering/pose_message.hh"
 #include "vision/fiducial_detection_message.hh"
 
@@ -36,6 +37,8 @@ void FilterBq::init(int argc, char* argv[]) {
   fiducial_sub_ = make_subscriber("fiducial_detection_channel");
   std::cout << "Advertising Pose" << std::endl;
   pose_pub_ = make_publisher("pose");
+
+  camera_from_vehicle_ = get_camera_extrinsics().camera_from_frame;
 
   std::cout << "Filter starting" << std::endl;
 }
@@ -81,11 +84,12 @@ void FilterBq::loop() {
 
     Pose pose;
     {
-      const SE3 body_from_camera = jcc::exp_z(-M_PI * 0.5) * jcc::exp_x(-M_PI * 0.5);
+      const SE3 body_from_camera = camera_from_vehicle_;
+
       pose.world_from_jet = (body_from_camera * state.T_body_from_world).inverse();
 
-      pose.v_world_frame = state.T_body_from_world.so3().inverse() * state.eps_dot.head<3>();
-      pose.w_world_frame = state.T_body_from_world.so3().inverse() * state.eps_dot.tail<3>();
+      pose.v_world_frame = (body_from_camera.so3() * state.T_body_from_world.so3()).inverse() * state.eps_dot.head<3>();
+      pose.w_world_frame = (body_from_camera.so3() * state.T_body_from_world.so3()).inverse() * state.eps_dot.tail<3>();
       pose.timestamp = imu_msg.timestamp;
     }
 
