@@ -38,7 +38,7 @@ void FilterBq::init(int argc, char* argv[]) {
   std::cout << "Advertising Pose" << std::endl;
   pose_pub_ = make_publisher("pose");
 
-  camera_from_vehicle_ = get_camera_extrinsics().camera_from_frame.inverse();
+  camera_from_vehicle_ = get_camera_extrinsics().camera_from_frame;
   tag_from_world_ = get_fiducial_pose().tag_from_world;
 
   std::cout << "Filter starting" << std::endl;
@@ -62,6 +62,8 @@ void FilterBq::loop() {
       xp0.x.T_body_from_world = fiducial_meas.T_fiducial_from_camera.inverse();
       xp0.time_of_validity = fiducial_time_of_validity;
       jf_.reset(xp0);
+
+      gonogo_.go();
     }
 
     std::cout << "Free-running" << std::endl;

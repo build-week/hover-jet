@@ -51,9 +51,10 @@ void FilterVizBq::init(int argc, char* argv[]) {
   pose_sub_ = make_subscriber("pose");
 
   tag_from_world_ = get_fiducial_pose().tag_from_world;
-  camera_from_body_ = get_camera_extrinsics().camera_from_frame.inverse();
+  camera_from_body_ = get_camera_extrinsics().camera_from_frame;
 
   std::cout << "Filter starting" << std::endl;
+  gonogo_.go();
 }
 
 void FilterVizBq::draw_sensors() {
@@ -103,13 +104,30 @@ void FilterVizBq::draw_sensors() {
   geo_->add_sphere({tag_from_world_.inverse().translation(), 0.3});
   geo_->add_axes({tag_from_world_.inverse()});
 
+  geo_->add_sphere({camera_from_body_.inverse().translation(), 0.3});
+  geo_->add_axes({camera_from_body_.inverse()});
+
   if (!fiducial_history_.empty()) {
     const SE3 fiducial_from_camera = fiducial_history_.back();
-    geo_->add_axes({fiducial_from_camera, 0.025, 3.0});
 
-    const SE3 world_from_vehicle = tag_from_world_.inverse() * fiducial_from_camera * camera_from_body_;
-    geo_->add_sphere({world_from_vehicle.translation(), 0.2, jcc::Vec4(1.0, 0.0, 0.2, 0.8)});
-    geo_->add_axes({world_from_vehicle, 0.6, 3.0, true});
+    // geo_->add_axes({fiducial_from_camera, 0.025, 3.0});
+
+    {  // Draw the fiducial axes in the camera frame
+      geo_->add_sphere({fiducial_from_camera.inverse().translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
+      geo_->add_axes({fiducial_from_camera.inverse(), 0.025, 3.0});
+    }
+
+    {  // Draw the vehicle axes in the world frame
+      const SE3 world_from_vehicle = tag_from_world_.inverse() * fiducial_from_camera * camera_from_body_;
+      geo_->add_sphere({world_from_vehicle.translation(), 0.2, jcc::Vec4(1.0, 0.0, 0.2, 0.8)});
+      geo_->add_axes({world_from_vehicle, 0.6, 3.0, true});
+    }
+
+    {  // Draw the body axes in the fiducial frame
+      const SE3 fiducial_from_body = fiducial_from_camera * camera_from_body_;
+      geo_->add_axes({fiducial_from_body.inverse()});
+      geo_->add_sphere({fiducial_from_body.inverse().translation(), 0.2, jcc::Vec4(0.0, 0.0, 1.0, 0.8)});
+    }
   }
 
   if (!accel_history_.empty()) {

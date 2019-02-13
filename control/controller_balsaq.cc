@@ -116,6 +116,7 @@ void ControllerBq::loop() {
 
   bool got_pose_msg = false;
   while (pose_sub_->read(pose_msg, 1)) {
+    gonogo_.go();
     got_pose_msg = true;
   }
 
