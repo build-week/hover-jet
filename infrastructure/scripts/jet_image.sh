@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source jet_functions
+source jet_functions.sh
 
 function help () {
 cat <<-END
