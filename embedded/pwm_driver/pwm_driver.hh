@@ -13,6 +13,7 @@ public:
   void set_pwm(uint8_t pwm_num, uint16_t start, uint16_t stop);
   void set_pin(uint8_t pwm_num, uint16_t val);
   void enable_auto_increment(bool enable);
+  void sleep(bool sleep);
 
 private:
   I2CDevice device;

@@ -20,6 +20,7 @@ class ServoDriver {
   float get_percentage() const;
   int get_servo_index() const;
   void set_angle_radians(float angle);
+  void shutdown_pwm();
 
  private:
   int servo_index_ = -1;

@@ -57,10 +57,10 @@ int main() {
   }
   clear_screen();
 
-  ServoDriver servo1 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg0.yaml");
-  ServoDriver servo2 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg1.yaml");
-  ServoDriver servo3 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg2.yaml");
-  ServoDriver servo4 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg3.yaml");
+  ServoDriver servo1 = ServoDriver("/embedded/servo_driver/cfg/servo_cfg0.yaml");
+  ServoDriver servo2 = ServoDriver("/embedded/servo_driver/cfg/servo_cfg1.yaml");
+  ServoDriver servo3 = ServoDriver("/embedded/servo_driver/cfg/servo_cfg2.yaml");
+  ServoDriver servo4 = ServoDriver("/embedded/servo_driver/cfg/servo_cfg3.yaml");
 
   servos.push_back(servo1);
   servos.push_back(servo2);
