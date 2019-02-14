@@ -75,6 +75,6 @@ void ServoDriver::set_angle_radians(
   set_percentage(calibrated_center_ + half_range * angleFraction);
 }
 
-void shutdown_pwm() {
-  pwm_driver_.sleep(true);
+void ServoDriver::shutdown_pwm() {
+  pwm_driver_->sleep(true);
 }
