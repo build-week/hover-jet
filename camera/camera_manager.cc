@@ -27,6 +27,10 @@ Calibration extract_calibration(const YAML::Node& cfg) {
   calibration.camera_matrix = cv::Mat(3, 3, CV_64F, camera_matrix_values.data()).clone();
   std::vector<double> distortion_coefficient_values = cfg["distortion_coefficients"].as<std::vector<double>>();
   calibration.distortion_coefficients = cv::Mat(1, 5, CV_64F, distortion_coefficient_values.data()).clone();
+
+  const std::vector<double> resolution = cfg["resolution"].as<std::vector<double>>();
+  calibration.cols = resolution.at(0);
+  calibration.rows = resolution.at(1);
   return calibration;
 }
 

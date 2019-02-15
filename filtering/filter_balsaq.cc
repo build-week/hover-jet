@@ -47,7 +47,9 @@ void FilterBq::init(const Config& config) {
 void FilterBq::loop() {
   FiducialDetectionMessage detection_msg;
 
-  std::cout << "Reading fiducial" << std::endl;
+  //
+  // Update with fiducial measurements
+  //
   if (fiducial_sub_->read(detection_msg, 1)) {
     estimation::jet_filter::FiducialMeasurement fiducial_meas;
     const SE3 fiducial_from_camera = detection_msg.fiducial_from_camera();
@@ -59,58 +61,64 @@ void FilterBq::loop() {
     if (!jf_.initialized()) {
       std::cout << "Initializing" << std::endl;
       auto xp0 = estimation::jet_filter::JetFilter::reasonable_initial_state();
-      xp0.x.T_body_from_world = fiducial_meas.T_fiducial_from_camera.inverse();
+      xp0.x.R_world_from_body = fiducial_meas.T_fiducial_from_camera.so3();
+      xp0.x.x_world = fiducial_meas.T_fiducial_from_camera.translation();
       xp0.time_of_validity = fiducial_time_of_validity;
       jf_.reset(xp0);
 
       gonogo().go();
     }
 
-    std::cout << "Free-running" << std::endl;
     jf_.measure_fiducial(fiducial_meas, fiducial_time_of_validity);
-    jf_.free_run();
     const auto state = jf_.state().x;
   }
 
+  //
+  // Update with IMU measurements
+  //
   ImuMessage imu_msg;
   bool got_imu_msg = false;
-  std::cout << "Reading old imu messages" << std::endl;
   while (imu_sub_->read(imu_msg, 1)) {
+
     got_imu_msg = true;
   }
 
+  // if (jf_.initialized() && got_imu_msg) {
+  //   const auto time_of_validity = to_time_point(imu_msg.timestamp);
+  //   const jcc::Vec3 gyro_radps(imu_msg.gyro_radps_x, imu_msg.gyro_radps_y, imu_msg.gyro_radps_z);
+  //   estimation::jet_filter::GyroMeasurement gyro_meas;
+  //   gyro_meas.observed_w = gyro_radps;
+  //   jf_.measure_gyro(gyro_meas, time_of_validity);
+  // }
+
+  if (jf_.initialized()) {
+    jf_.free_run();
+  }
+
+  //
+  // Report a state
+  //
   if (jf_.initialized() && got_imu_msg) {
     const auto current_time = to_time_point(imu_msg.timestamp);
-    std::cout << "Generating view" << std::endl;
     const auto state = jf_.view(current_time);
-
-    std::cout << "eps_dot: " << state.eps_dot.transpose() << std::endl;
 
     Pose pose;
     {
       const SE3 vehicle_real_from_vehicle_filtered;
-      pose.world_from_jet = (vehicle_real_from_vehicle_filtered * state.T_body_from_world).inverse();
+      const SE3 T_world_from_body = estimation::jet_filter::get_world_from_body(state);
+      pose.world_from_jet = T_world_from_body * vehicle_real_from_vehicle_filtered.inverse();
 
       const jcc::Vec3 log_translation_world_from_vehicle = pose.world_from_jet.translation();
       const jcc::Vec3 log_rotation_world_from_vehicle = pose.world_from_jet.so3().log();
 
-      std::cout << "log_translation_world_from_vehicle: [" << log_translation_world_from_vehicle[0] << ", "
-                << log_translation_world_from_vehicle[1] << ", " << log_translation_world_from_vehicle[2] << "] "
-                << std::endl;
-
-      std::cout << "log_rotation_world_from_vehicle: [" << log_rotation_world_from_vehicle[0] << ", "
-                << log_rotation_world_from_vehicle[1] << ", " << log_rotation_world_from_vehicle[2] << "] "
-                << std::endl;
-
-      pose.v_world_frame = (vehicle_real_from_vehicle_filtered.so3() * state.T_body_from_world.so3()).inverse() *
+      pose.v_world_frame = (vehicle_real_from_vehicle_filtered.so3() * state.R_world_from_body.inverse()).inverse() *
                            state.eps_dot.head<3>();
-      pose.w_world_frame = (vehicle_real_from_vehicle_filtered.so3() * state.T_body_from_world.so3()).inverse() *
+      pose.w_world_frame = (vehicle_real_from_vehicle_filtered.so3() * state.R_world_from_body.inverse()).inverse() *
                            state.eps_dot.tail<3>();
       pose.timestamp = imu_msg.timestamp;
     }
 
     PoseMessage pose_msg = PoseMessage::from_pose(pose);
-    std::cout << "Transmitting" << std::endl;
     pose_pub_->publish(pose_msg);
   } else {
     std::cout << "No means to queue time" << std::endl;

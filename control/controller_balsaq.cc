@@ -35,6 +35,8 @@ jcc::Vec3 sigmoid(const jcc::Vec3& v) {
 QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pose, const JetStatus& jet_status) {
   JetVaneMapper mapper_;
 
+  const MatNd<3, 3> K = jcc::Vec3(0.3, 0.3, 0.4).asDiagonal();
+
   //
   // Compute the current expected jet force (All servos zero'd)
   //
@@ -50,9 +52,8 @@ QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pos
 
   const jcc::Vec3 desired_force_jet_frame = wrench_for_zero.force_N;
 
-  const double gain_p = 0.1;
   const SO3 target_from_jet = world_from_target.inverse() * pose.world_from_jet.so3();
-  const jcc::Vec3 desired_torque_jet_frame = gain_p * sigmoid(target_from_jet.log());
+  const jcc::Vec3 desired_torque_jet_frame = -K * target_from_jet.log();
 
   Wrench target_wrench;
   target_wrench.torque_Nm = desired_torque_jet_frame;

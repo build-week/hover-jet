@@ -1,4 +1,6 @@
 //%bin(gonogo_bq_main)
+//%deps(balsa_queue)
+//%deps(message)
 
 #include "infrastructure/gonogo/gonogo_bq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"

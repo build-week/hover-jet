@@ -42,13 +42,12 @@ class FilterVizBq : public BalsaQ {
   std::shared_ptr<viewer::SimpleGeometry> pose_geo_;
   std::shared_ptr<viewer::SimpleGeometry> servo_geo_;
 
-  std::shared_ptr<viewer::SimpleGeometry> persistent_;
-
   struct AccelStuff {
     jcc::Vec3 accel_mpss;
     jcc::Vec3 gyro_radps;
     jcc::Vec3 mag_utesla;
   };
+
   std::deque<AccelStuff> accel_history_;
   std::deque<SE3> fiducial_history_;
   std::deque<jcc::Vec3> mag_utesla_;
