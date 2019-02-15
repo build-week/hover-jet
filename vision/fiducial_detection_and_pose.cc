@@ -8,7 +8,7 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   const auto params = cv::aruco::DetectorParameters::create();
-  params->doCornerRefinement = true;
+  params->cornerRefinementMethod = cv::aruco::CornerRefineMethod::CORNER_REFINE_SUBPIX;
   params->cornerRefinementWinSize = 5;
 
   // TODO isaac make aruco_dictionary parameter of this method to allow for
