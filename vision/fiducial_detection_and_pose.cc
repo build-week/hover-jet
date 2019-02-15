@@ -14,6 +14,7 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   // TODO isaac make aruco_dictionary parameter of this method to allow for
   // multiple unique boards
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
+  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), corners, ids, objPoints, imgPoints) ;
 
   // TODO isaac move these to config and make them
   const cv::Mat camera_matrix =
