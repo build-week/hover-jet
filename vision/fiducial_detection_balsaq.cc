@@ -32,7 +32,7 @@ void FidicualDetectionBq::loop() {
     gonogo_.go();
     last_msg_recvd_timestamp_ = get_current_time();
     const cv::Mat camera_frame = get_image_mat(image_message);
-    const std::optional<SE3> board_from_camera = detect_board(camera_frame);
+    const std::optional<SE3> board_from_camera = estimate_board_center_from_camera_from_image(camera_frame);
     if (board_from_camera) {
       // publish a fiducial message using *board_from_camera
       FiducialDetectionMessage detection_message;

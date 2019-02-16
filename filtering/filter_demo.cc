@@ -438,7 +438,7 @@ void go() {
       if (reader.read_next_message("camera_image_channel", cam_msg)) {
         const auto image = get_image_mat(cam_msg);
 
-        const auto result = detect_board(image);
+        const auto result = estimate_board_center_from_camera_from_image(image);
         if (result) {
           const SE3 world_from_camera = *result;
 

@@ -4,7 +4,8 @@
 
 namespace jet {
 
-std::optional<SE3> detect_board(const cv::Mat &input_image) {
+
+std::tuple<std::vector<int> , std::vector<std::vector<cv::Point2f>>> get_ids_and_corners(const cv::Mat &input_image){
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   const auto params = cv::aruco::DetectorParameters::create();
@@ -14,7 +15,23 @@ std::optional<SE3> detect_board(const cv::Mat &input_image) {
   // TODO isaac make aruco_dictionary parameter of this method to allow for
   // multiple unique boards
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
+  return std::make_tuple(ids, corners);
+}
+
+std::tuple<cv::Mat, cv::Mat> obj_points_img_points_from_image(const cv::Mat &input_image){
+  const auto ids_corners = get_ids_and_corners(input_image);
+  const auto ids = std::get<0>(ids_corners);
+  const auto corners = std::get<1>(ids_corners);
+  cv::Mat objPoints, imgPoints;
   cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), corners, ids, objPoints, imgPoints) ;
+  return std::make_tuple(objPoints, imgPoints);
+}
+
+std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &input_image) {
+  
+  const auto ids_corners = get_ids_and_corners(input_image);
+  const auto ids = std::get<0>(ids_corners);
+  const auto corners = std::get<1>(ids_corners);
 
   // TODO isaac move these to config and make them
   const cv::Mat camera_matrix =
