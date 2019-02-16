@@ -1,3 +1,5 @@
+#!/bin/bash
+
 get_image_name() {
     # The bash lines below are left intentionally commented
     # They will be returned when it is time to return to the latest docker image

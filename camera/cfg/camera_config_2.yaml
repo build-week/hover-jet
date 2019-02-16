@@ -1,6 +1,6 @@
 serial_number: CA38DB5E
 v4l_path: usb-046d_Logitech_Webcam_C930e_CA38DB5E-video-index0
-note: these cal values were copied from camera 0
+# note: these cal values were copied from camera 0
 camera_matrix: [499.7749869454186, 0, 309.3792706235992,
                 0, 496.9300965132637, 241.6934416030273, 
                 0, 0, 1]

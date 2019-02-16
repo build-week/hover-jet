@@ -49,6 +49,7 @@ void MessageLoggerBQ::init(int argc, char *argv[]) {
   for (const std::string& channel_name : channels_) {
     subscribers_.emplace_back(channel_name, make_subscriber(channel_name));
   }
+  gonogo_.go();
 }
 
 void MessageLoggerBQ::loop() {

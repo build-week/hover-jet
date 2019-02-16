@@ -30,6 +30,7 @@ void TurbineInterfaceBQ::init(int argc, char* argv[]) {
   turbine_ignition_subscriber_ = make_subscriber("turbine_ignition");
   turbine_throttle_setting_subscriber_ = make_subscriber("turbine_set_throttle");
   turbine_state_publisher_ = make_publisher("turbine_state");
+  go_no_go_subscriber_ = make_subscriber("GoNoGo_output");
 
   turbine_ptr_ = std::make_unique<JetCatTurbine>(SERIAL_PORT_PATH);
 }
@@ -77,11 +78,7 @@ void TurbineInterfaceBQ::set_target_rpm(uint32_t target_rpm) {
 void TurbineInterfaceBQ::loop() {
   // Check to see if we have any new commands we should send to the turbine.
   TurbineIgnitionCommandMessage ignition_command_message;
-  bool ignition_command_found = false;
-  while (turbine_ignition_subscriber_->read(ignition_command_message, 0)) {
-    ignition_command_found = true;
-  }
-  if (ignition_command_found) {
+  if (turbine_ignition_subscriber_->read_latest(ignition_command_message, 0)) {
     if (ignition_command_message.command == IgnitionCommand::START) {
       start_turbine();
     } else if (ignition_command_message.command == IgnitionCommand::STOP) {
@@ -89,13 +86,15 @@ void TurbineInterfaceBQ::loop() {
     }
   }
 
-  ThrottleCommandMessage throttle_command_message;
-  bool throttle_command_found = false;
-  while (turbine_throttle_setting_subscriber_->read(throttle_command_message, 0)) {
-    throttle_command_found = true;
-  }
-  if (throttle_command_found) {
-    set_thrust_percent(throttle_command_message.throttle_percent);
+  go_no_go_subscriber_->read_latest(go_nogo_message_, 0);
+
+  if (go_nogo_message_.ready) {
+    ThrottleCommandMessage throttle_command_message;
+    if (turbine_throttle_setting_subscriber_->read_latest(throttle_command_message, 0)) {
+      set_thrust_percent(throttle_command_message.throttle_percent);
+    }
+  } else {
+    set_thrust_percent(0);
   }
 
   std::optional<JetCat::LiveValues> live_values = turbine_ptr_->get_live_values();

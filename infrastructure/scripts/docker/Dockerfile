@@ -27,7 +27,6 @@ RUN apt install libxmu-dev libxi-dev -y
 RUN apt install libassimp-dev -y
 RUN apt install libyaml-cpp-dev -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-RUN apt install libopencv-dev python-opencv -y
 RUN apt install libssl-dev -y
 RUN apt install libreadline6-dev -y
 RUN apt install libserial-dev -y
@@ -44,7 +43,7 @@ RUN mkdir /var/log/supervisord/
 # Python
 #
 
-RUN apt install python-pip ipython -y
+RUN apt install pkg-config python-pip ipython -y
 RUN pip install --upgrade pip
 RUN apt install libfreetype6-dev -y
 RUN pip install matplotlib
@@ -55,7 +54,7 @@ RUN apt install python-tk -y
 #
 # Gl Viewer Support
 #
-
+RUN apt update
 RUN apt install xorg-dev libglu1-mesa-dev -y
 RUN apt install libglfw3 libglfw3-dev libglew-dev -y
 RUN apt install freeglut3-dev -y
@@ -94,7 +93,7 @@ RUN rm -r paho.mqtt.cpp
 #
 
 RUN apt install uuid-dev -y
-RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; mkdir build; cd build; cmake ..; make install
+RUN git clone https://github.com/graeme-hill/crossguid.git; cd crossguid; git reset --hard 0f2753174c914bc561504b14c963d179283fe829; mkdir build; cd build; cmake ..; make install
 RUN rm -r crossguid
 
 
@@ -119,3 +118,12 @@ RUN apt install -y autoconf libtool
 RUN git clone https://github.com/martinling/libserialport.git; cd libserialport; ./autogen.sh; ./configure; make; make install;
 RUN rm -r libserialport
 RUN ldconfig
+
+
+#
+# Opencv
+#
+
+RUN cd /; apt install libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev -y
+RUN git clone https://github.com/opencv/opencv_contrib.git --depth=1
+RUN cd opencv_contrib; CONTRIB_PATH=$PWD; git reset --hard a17185c6dc7aa554591ad1be38923232472f8001; cd ..; git clone https://github.com/opencv/opencv.git --depth=1; cd opencv; git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..; make -j3; make install

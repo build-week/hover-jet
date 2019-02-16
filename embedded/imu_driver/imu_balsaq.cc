@@ -15,7 +15,11 @@ void ImuBq::init(int argc, char *argv[]) {
   publisher_ = make_publisher("imu");
   std::cout << "IMU starting" << std::endl;
 
-  imu_driver_.initialize();
+  if (imu_driver_.initialize()) {
+    gonogo_.go();
+  } else {
+    gonogo_.nogo("Failed to intialize IMU driver");
+  }
 }
 
 void ImuBq::loop() {
@@ -38,6 +42,12 @@ void ImuBq::loop() {
   msg.mag_utesla_x = mag_utesla.x();
   msg.mag_utesla_y = mag_utesla.y();
   msg.mag_utesla_z = mag_utesla.z();
+
+  if (msg.accel_mpss_x == 0 && msg.accel_mpss_y == 0 && msg.accel_mpss_z == 0) {
+    gonogo_.nogo("IMU reading all zeroes!");
+  } else {
+    gonogo_.go();
+  }
 
   publisher_->publish(msg);
 }

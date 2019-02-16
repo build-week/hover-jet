@@ -17,7 +17,7 @@ namespace jet {
 namespace embedded {
 
 const std::string i2c_addr = "/dev/i2c-1";
-void ImuDriver::initialize() {
+bool ImuDriver::initialize() {
   const char* c_str = i2c_addr.c_str();
 
   bno_ = std::make_shared<Adafruit_BNO055>(c_str);
@@ -32,10 +32,10 @@ void ImuDriver::initialize() {
     // TODO
     std::cout << "Attempting to reconnect to bno" << std::endl;
     ++tries;
-  } while (!bno_->begin() && (tries < MAX_TRIES));
+  } while (!bno_->begin(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG) && (tries < MAX_TRIES));
 
   if (tries >= MAX_TRIES) {
-    throw std::runtime_error("Failed to connect to the IMU");
+    return false;
   }
 
   std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -71,6 +71,7 @@ void ImuDriver::initialize() {
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
   initialized_ = true;
+  return initialized_;
 }
 
 int ImuDriver::sample_period_ms() const {
