@@ -23,7 +23,9 @@ class MqttSubscriber : public Subscriber {
   std::string mqtt_client_id_;
   std::unique_ptr<mqtt::async_client> mqtt_client_;
   std::unique_ptr<std::thread> connect_thread_;
-  std::atomic<bool> connecting_;
+  std::atomic<bool> connecting_{false};
+
+  const std::string channel_name_;
 
   void async_connect();
   void connect();
