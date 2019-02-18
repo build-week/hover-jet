@@ -14,7 +14,7 @@
 namespace jet {
 
 MqttSubscriber::MqttSubscriber(const std::string& channel_name)
-    : Subscriber(channel_name) {
+    : Subscriber(channel_name), channel_name_(channel_name) {
   if (const char* env_addr = std::getenv("MQTT_ADDRESS")) {
     mqtt_server_address_ = env_addr;
   } else {
@@ -22,8 +22,7 @@ MqttSubscriber::MqttSubscriber(const std::string& channel_name)
   }
 
   mqtt_client_id_ = xg::newGuid().str();
-  mqtt_client_ =
-      std::make_unique<mqtt::async_client>(mqtt_server_address_, mqtt_client_id_);
+  mqtt_client_ = std::make_unique<mqtt::async_client>(mqtt_server_address_, mqtt_client_id_);
 
   async_connect();
 }
@@ -39,12 +38,13 @@ MqttSubscriber::~MqttSubscriber() {
 
 void MqttSubscriber::async_connect() {
   if (connecting_) {
+    std::cerr << channel_name_ << ": Already connecting, giving up" << std::endl;
     return;
   }
   if (connect_thread_) {
     // @Ben: Leaving this here for a debug print in case the crash I saw happens again;
     // I believe it's linux trapping a thread fault if this join gets called after detach
-    std::cout << "Attempting Join" << std::endl;
+    std::cerr << channel_name_ << ": Attempting Join" << std::endl;
     connect_thread_->join();
   }
   connect_thread_ = std::make_unique<std::thread>([this]() { connect(); });
@@ -58,9 +58,16 @@ void MqttSubscriber::connect() {
   //       from two threads
   // TODO(jake, ben): Figure that out
   if (connecting_) {
+    std::cerr << channel_name_ << ": Already connecting, not attempting" << std::endl;
     return;
   }
   connecting_ = true;
+  // Check if we're connected once we've claimed the connection atomic
+  if (mqtt_client_->is_connected()) {
+    std::cerr << channel_name_ << ": Already connected, not attempting reconnect" << std::endl;
+    return;
+  }
+
   const int QOS = 1;
   try {
     mqtt::connect_options connection_options;
@@ -76,14 +83,16 @@ void MqttSubscriber::connect() {
 }
 
 bool MqttSubscriber::get_mqtt_message(mqtt::const_message_ptr& mqtt_message_ptr, const Duration& timeout) {
-  if (!mqtt_client_->is_connected() || connecting_) {
-    std::cerr << "Not connected. Skipping read." << std::endl;
+  const bool is_connected = mqtt_client_->is_connected();
+  if (!is_connected || connecting_) {
+    std::cerr << channel_name_
+              << ": Not connected. Skipping read. Reason: " << (connecting_ ? "Connecting" : "Not connected")
+              << std::endl;
     connect();
     return false;
   }
 
-  bool success = mqtt_client_->try_consume_message_for(
-      &mqtt_message_ptr, std::chrono::nanoseconds(timeout));
+  bool success = mqtt_client_->try_consume_message_for(&mqtt_message_ptr, std::chrono::nanoseconds(timeout));
   if (!success) {
     return success;
   } else if (!mqtt_message_ptr) {
