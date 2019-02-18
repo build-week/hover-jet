@@ -24,6 +24,7 @@ class FilterVizBq : public BalsaQ {
 
   void draw_sensors();
   void draw_pose();
+  void draw_servos();
 
   // Every millisecond
   const static uint loop_delay_microseconds = 10000;
@@ -32,11 +33,15 @@ class FilterVizBq : public BalsaQ {
   SubscriberPtr fiducial_sub_;
   SubscriberPtr imu_sub_;
   SubscriberPtr pose_sub_;
+  SubscriberPtr servo_sub_;
 
   SE3 tag_from_world_;
   SE3 camera_from_body_;
 
-  std::shared_ptr<viewer::SimpleGeometry> geo_;
+  std::shared_ptr<viewer::SimpleGeometry> sensor_geo_;
+  std::shared_ptr<viewer::SimpleGeometry> pose_geo_;
+  std::shared_ptr<viewer::SimpleGeometry> servo_geo_;
+
   std::shared_ptr<viewer::SimpleGeometry> persistent_;
 
   struct AccelStuff {

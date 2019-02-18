@@ -1,3 +1,5 @@
+//%bin(gonogo_bq_main)
+
 //%deps(balsa_queue)
 //%deps(message)
 
