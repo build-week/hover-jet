@@ -2,8 +2,7 @@
 #include <cassert>
 #include <cstdlib>
 
-namespace jet {
-
+namespace jet { 
 
 std::tuple<std::vector<int> , std::vector<std::vector<cv::Point2f>>> get_ids_and_corners(const cv::Mat &input_image){
   std::vector<int> ids;
@@ -18,13 +17,21 @@ std::tuple<std::vector<int> , std::vector<std::vector<cv::Point2f>>> get_ids_and
   return std::make_tuple(ids, corners);
 }
 
-std::tuple<cv::Mat, cv::Mat> obj_points_img_points_from_image(const cv::Mat &input_image){
+std::vector<boardPointImagePointAssociation> obj_points_img_points_from_image(const cv::Mat &input_image){
   const auto ids_corners = get_ids_and_corners(input_image);
   const auto ids = std::get<0>(ids_corners);
   const auto corners = std::get<1>(ids_corners);
-  cv::Mat objPoints, imgPoints;
-  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), corners, ids, objPoints, imgPoints) ;
-  return std::make_tuple(objPoints, imgPoints);
+  cv::Mat boardPoints, imgPoints;
+  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), corners, ids, boardPoints, imgPoints);
+  std::vector<boardPointImagePointAssociation> result;
+  for (int i=0; i < boardPoints.rows; i++){
+    boardPointImagePointAssociation association = {};
+    boardPoints.at<float>(i, 0);
+    association.point_board_space = jcc::Vec2(boardPoints.at<float>(i, 0), boardPoints.at<float>(i, 1));
+    association.point_image_space = jcc::Vec2(imgPoints.at<float>(i, 0), imgPoints.at<float>(i, 1));
+    result.push_back(association);
+  }
+  return result;
 }
 
 std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &input_image) {
@@ -47,7 +54,8 @@ std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &i
   cv::Mat tvec;
 
   const int num_fiducials_detected_on_board =
-      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(), camera_matrix, distortion_coefficients, rvec, tvec);
+      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(), camera_matrix,
+                                   distortion_coefficients, rvec, tvec);
   (void)num_fiducials_detected_on_board;
 
   if (tvec.size().height > 0) {
