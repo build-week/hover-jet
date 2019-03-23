@@ -76,5 +76,5 @@ void ServoDriver::set_angle_radians(
 }
 
 void ServoDriver::shutdown_pwm() {
-  pwm_driver_->sleep(true);
+  pwm_driver_->disable_servos(true);
 }

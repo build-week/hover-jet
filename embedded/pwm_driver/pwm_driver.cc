@@ -50,8 +50,8 @@ PwmDriver::PwmDriver(int i2cHandle) {
   // TODO check if pwm driver can be found
   // first we want to reset the device
   reset();
-  //then make sure it's not asleep
-  sleep(false);
+  //then make sure the servos are enabled
+  disable_servos(false);
   // then set a default frequency
   set_pwm_freq(100);
 }
@@ -104,7 +104,7 @@ void PwmDriver::enable_auto_increment(bool enable) {
   }
 }
 
-void PwmDriver::sleep(bool sleep) {
+void PwmDriver::disable_servos(bool sleep) {
   if (sleep) {
     // 1 in this bit register is low power, oscillator off
     set_register_bit(PCA9685_MODE1, 4);
