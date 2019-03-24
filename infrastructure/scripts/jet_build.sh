@@ -35,7 +35,7 @@ J_NUM=`expr $(nproc) - 1`
 
 TARGETS="${@:1}"
 
-docker run -it -v $JET_REPO_PATH:/jet --net=host --privileged $FULL_IMAGE_NAME bash -c "cd /jet; cmake .; make -j $J_NUM $TARGETS;"
+docker run -it -v $JET_REPO_PATH:/jet --net=host --privileged $FULL_IMAGE_NAME bash -c "mkdir -p /jet/bin; cd /jet/bin; cmake ..; make -j $J_NUM $TARGETS;"
 if [ $? -ne 0 ]; then
     exit $?
 fi
