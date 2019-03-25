@@ -20,7 +20,14 @@ class JetVaneMapper {
 
   MappingResult map_wrench(const Wrench& target_wrench, const JetStatus& current_jet_status) const;
 
-  Wrench wrench_for_status(const QuadraframeStatus&, const JetStatus&) const;
+  // qframe_status: The current status of the quadraframe assembly
+  // jet_status: The current status of the engine itself
+  // relative_force_weight: The weighting for achievement of *force* vs. achievement of torque
+  //                        - For exactly feasible wrenches, this will generally have no effect
+  //                        - For infeasible wrenches, this will bias towards matching torque instead of force
+  Wrench wrench_for_status(const QuadraframeStatus& qframe_status,
+                           const JetStatus& jet_status,
+                           double relative_force_weight) const;
 
  private:
   VaneConfiguration vane_cfg_;

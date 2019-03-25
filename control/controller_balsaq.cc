@@ -57,7 +57,8 @@ QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pos
   target_wrench.torque_Nm = desired_torque_jet_frame;
   target_wrench.force_N = desired_force_jet_frame;
 
-  const auto result = mapper_.map_wrench(target_wrench, jet_status);
+  constexpr double FORCE_WEIGHTING = 0.1;
+  const auto result = mapper_.map_wrench(target_wrench, jet_status, FORCE_WEIGHTING);
 
   std::cout << "\n" << std::endl;
   std::cout << "Want (Torque Nm): " << target_wrench.torque_Nm.transpose() << std::endl;
