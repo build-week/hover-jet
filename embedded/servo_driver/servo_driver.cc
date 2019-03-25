@@ -74,3 +74,7 @@ void ServoDriver::set_angle_radians(
   float half_range = (calibrated_max_ - calibrated_center_);
   set_percentage(calibrated_center_ + half_range * angleFraction);
 }
+
+void ServoDriver::shutdown_pwm() {
+  pwm_driver_->disable_servos(true);
+}

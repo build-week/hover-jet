@@ -50,6 +50,8 @@ void ServoBq::loop() {
   }
 }
 void ServoBq::shutdown() {
+  std::cout << "Servo process shutting down." << std::endl;
+  servos.at(0).shutdown_pwm();
 }
 }  // namespace jet
 
