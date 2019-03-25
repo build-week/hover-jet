@@ -24,11 +24,17 @@ void GoNoGo::go() {
 void GoNoGo::nogo(const std::string &status_message) {
     gonogomessage_.ready = false;
     gonogomessage_.status_message = status_message;
+
+    // If it's changing state
+    if (gonogomessage_.ready){
+      std::cout << gonogomessage_.bq_name << ": go=" << gonogomessage_.ready
+                << ", msg=" << gonogomessage_.status_message << std::endl;
+    }
+
     publish_status();
 }
 
 void GoNoGo::publish_status() {
-    std::cout << gonogomessage_.bq_name << ": go=" << gonogomessage_.ready << ", msg=" << gonogomessage_.status_message << std::endl;
     publisher_->publish(gonogomessage_);
 }
 
