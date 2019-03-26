@@ -4,8 +4,12 @@
 #include "infrastructure/time/timestamp.hh"
 #include "infrastructure/gonogo/gonogo.hh"
 
+#include <yaml-cpp/yaml.h>
+
 #include <stdint.h>
 #include <memory>
+
+//%deps(yaml-cpp)
 
 namespace jet {
 
