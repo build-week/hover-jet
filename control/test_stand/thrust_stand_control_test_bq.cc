@@ -4,7 +4,6 @@
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 // %deps(yaml-cpp)
-#include <yaml-cpp/yaml.h>
 #include <cassert>
 
 namespace jet {

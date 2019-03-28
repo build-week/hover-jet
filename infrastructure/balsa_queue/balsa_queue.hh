@@ -3,6 +3,7 @@
 //%deps(yaml-cpp)
 
 #include "infrastructure/comms/comms_factory.hh"
+#include "infrastructure/config/config.hh"
 #include "infrastructure/time/timestamp.hh"
 #include "infrastructure/gonogo/gonogo.hh"
 
@@ -12,8 +13,6 @@
 #include <memory>
 
 namespace jet {
-
-using Config = YAML::Node;
 
 /// Balsa Queue: A base class that allows all processes on the balsa jet to share a common
 /// structure and common event loop implementation.

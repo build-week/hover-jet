@@ -17,8 +17,8 @@ namespace jet {
 
 void ServoBq::init(const Config& config) {
   subscriber = make_subscriber("servo_command_channel");
-  for (auto& config_path : config["config_paths"]) {
-    ServoDriver servo = ServoDriver(config_path.as<std::string>());  // TODO create standard config dir
+  for (auto& servo_config : config) {
+    ServoDriver servo = ServoDriver(servo_config.second);
     servos.push_back(servo);
   }
 }

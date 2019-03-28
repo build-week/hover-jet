@@ -7,7 +7,8 @@
 constexpr int PWM_FREQUENCY = 330;
 
 int main() {
-  ServoDriver servo1("cfg/servo_cfg0.yaml");
+  Config servo_configs = YAML::LoadFile("cfg/servo_configs.yaml");
+  ServoDriver servo1(servo_configs[0]);
 
   std::vector<ServoDriver> servos;
   servos.push_back(servo1);
