@@ -46,6 +46,9 @@ void FidicualDetectionBq::loop() {
 
       detection_message.timestamp = image_message.timestamp;
 
+      std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(camera_frame);
+      detection_message.board_points_image_points = board_point_assocs;
+
       publisher_->publish(detection_message);
       // reconstruct with eg
       // board_from_camera = SE3::exp(Eigen::Map<jcc::Vec6>>(array));

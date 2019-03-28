@@ -16,10 +16,10 @@ struct FiducialDetectionMessage : Message {
 
   // Timestamp of the image that was used to generate this
   Timestamp timestamp;
-
+  std::vector<BoardPointImagePointAssociation> board_points_image_points;
   SE3 fiducial_from_camera() const;
 
-  MESSAGE(FiducialDetectionMessage, fiducial_from_camera_log, timestamp);
+  MESSAGE(FiducialDetectionMessage, fiducial_from_camera_log, timestamp,board_points_image_points);
 };
 
 }  //  namespace jet
