@@ -16,7 +16,7 @@ LoadCellReceiver::LoadCellReceiver(const std::string &path) : serial_port_path_(
     sp_set_config_flowcontrol(config, SP_FLOWCONTROL_NONE);
     sp_set_config(serial_port_ptr_, config);
   } else {
-    std::cerr << "Could not open serial port to load cells." << std::endl;
+    std::cerr << "(Error): Could not open serial port to load cells." << std::endl;
     std::abort();
   }
 }
@@ -51,17 +51,16 @@ std::optional<ForceReading> LoadCellReceiver::receive() {
 
   const char sensor_id_byte = read_bytes(1)[0];
   const uint8_t sensor_id = sensor_id_byte - static_cast<uint8_t>('0');
-  std::cout << "sensor_id: " << static_cast<int>(sensor_id) << std::endl;
   if (sensor_id < 0 || sensor_id > 5) {
     // Invalid
-    std::cout << "Failed to get valid sensor id byte" << std::endl;
+    std::cerr << "(Error): Failed to get valid sensor id byte" << std::endl;
     return {};
   }
 
   // Comma
   const char comma_byte = read_bytes(1)[0];
   if (comma_byte != ',') {
-    std::cout << "Expected comma" << std::endl;
+    std::cerr << "(Error): Expected comma" << std::endl;
     return {};
   }
 
@@ -77,12 +76,10 @@ std::optional<ForceReading> LoadCellReceiver::receive() {
 
   const char terminator = read_bytes(1)[0];
   if (terminator != ';') {
-    std::cout << "Failed to get semicolon" << std::endl;
+    std::cerr << "(Error): Failed to get semicolon" << std::endl;
     return {};
   }
 
-  std::cout << "Got: " << static_cast<int>(sensor_id) << ": " << load_cell_value
-            << std::endl;
   return ForceReading({.id = sensor_id, .value = load_cell_value});
 }
 
