@@ -24,7 +24,7 @@ TurbineInterfaceBQ::TurbineInterfaceBQ() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void TurbineInterfaceBQ::init(int argc, char* argv[]) {
+void TurbineInterfaceBQ::init(const Config& config) {
   // Only send commands to the turbine every 200ms.
   loop_delay_microseconds = 200000;
   turbine_ignition_subscriber_ = make_subscriber("turbine_ignition");

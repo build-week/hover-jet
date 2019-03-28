@@ -10,7 +10,7 @@ namespace jet {
 class TurbineInterfaceBQ : public BalsaQ {
  public:
   TurbineInterfaceBQ();
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

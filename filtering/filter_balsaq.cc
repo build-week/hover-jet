@@ -30,7 +30,7 @@ estimation::TimePoint to_time_point(const Timestamp& ts) {
   return time_point;
 }
 
-void FilterBq::init(int argc, char* argv[]) {
+void FilterBq::init(const Config& config) {
   std::cout << "Subscribing IMU" << std::endl;
   imu_sub_ = make_subscriber("imu");
   std::cout << "Subscribing Fiducial" << std::endl;

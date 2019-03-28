@@ -10,7 +10,7 @@ namespace jet {
 class SingleServoCommandBq : public BalsaQ {
  public:
   SingleServoCommandBq();
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

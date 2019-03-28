@@ -24,7 +24,8 @@ void signal_handler(int s) {
     balsa_queue.gonogo_.setName(#bq_type);                               \
     balsa_queue.gonogo_.nogo("init");                                    \
     balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
-    balsa_queue.init(argc, argv);                                        \
+    YAML::Node config = YAML::LoadFile(argv[1]);                         \
+    balsa_queue.init(config);                                            \
     while (!shutdown) {                                                  \
       balsa_queue.loop();                                                \
       usleep(balsa_queue.loop_delay_microseconds);                       \

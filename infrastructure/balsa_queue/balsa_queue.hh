@@ -1,13 +1,19 @@
 #pragma once
 
+//%deps(yaml-cpp)
+
 #include "infrastructure/comms/comms_factory.hh"
 #include "infrastructure/time/timestamp.hh"
 #include "infrastructure/gonogo/gonogo.hh"
+
+#include <yaml-cpp/yaml.h>
 
 #include <stdint.h>
 #include <memory>
 
 namespace jet {
+
+using Config = YAML::Node;
 
 /// Balsa Queue: A base class that allows all processes on the balsa jet to share a common
 /// structure and common event loop implementation.
@@ -16,7 +22,7 @@ class BalsaQ {
   uint loop_delay_microseconds = 10000;
   std::string bq_name_;
   BalsaQ() = default;
-  virtual void init(int argc, char *argv[]) = 0;
+  virtual void init(const Config& config) = 0;
   virtual void loop() = 0;
   virtual void shutdown() = 0;
 

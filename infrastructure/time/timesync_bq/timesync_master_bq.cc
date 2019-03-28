@@ -13,7 +13,7 @@
 namespace jet {
 
 
-void TimesyncMasterBq::init(int argc, char *argv[]) {
+void TimesyncMasterBq::init(const Config& config) {
   publisher_ = make_publisher("timesync_master");
   gonogo_.go();
 }

@@ -5,7 +5,7 @@ namespace jet {
 class TurbineMonitorUtilityBQ : public BalsaQ {
  public:
   TurbineMonitorUtilityBQ() = default;
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

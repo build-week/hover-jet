@@ -12,7 +12,7 @@
 
 namespace jet {
 
-void SubscriberDemoBq::init(int argc, char *argv[]) {
+void SubscriberDemoBq::init(const Config& config) {
   subscriber_ = make_subscriber("demo_channel_name");
 }
 

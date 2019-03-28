@@ -20,7 +20,7 @@ LoggedMessagePlayerBQ::LoggedMessagePlayerBQ() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void LoggedMessagePlayerBQ::init(int argc, char *argv[]) {
+void LoggedMessagePlayerBQ::init(const Config& config) {
   loop_delay_microseconds = 100;
   std::string log_path;
   if (const char* env_log_path = std::getenv("LOG_PATH")) {

@@ -13,7 +13,7 @@
 namespace jet {
 
 
-void PublisherDemoBq::init(int argc, char *argv[]) {
+void PublisherDemoBq::init(const Config& config) {
   publisher_ = make_publisher("demo_channel_name");
 }
 

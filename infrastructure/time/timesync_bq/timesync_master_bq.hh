@@ -7,7 +7,7 @@ namespace jet {
 class TimesyncMasterBq : public BalsaQ {
  public:
   TimesyncMasterBq() = default;
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

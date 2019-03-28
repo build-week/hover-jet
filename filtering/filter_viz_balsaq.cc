@@ -34,7 +34,7 @@ estimation::TimePoint to_time_point(const Timestamp& ts) {
   return time_point;
 }
 
-void FilterVizBq::init(int argc, char* argv[]) {
+void FilterVizBq::init(const Config& config) {
   const auto view = viewer::get_window3d("Filter Debug");
   view->set_target_from_world(SE3(SO3::exp(Eigen::Vector3d(-3.1415 * 0.5, 0.0, 0.0)), jcc::Vec3(-1.0, 0.0, -1.0)));
   const auto background = view->add_primitive<viewer::SimpleGeometry>();

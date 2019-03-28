@@ -11,7 +11,7 @@
 namespace jet {
 namespace embedded {
 
-void ImuBq::init(int argc, char *argv[]) {
+void ImuBq::init(const Config& config) {
   publisher_ = make_publisher("imu");
   std::cout << "IMU starting" << std::endl;
 

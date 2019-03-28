@@ -14,7 +14,7 @@
 
 namespace jet {
 
-void FidicualDetectionBq::init(int argc, char *argv[]) {
+void FidicualDetectionBq::init(const Config& config) {
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 }
