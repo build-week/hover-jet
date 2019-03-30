@@ -11,7 +11,7 @@ void go() {
 
   JetStatus jet_status({.throttle = 1.0});
 
-  mapper.map_wrench(wrench, jet_status);
+  mapper.map_wrench(wrench, jet_status, 1.0);
 }
 
 }  // namespace control
