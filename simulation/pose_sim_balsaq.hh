@@ -12,7 +12,7 @@ namespace simulation {
 class PoseSimulatorBq : public BalsaQ {
  public:
   PoseSimulatorBq();
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 
