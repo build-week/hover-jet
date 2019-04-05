@@ -79,7 +79,7 @@ ControllerBq::ControllerBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void ControllerBq::init(int argc, char* argv[]) {
+void ControllerBq::init(const Config& config) {
   std::cout << "Subscribing Roll" << std::endl;
   roll_sub_ = make_subscriber("joystick_roll");
 

@@ -15,7 +15,7 @@ namespace jet {
 
 constexpr double WEBCAM_EXPOSURE = 0.01;
 
-void CameraBq::init(int argc, char *argv[]) {
+void CameraBq::init(const Config& config) {
   cap = cv::VideoCapture(0);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);

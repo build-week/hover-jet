@@ -18,7 +18,7 @@ namespace embedded {
 class FilterVizBq : public BalsaQ {
  public:
   FilterVizBq();
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

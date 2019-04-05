@@ -15,13 +15,10 @@
 
 namespace jet {
 
-void ServoBq::init(int argc, char* argv[]) {
-  assert(argc > 1);
+void ServoBq::init(const Config& config) {
   subscriber = make_subscriber("servo_command_channel");
-  const int n_servos = argc - 1;
-  for (int i = 0; i < n_servos; i++) {
-    std::string config_path = argv[1 + i];
-    ServoDriver servo = ServoDriver(config_path);  // TODO create standard config dir
+  for (auto& servo_config : config) {
+    ServoDriver servo = ServoDriver(servo_config.second);
     servos.push_back(servo);
   }
 }
@@ -38,7 +35,7 @@ void ServoBq::loop() {
   if (got_msg) {
     gonogo_.go();
     last_msg_recvd_timestamp_ = get_current_time();
-    for (int i = 0; i < message.servo_indices.size(); i++) {
+    for (uint i = 0; i < message.servo_indices.size(); i++) {
       auto servo_index = message.servo_indices.at(i);
       auto target_radian = message.target_radians.at(i);
       assert(servo_index < servos.size());

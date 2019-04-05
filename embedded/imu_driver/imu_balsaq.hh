@@ -11,7 +11,7 @@ namespace embedded {
 class ImuBq : public BalsaQ {
  public:
   ImuBq() = default;
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

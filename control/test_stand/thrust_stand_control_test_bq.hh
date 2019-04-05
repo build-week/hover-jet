@@ -29,7 +29,7 @@ class ThrustStandControlTestBq : public BalsaQ {
   // Each command is separated from the previous by ~25ms, governed by this bq's loop time
   // Yes, that will make these sequences *huge*
   //
-  void init(int argc, char *argv[]) override;
+  void init(const Config& config) override;
   void loop() override;
   void shutdown() override;
 

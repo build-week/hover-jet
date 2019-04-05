@@ -10,7 +10,7 @@ namespace jet {
 class LoggedMessagePlayerBQ : public BalsaQ {
  public:
   LoggedMessagePlayerBQ();
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

@@ -4,7 +4,6 @@
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
 // %deps(yaml-cpp)
-#include <yaml-cpp/yaml.h>
 #include <cassert>
 
 namespace jet {
@@ -22,15 +21,12 @@ QuadraframeStatus servo_commands_from_angle_list(const YAML::Node& yml_node) {
 }
 }  // namespace
 
-void ThrustStandControlTestBq::init(int argc, char* argv[]) {
+void ThrustStandControlTestBq::init(const Config& config) {
   //
   // Read configuration
   //
 
-  assert(argc == 2);
-  const std::string config_path = argv[1];
-  const YAML::Node yml_node = YAML::LoadFile(config_path);
-  for (const auto& command : yml_node["commands"]) {
+  for (const auto& command : config["commands"]) {
     const auto qframe_status = servo_commands_from_angle_list(command);
     command_sequence_.push_back(qframe_status);
   }

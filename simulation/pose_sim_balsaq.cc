@@ -17,7 +17,7 @@ PoseSimulatorBq::PoseSimulatorBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void PoseSimulatorBq::init(int argc, char* argv[]) {
+void PoseSimulatorBq::init(const Config& config) {
   std::cout << "Subscribing IMU" << std::endl;
   imu_sub_ = make_subscriber("imu");
 

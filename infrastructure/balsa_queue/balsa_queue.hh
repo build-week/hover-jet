@@ -1,8 +1,13 @@
 #pragma once
 
+//%deps(yaml-cpp)
+
 #include "infrastructure/comms/comms_factory.hh"
+#include "infrastructure/config/config.hh"
 #include "infrastructure/time/timestamp.hh"
 #include "infrastructure/gonogo/gonogo.hh"
+
+#include <yaml-cpp/yaml.h>
 
 #include <stdint.h>
 #include <memory>
@@ -16,7 +21,7 @@ class BalsaQ {
   uint loop_delay_microseconds = 10000;
   std::string bq_name_;
   BalsaQ() = default;
-  virtual void init(int argc, char *argv[]) = 0;
+  virtual void init(const Config& config) = 0;
   virtual void loop() = 0;
   virtual void shutdown() = 0;
 

@@ -11,7 +11,7 @@ namespace control {
 class ControllerBq : public BalsaQ {
  public:
   ControllerBq();
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

@@ -12,23 +12,32 @@ void signal_handler(int s) {
   shutdown = true;
 }
 
-#define BALSA_QUEUE_MAIN_FUNCTION(bq_type)                               \
-  int main(int argc, char *argv[]) {                                     \
-    struct sigaction sigIntHandler;                                      \
-    sigIntHandler.sa_handler = signal_handler;                           \
-    sigemptyset(&sigIntHandler.sa_mask);                                 \
-    sigIntHandler.sa_flags = 0;                                          \
-    sigaction(SIGINT, &sigIntHandler, NULL);                             \
-    bq_type balsa_queue = bq_type();                                     \
-    balsa_queue.bq_name_ = #bq_type;                                     \
-    balsa_queue.gonogo_.setName(#bq_type);                               \
-    balsa_queue.gonogo_.nogo("init");                                    \
+#define BALSA_QUEUE_MAIN_FUNCTION(bq_type)                                    \
+  int main(int argc, char *argv[]) {                                          \
+    struct sigaction sigIntHandler;                                           \
+    sigIntHandler.sa_handler = signal_handler;                                \
+    sigemptyset(&sigIntHandler.sa_mask);                                      \
+    sigIntHandler.sa_flags = 0;                                               \
+    sigaction(SIGINT, &sigIntHandler, NULL);                                  \
+    bq_type balsa_queue = bq_type();                                          \
+    balsa_queue.bq_name_ = #bq_type;                                          \
+    balsa_queue.gonogo_.setName(#bq_type);                                    \
+    balsa_queue.gonogo_.nogo("init");                                         \
     balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
-    balsa_queue.init(argc, argv);                                        \
-    while (!shutdown) {                                                  \
-      balsa_queue.loop();                                                \
-      usleep(balsa_queue.loop_delay_microseconds);                       \
-    }                                                                    \
-    balsa_queue.shutdown();                                              \
-    return 0;                                                            \
+    YAML::Node config;                                                        \
+    if (argc > 1) {                                                           \
+      try {                                                                   \
+        config = YAML::LoadFile(argv[1]);                                     \
+      } catch (YAML::BadFile e) {                                             \
+        std::cerr << "Could not find YAML file " << std::endl;                \
+        config = YAML::Node();                                                \
+      }                                                                       \
+    }                                                                         \
+    balsa_queue.init(config);                                                 \
+    while (!shutdown) {                                                       \
+      balsa_queue.loop();                                                     \
+      usleep(balsa_queue.loop_delay_microseconds);                            \
+    }                                                                         \
+    balsa_queue.shutdown();                                                   \
+    return 0;                                                                 \
   }
