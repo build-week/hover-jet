@@ -45,6 +45,7 @@ QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pos
     all_zeroed.servo_2_angle_rad = 0.0;
     all_zeroed.servo_3_angle_rad = 0.0;
   }
+
   const auto wrench_for_zero = mapper_.wrench_for_status(all_zeroed, jet_status);
 
   const jcc::Vec3 desired_force_jet_frame = wrench_for_zero.force_N;
@@ -57,7 +58,8 @@ QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pos
   target_wrench.torque_Nm = desired_torque_jet_frame;
   target_wrench.force_N = desired_force_jet_frame;
 
-  const auto result = mapper_.map_wrench(target_wrench, jet_status);
+  constexpr double FORCE_WEIGHTING = 0.02;
+  const auto result = mapper_.map_wrench(target_wrench, jet_status, FORCE_WEIGHTING);
 
   std::cout << "\n" << std::endl;
   std::cout << "Want (Torque Nm): " << target_wrench.torque_Nm.transpose() << std::endl;
@@ -77,7 +79,7 @@ ControllerBq::ControllerBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void ControllerBq::init(int argc, char* argv[]) {
+void ControllerBq::init(const Config& config) {
   std::cout << "Subscribing Roll" << std::endl;
   roll_sub_ = make_subscriber("joystick_roll");
 

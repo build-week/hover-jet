@@ -22,10 +22,9 @@ namespace {
 constexpr int PWM_FREQUENCY = 330;
 }
 
-void SingleServoCommandBq::init(int argc, char *argv[]) {
-  assert(argc == 3);
-  int servo_index = atoi(argv[1]);
-  float target_radian = (float)(std::stof(argv[2]));
+void SingleServoCommandBq::init(const Config& config) {
+  int servo_index = config["servo_index"].as<int>();
+  float target_radian = config["target_radian"].as<float>();
 
   const std::string channel_name = "servo_command_channel";
   std::cout << "channel name " << channel_name << std::endl;

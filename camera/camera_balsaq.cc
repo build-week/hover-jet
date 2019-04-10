@@ -2,8 +2,9 @@
 #include "camera/camera_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/time/duration.hh"
+// #include "camera/calibration_manager.hh"
+#include "camera/camera_manager.hh"
 
-#include <chrono>
 #include <cstddef>
 #include <iostream>
 #include <sstream>
@@ -15,9 +16,10 @@ namespace jet {
 
 constexpr double WEBCAM_EXPOSURE = 0.01;
 
-void CameraBq::init(int argc, char *argv[]) {
-  assert(argc == 2);
-  Camera camera = camera_manager_.get_camera(argv[1]);
+void CameraBq::init(const Config& config) {
+  cap = cv::VideoCapture(0);
+  Camera camera;
+  camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   camera_serial_number_ = camera.serial_number;
   cap = cv::VideoCapture(camera.video_index);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);

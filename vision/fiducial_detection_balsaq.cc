@@ -14,7 +14,7 @@
 
 namespace jet {
 
-void FidicualDetectionBq::init(int argc, char *argv[]) {
+void FidicualDetectionBq::init(const Config& config) {
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 }
@@ -31,9 +31,9 @@ void FidicualDetectionBq::loop() {
   if (got_msg) {
     gonogo_.go();
     last_msg_recvd_timestamp_ = get_current_time();
-    const cv::Mat camera_frame = get_image_mat(image_message);
     Calibration camera_calibration = camera_manager_.get_camera(image_message.camera_serial_number).calibration;
-    const std::optional<SE3> board_from_camera = detect_board(camera_frame, camera_calibration);
+    const cv::Mat camera_frame = get_image_mat(image_message);
+    const std::optional<SE3> board_from_camera = estimate_board_center_from_camera_from_image(camera_frame, camera_calibration);
     if (board_from_camera) {
       // publish a fiducial message using *board_from_camera
       FiducialDetectionMessage detection_message;
@@ -45,7 +45,10 @@ void FidicualDetectionBq::loop() {
       detection_message.fiducial_from_camera_log[4] = log_fiducial_from_camera[4];
       detection_message.fiducial_from_camera_log[5] = log_fiducial_from_camera[5];
 
-      detection_message.timestamp = image_message.timestamp;
+      detection_message.timestamp = image_message.header.timestamp_ns;
+
+      std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(camera_frame);
+      detection_message.board_points_image_points = board_point_assocs;
 
       publisher_->publish(detection_message);
       // reconstruct with eg

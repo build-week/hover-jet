@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <memory>
@@ -7,15 +6,12 @@
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 
-//%deps(jet_filter)
-#include "third_party/experiments/estimation/jet/jet_filter.hh"
-
 namespace jet {
-namespace filtering {
+namespace simulation {
 
-class FilterBq : public BalsaQ {
+class PoseSimulatorBq : public BalsaQ {
  public:
-  FilterBq();
+  PoseSimulatorBq();
   void init(const Config& config);
   void loop();
   void shutdown();
@@ -24,15 +20,9 @@ class FilterBq : public BalsaQ {
   const static uint loop_delay_microseconds = 10000;
 
  private:
-  SubscriberPtr fiducial_sub_;
-  SubscriberPtr imu_sub_;
-
   PublisherPtr pose_pub_;
-
-  SE3 camera_from_vehicle_;
-  SE3 tag_from_world_;
-  estimation::jet_filter::JetFilter jf_;
+  SubscriberPtr imu_sub_;
 };
 
-}  // namespace filtering
+}  // namespace simulation
 }  // namespace jet

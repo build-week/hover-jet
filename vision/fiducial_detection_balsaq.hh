@@ -14,7 +14,7 @@ namespace jet {
 class FidicualDetectionBq : public BalsaQ {
  public:
   FidicualDetectionBq() = default;
-  void init(int argc, char *argv[]) override;
+  void init(const Config& config) override;
   void loop() override;
   void shutdown() override;
 

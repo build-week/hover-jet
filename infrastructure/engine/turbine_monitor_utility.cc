@@ -11,7 +11,7 @@
 
 namespace jet {
 
-void TurbineMonitorUtilityBQ::init(int argc, char *argv[]) {
+void TurbineMonitorUtilityBQ::init(const Config& config) {
   turbine_state_subscriber_ = make_subscriber("turbine_state");
 }
 

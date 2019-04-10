@@ -15,7 +15,7 @@
 namespace jet {
 
 
-void TimesyncClientBq::init(int argc, char *argv[]) {
+void TimesyncClientBq::init(const Config& config) {
   publisher_ = make_publisher("timesync_client");
   subscriber_ = make_subscriber("timesync_master");
   // gethostname will return 0 if successful, SOCKET_ERROR otherwise

@@ -57,10 +57,11 @@ int main() {
   }
   clear_screen();
 
-  ServoDriver servo1 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg0.yaml");
-  ServoDriver servo2 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg1.yaml");
-  ServoDriver servo3 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg2.yaml");
-  ServoDriver servo4 = ServoDriver("../embedded/servo_driver/cfg/servo_cfg3.yaml");
+  Config servo_configs = YAML::LoadFile("cfg/servo_configs.yaml");
+  ServoDriver servo1 = ServoDriver(servo_configs[0]);
+  ServoDriver servo2 = ServoDriver(servo_configs[1]);
+  ServoDriver servo3 = ServoDriver(servo_configs[2]);
+  ServoDriver servo4 = ServoDriver(servo_configs[3]);
 
   servos.push_back(servo1);
   servos.push_back(servo2);

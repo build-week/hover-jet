@@ -8,7 +8,7 @@
 namespace jet {
 namespace visualization {
 
-void ThrustStandVisualizerBq::init(int argc, char* argv[]) {
+void ThrustStandVisualizerBq::init(const Config& config) {
   servo_sub_ = make_subscriber("servo_command_channel");
   load_cell_sub_ = make_subscriber("force_sensor_output_channel");
 

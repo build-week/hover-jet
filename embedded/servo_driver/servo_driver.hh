@@ -11,15 +11,17 @@
 #include <string>
 
 #include "embedded/pwm_driver/pwm_driver.hh"
+#include "infrastructure/config/config.hh"
 #include "third_party/i2c/i2c.h"
 
 class ServoDriver {
  public:
-  ServoDriver(const std::string &config_path);
+  ServoDriver(const Config& config);
   void set_percentage(float percentage);
   float get_percentage() const;
   int get_servo_index() const;
   void set_angle_radians(float angle);
+  void shutdown_pwm();
 
  private:
   int servo_index_ = -1;

@@ -8,7 +8,7 @@ namespace jet {
 class TimesyncClientBq : public BalsaQ {
  public:
   TimesyncClientBq() = default;
-  void init(int argc, char *argv[]);
+  void init(const Config& config);
   void loop();
   void shutdown();
 

@@ -14,10 +14,9 @@ ForceSensorBq::ForceSensorBq() {
   set_comms_factory(std::make_unique<MqttCommsFactory>());
 }
 
-void ForceSensorBq::init(int argc, char *argv[]) {
-  assert(argc == 2);
+void ForceSensorBq::init(const Config& config) {
   publisher_ = make_publisher("force_sensor_output_channel");
-  load_cell_reader_ = std::make_unique<LoadCellReceiver>(argv[1]);
+  load_cell_reader_ = std::make_unique<LoadCellReceiver>(config["reader"].as<std::string>());
 }
 
 void ForceSensorBq::loop() {

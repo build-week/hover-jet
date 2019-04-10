@@ -13,7 +13,7 @@
 
 namespace jet {
 
-void MessageLoggerBQ::init(int argc, char *argv[]) {
+void MessageLoggerBQ::init(const Config& config) {
   if (const char* env_logged_channels = std::getenv("LOGGED_CHANNELS")) {
       std::string channels_string(env_logged_channels);
       std::string delimiter = ",";

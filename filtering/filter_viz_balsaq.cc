@@ -2,10 +2,13 @@
 #include "filtering/filter_viz_balsaq.hh"
 
 #include "config/fiducial_map/read_fiducial_map.hh"
+#include "control/servo_interface.hh"
 #include "embedded/imu_driver/imu_message.hh"
+#include "embedded/servo_bq/set_servo_message.hh"
 #include "filtering/pose_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "vision/fiducial_detection_message.hh"
+#include "visualization/thrust_stand_visualizer.hh"
 
 #include <cstddef>
 #include <iostream>
@@ -31,7 +34,7 @@ estimation::TimePoint to_time_point(const Timestamp& ts) {
   return time_point;
 }
 
-void FilterVizBq::init(int argc, char* argv[]) {
+void FilterVizBq::init(const Config& config) {
   const auto view = viewer::get_window3d("Filter Debug");
   view->set_target_from_world(SE3(SO3::exp(Eigen::Vector3d(-3.1415 * 0.5, 0.0, 0.0)), jcc::Vec3(-1.0, 0.0, -1.0)));
   const auto background = view->add_primitive<viewer::SimpleGeometry>();
@@ -39,21 +42,27 @@ void FilterVizBq::init(int argc, char* argv[]) {
   background->add_plane({ground, 0.1});
   background->flip();
 
-  geo_ = view->add_primitive<viewer::SimpleGeometry>();
+  sensor_geo_ = view->add_primitive<viewer::SimpleGeometry>();
+  pose_geo_ = view->add_primitive<viewer::SimpleGeometry>();
   persistent_ = view->add_primitive<viewer::SimpleGeometry>();
+  servo_geo_ = view->add_primitive<viewer::SimpleGeometry>();
 
   std::cout << "Subscribing IMU" << std::endl;
   imu_sub_ = make_subscriber("imu");
+
   std::cout << "Subscribing Fiducial" << std::endl;
   fiducial_sub_ = make_subscriber("fiducial_detection_channel");
 
   std::cout << "Subscribing pose" << std::endl;
   pose_sub_ = make_subscriber("pose");
 
+  std::cout << "Subscribing servos" << std::endl;
+  servo_sub_ = make_subscriber("servo_command_channel");
+
   tag_from_world_ = get_fiducial_pose().tag_from_world;
   camera_from_body_ = get_camera_extrinsics().camera_from_frame;
 
-  std::cout << "Filter starting" << std::endl;
+  std::cout << "Filter Viz starting" << std::endl;
   gonogo_.go();
 }
 
@@ -101,40 +110,45 @@ void FilterVizBq::draw_sensors() {
     mag_utesla_.pop_front();
   }
 
-  geo_->add_sphere({tag_from_world_.inverse().translation(), 0.3});
-  geo_->add_axes({tag_from_world_.inverse()});
+  // Tag in world frame
+  sensor_geo_->add_sphere({tag_from_world_.inverse().translation(), 0.3});
+  sensor_geo_->add_axes({tag_from_world_.inverse()});
 
-  geo_->add_sphere({camera_from_body_.inverse().translation(), 0.3});
-  geo_->add_axes({camera_from_body_.inverse()});
+  // Camera in body frame
+  // sensor_geo_->add_sphere({camera_from_body_.inverse().translation(), 0.3, jcc::Vec4(0.0, 1.0, 1.0, 1.0)});
+  // sensor_geo_->add_axes({camera_from_body_.inverse()});
 
   if (!fiducial_history_.empty()) {
     const SE3 fiducial_from_camera = fiducial_history_.back();
 
-    // geo_->add_axes({fiducial_from_camera, 0.025, 3.0});
+    constexpr bool DRAW_FIDUCIAL_POSE = true;
+    constexpr bool DRAW_VEHICLE_POSE = false;
+    constexpr bool DRAW_FIDUCIAL_IN_BODY_FRAME = false;
 
-    {  // Draw the fiducial axes in the camera frame
-      geo_->add_sphere({fiducial_from_camera.inverse().translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
-      geo_->add_axes({fiducial_from_camera.inverse(), 0.025, 3.0});
+    if (DRAW_FIDUCIAL_POSE) {  // Draw the fiducial axes in the camera frame
+      sensor_geo_->add_sphere({fiducial_from_camera.inverse().translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
+      sensor_geo_->add_axes({fiducial_from_camera.inverse(), 0.025, 3.0});
     }
 
-    {  // Draw the vehicle axes in the world frame
+    if (DRAW_VEHICLE_POSE) {  // Draw the vehicle axes in the world frame
       const SE3 world_from_vehicle = tag_from_world_.inverse() * fiducial_from_camera * camera_from_body_;
-      geo_->add_sphere({world_from_vehicle.translation(), 0.2, jcc::Vec4(1.0, 0.0, 0.2, 0.8)});
-      geo_->add_axes({world_from_vehicle, 0.6, 3.0, true});
+      sensor_geo_->add_sphere({world_from_vehicle.translation(), 0.2, jcc::Vec4(1.0, 0.0, 0.2, 0.8)});
+      sensor_geo_->add_axes({world_from_vehicle, 0.6, 3.0, true});
     }
 
-    {  // Draw the body axes in the fiducial frame
+    if (DRAW_FIDUCIAL_IN_BODY_FRAME) {  // Draw the body axes in the fiducial frame
       const SE3 fiducial_from_body = fiducial_from_camera * camera_from_body_;
-      geo_->add_axes({fiducial_from_body.inverse()});
-      geo_->add_sphere({fiducial_from_body.inverse().translation(), 0.2, jcc::Vec4(0.0, 0.0, 1.0, 0.8)});
+      sensor_geo_->add_axes({fiducial_from_body.inverse()});
+      sensor_geo_->add_sphere({fiducial_from_body.inverse().translation(), 0.2, jcc::Vec4(0.0, 0.0, 1.0, 0.8)});
     }
   }
 
   if (!accel_history_.empty()) {
-    geo_->add_line({jcc::Vec3::Zero(), accel_history_.back().accel_mpss});
+    sensor_geo_->add_line({jcc::Vec3::Zero(), accel_history_.back().accel_mpss});
   }
 
-  geo_->add_sphere({jcc::Vec3::Zero(), 9.81});
+  sensor_geo_->add_sphere({jcc::Vec3::Zero(), 9.81});
+  sensor_geo_->flip();
 }
 
 void FilterVizBq::draw_pose() {
@@ -146,16 +160,35 @@ void FilterVizBq::draw_pose() {
 
   if (got_pose_msg) {
     const Pose pose = pose_msg.to_pose();
-    std::cout << "Got pose message" << std::endl;
-    geo_->add_axes({pose.world_from_jet, 0.055, 3.0, true});
+    pose_geo_->add_axes({pose.world_from_jet, 0.055, 3.0, true});
+    pose_geo_->flip();
+  }
+}
+
+void FilterVizBq::draw_servos() {
+  const control::VaneConfiguration vane_cfg = {};
+  const control::QuadraframeConfiguration qframe_cfg = {};
+
+  SetServoMessage servo_message;
+  bool got_servo_msg = false;
+  while (servo_sub_->read(servo_message, 1)) {
+    got_servo_msg = true;
+  }
+  if (got_servo_msg) {
+    const control::QuadraframeStatus qframe_status = control::create_quadraframe_status(servo_message);
+    visualization::put_quadraframe(*servo_geo_, qframe_status, qframe_cfg, vane_cfg);
+    std::cout << "--" << std::endl;
+    std::cout << qframe_status.servo_0_angle_rad << ", " << qframe_status.servo_1_angle_rad << ", "
+              << qframe_status.servo_2_angle_rad << ", " << qframe_status.servo_3_angle_rad << std::endl;
+
+    servo_geo_->flip();
   }
 }
 
 void FilterVizBq::loop() {
   draw_sensors();
   draw_pose();
-
-  geo_->flip();
+  draw_servos();
 }
 
 void FilterVizBq::shutdown() {

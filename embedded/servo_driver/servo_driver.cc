@@ -20,10 +20,10 @@ float rad_to_deg(float radians) {
 }
 }  // namespace
 
-ServoDriver::ServoDriver(const std::string &config_path) : config_path_(config_path) {
+ServoDriver::ServoDriver(const Config& config) {
   int i2cHandle = i2c_open("/dev/i2c-1");  // TODO make configurable
   if (i2cHandle == -1) {
-    std::string err = std::string("Failed to open i2c") + config_path_;
+    std::string err = std::string("Failed to open i2c");
     throw std::runtime_error(err);
   }
 
@@ -32,14 +32,13 @@ ServoDriver::ServoDriver(const std::string &config_path) : config_path_(config_p
   pwm_driver_->enable_auto_increment(true);
 
   try {
-    YAML::Node config = YAML::LoadFile(config_path_);
     max_angle_ = config["max_angle"].as<float>();
     calibrated_center_ = config["calibrated_center"].as<float>();
     calibrated_max_ = config["calibrated_max"].as<float>();
     servo_index_ = config["index"].as<int>();
     assert(servo_index_ >= 0);
   } catch (YAML::BadFile e) {
-    std::string err = std::string("Could not find YAML file ") + config_path_;
+    std::string err = std::string("Could not find YAML file ");
     throw std::runtime_error(err);
   }
 
@@ -73,4 +72,8 @@ void ServoDriver::set_angle_radians(
   float angleFraction = static_cast<float>(angle_degrees) / max_angle_;
   float half_range = (calibrated_max_ - calibrated_center_);
   set_percentage(calibrated_center_ + half_range * angleFraction);
+}
+
+void ServoDriver::shutdown_pwm() {
+  pwm_driver_->disable_servos(true);
 }

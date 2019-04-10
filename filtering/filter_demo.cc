@@ -441,7 +441,7 @@ void go() {
         Calibration camera_calibration = camera_manager_.get_camera(cam_msg.camera_serial_number).calibration;
         const auto image = get_image_mat(cam_msg);
 
-        const auto result = detect_board(image, camera_calibration);
+        const auto result = estimate_board_center_from_camera_from_image(image, camera_calibration);
         if (result) {
           const SE3 world_from_camera = *result;
 
