@@ -18,7 +18,7 @@ constexpr double WEBCAM_EXPOSURE = 0.01;
 
 void CameraBq::init(const Config& config) {
   Camera camera;
-  std::cout << config["serial_number"].as<std::string>() << std::endl;
+  std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
   camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   camera_serial_number_ = camera.serial_number;
   cap = cv::VideoCapture(camera.video_index);
@@ -52,14 +52,14 @@ void CameraBq::loop() {
     message.width = camera_frame.size().width;
     message.camera_serial_number = camera_serial_number_;
     publisher_->publish(message);
-    std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " " << message.height << std::endl;
+    std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo_.nogo("More than 1 second since last camera frame");
   }
 }
 void CameraBq::shutdown() {
-  std::cout << "Camera process shutting down." << std::endl;
+  std::cout << "Camera BQ shutting down." << std::endl;
 }
 
 }  // namespace jet
