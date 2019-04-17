@@ -28,8 +28,11 @@ class CameraManager {
         Camera get_camera(std::string serial_number);
     private:
         std::map<std::string, Camera> camera_map_;
-        void parse_config(YAML::Node cfg);
+        void load_configs();
+        std::optional<YAML::Node> read_YAML(std::string filepath);
+        std::optional<Camera> parse_config(YAML::Node cfg);
         int follow_v4l_path(std::string path);
+        const std::string& config_dir = "/jet/camera/cfg/";
 };
 
 } // namespace jet
