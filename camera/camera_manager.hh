@@ -1,8 +1,7 @@
 #pragma once
 
 #include <yaml-cpp/yaml.h>
-#include <sys/types.h>
-#include <dirent.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <string>
 
@@ -16,7 +15,7 @@ struct Calibration {
     cv::Mat distortion_coefficients;
 };
 struct Camera {
-    std::string serial_number = "CA38DB5E";
+    std::string serial_number = "uninitialized";
     std::string v4l_path;
     int video_index = 0;
     Calibration calibration;
@@ -25,14 +24,13 @@ struct Camera {
 class CameraManager {
     public:
         CameraManager();
-        Camera get_camera(std::string serial_number);
+        Camera get_camera(const std::string& serial_number) const;
     private:
-        std::map<std::string, Camera> camera_map_;
         void load_configs();
-        std::optional<YAML::Node> read_YAML(std::string filepath);
-        std::optional<Camera> parse_config(YAML::Node cfg);
-        int follow_v4l_path(std::string path);
-        const std::string& config_dir = "/jet/camera/cfg/";
+        std::optional<YAML::Node> read_YAML(const std::string& filepath) const;
+        std::optional<Camera> parse_config(const YAML::Node& cfg) const;
+        std::optional<int> follow_v4l_path(const std::string& path) const;
+        std::map<std::string, Camera> camera_map_;
 };
 
 } // namespace jet

@@ -1,6 +1,9 @@
 //%deps(yaml-cpp)
+//%deps(-lstdc++fs)
 
 #include "camera/camera_manager.hh"
+
+namespace fs = std::experimental::filesystem;
 
 namespace jet {
 
@@ -13,19 +16,14 @@ CameraManager::CameraManager() {
 }
 
 void CameraManager::load_configs() {
-  // directory iteration from http://www.martinbroadhurst.com/list-the-files-in-a-directory-in-c.html
-  DIR* dir_path = opendir(config_dir.c_str());
-  if (dir_path == NULL) {
-    std::string err = std::string("Unable to open ") + config_dir;
-    throw std::runtime_error(err);
-  }
-  const struct dirent* dp;
-  while ((dp = readdir(dir_path)) != NULL) {
-    std::string filename = dp->d_name;
+  // directory iteration from https://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c/37494654#37494654
+  const std::string config_dir = "/jet/camera/cfg";
+  for (const auto & entry : fs::directory_iterator(config_dir)) {
+    const std::string filename = entry.path();
     if (filename == "." || filename == ".."){ 
       continue;
     }
-    std::optional<YAML::Node> config = read_YAML(config_dir + filename);
+    std::optional<YAML::Node> config = read_YAML(filename);
     std::optional<Camera> camera = parse_config(*config);
     if (camera) {
       camera_map_[camera->serial_number] = *camera;
@@ -33,22 +31,22 @@ void CameraManager::load_configs() {
   }
 }
 
-std::optional<YAML::Node> CameraManager::read_YAML(std::string filepath) {
+std::optional<YAML::Node> CameraManager::read_YAML(const std::string& filepath) const {
   try {
     return YAML::LoadFile(filepath);
   } catch (YAML::BadFile e) {
-    std::string err = std::string("Could not find YAML file ") + filepath;
+    const std::string err = std::string("Could not find YAML file ") + filepath;
     throw std::runtime_error(err);
   }
 }
 
-std::optional<Camera> CameraManager::parse_config(YAML::Node cfg) {
+std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
   Camera camera;
   // path & video index
   camera.serial_number = cfg["serial_number"].as<std::string>();
   camera.v4l_path = "/dev/v4l/by-id/" + cfg["v4l_path"].as<std::string>();
-  camera.video_index = follow_v4l_path(camera.v4l_path);
-  if (camera.video_index == -1) {
+  camera.video_index = *follow_v4l_path(camera.v4l_path);
+  if (!camera.video_index) {
     return std::nullopt;
   }
   // calibration values
@@ -59,22 +57,20 @@ std::optional<Camera> CameraManager::parse_config(YAML::Node cfg) {
   return camera;
 }
 
-int CameraManager::follow_v4l_path(std::string path) {
-  // http://pubs.opengroup.org/onlinepubs/9699919799/functions/readlink.html
-  char buf[1024];
-  ssize_t len;
-  if ((len = readlink(path.c_str(), buf, sizeof(buf) - 1)) != -1) {
-    buf[len] = '\0';
+std::optional<int> CameraManager::follow_v4l_path(const std::string& path) const {
+  std::error_code ec;
+  const std::string v4l_path = fs::canonical(path, ec).string();
+  const int index = v4l_path.back() - '0'; // note that this will break for >10 cameras
+  if (ec) {
+    return std::nullopt;
+  } else {
+    return index;
   }
-  else {
-    return -1;
-  }
-  return buf[len - 1] - '0';
 }
 
-Camera CameraManager::get_camera(std::string serial_number) {
+Camera CameraManager::get_camera(const std::string& serial_number) const {
   if (camera_map_.count(serial_number) == 0) {
-    std::string err = std::string(
+    const std::string err = std::string(
         "The camera config passed to start the camera BQ specified "
         "a serial number that doesn't match the camera we have plugged in.");
     throw std::runtime_error(err);
