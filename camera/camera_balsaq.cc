@@ -2,8 +2,8 @@
 #include "camera/camera_balsaq.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/time/duration.hh"
+#include "camera/camera_manager.hh"
 
-#include <chrono>
 #include <cstddef>
 #include <iostream>
 #include <sstream>
@@ -16,11 +16,14 @@ namespace jet {
 constexpr double WEBCAM_EXPOSURE = 0.01;
 
 void CameraBq::init(const Config& config) {
-  cap = cv::VideoCapture(0);
+  Camera camera;
+  std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
+  camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
+  camera_serial_number_ = camera.serial_number;
+  cap = cv::VideoCapture(camera.video_index);
   cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
   cap.set(cv::CAP_PROP_FPS, CAMERA_FPS);
-  // 0 is the id of video device.0 if you have only one camera.
   publisher_ = make_publisher("camera_image_channel");
 }
 
@@ -41,22 +44,21 @@ void CameraBq::loop() {
     message.image_data.resize(n_elements);
     constexpr std::size_t SIZE_OF_UCHAR = sizeof(uint8_t);
     if (camera_frame.isContinuous()) {
-      std::memcpy(message.image_data.data(), camera_frame.data,
-                  SIZE_OF_UCHAR * n_elements);
+      std::memcpy(message.image_data.data(), camera_frame.data, SIZE_OF_UCHAR * n_elements);
     }
     message.timestamp = current_time;
     message.height = camera_frame.size().height;
     message.width = camera_frame.size().width;
+    message.camera_serial_number = camera_serial_number_;
     publisher_->publish(message);
-    std::cout << "CAMERA TASK: publishes a camera frame " << message.width << " "
-              << message.height << std::endl;
+    std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo_.nogo("More than 1 second since last camera frame");
   }
 }
 void CameraBq::shutdown() {
-  std::cout << "Camera process shutting down." << std::endl;
+  std::cout << "Camera BQ shutting down." << std::endl;
 }
 
 }  // namespace jet

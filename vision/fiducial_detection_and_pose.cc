@@ -4,7 +4,7 @@
 
 namespace jet { 
 
-std::tuple<std::vector<int> , std::vector<std::vector<cv::Point2f>>> get_ids_and_corners(const cv::Mat &input_image){
+std::tuple<std::vector<int>, std::vector<std::vector<cv::Point2f>>> get_ids_and_corners(const cv::Mat &input_image) {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   const auto params = cv::aruco::DetectorParameters::create();
@@ -17,14 +17,14 @@ std::tuple<std::vector<int> , std::vector<std::vector<cv::Point2f>>> get_ids_and
   return std::make_tuple(ids, corners);
 }
 
-std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const cv::Mat &input_image){
+std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const cv::Mat &input_image) {
   const auto ids_corners = get_ids_and_corners(input_image);
   const auto ids = std::get<0>(ids_corners);
   const auto corners = std::get<1>(ids_corners);
   cv::Mat boardPoints, imgPoints;
   cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), corners, ids, boardPoints, imgPoints);
   std::vector<BoardPointImagePointAssociation> result;
-  for (int i=0; i < boardPoints.rows; i++){
+  for (int i = 0; i < boardPoints.rows; i++) {
     BoardPointImagePointAssociation association = {};
     boardPoints.at<float>(i, 0);
     association.point_board_space = jcc::Vec2(boardPoints.at<float>(i, 0), boardPoints.at<float>(i, 1));
@@ -34,19 +34,14 @@ std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(co
   return result;
 }
 
-std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &input_image) {
-  
+std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &input_image,
+                                                                const Calibration &calibration) {
   const auto ids_corners = get_ids_and_corners(input_image);
   const auto ids = std::get<0>(ids_corners);
   const auto corners = std::get<1>(ids_corners);
 
-  // TODO isaac move these to config and make them
-  const cv::Mat camera_matrix =
-      (cv::Mat1d(3, 3) << 499.7749869454186, 0, 309.3792706235992, 0, 496.9300965132637,
-       241.6934416030273, 0, 0, 1);
-  const cv::Mat distortion_coefficients =
-      (cv::Mat1d(1, 5) << 0.003861115403120386, 0.09541932181851349, 0.001898991151152847,
-       -0.003082742498836169, -0.2932184860155891);
+  const cv::Mat camera_matrix = calibration.camera_matrix;
+  const cv::Mat distortion_coefficients = calibration.distortion_coefficients;
 
   // these must be CV mats to force aruco to not use their
   // values as initial pose estimates.  Despair!
@@ -54,8 +49,8 @@ std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &i
   cv::Mat tvec;
 
   const int num_fiducials_detected_on_board =
-      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(), camera_matrix,
-                                   distortion_coefficients, rvec, tvec);
+      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(),
+        camera_matrix, distortion_coefficients, rvec, tvec);
   (void)num_fiducials_detected_on_board;
 
   if (tvec.size().height > 0) {

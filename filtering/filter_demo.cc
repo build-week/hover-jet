@@ -30,6 +30,7 @@
 //
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
+#include "camera/camera_manager.hh"
 
 namespace jet {
 namespace filtering {
@@ -399,6 +400,7 @@ class Calibrator {
 
 void go() {
   setup();
+  CameraManager camera_manager_ = CameraManager();
   const auto view = viewer::get_window3d("Filter Debug");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
   const std::vector<std::string> channel_names = {"imu", "fiducial_detection_channel", "camera_image_channel"};
@@ -436,9 +438,10 @@ void go() {
     if (USE_CAMERA_IMAGES) {
       CameraImageMessage cam_msg;
       if (reader.read_next_message("camera_image_channel", cam_msg)) {
+        Calibration camera_calibration = camera_manager_.get_camera(cam_msg.camera_serial_number).calibration;
         const auto image = get_image_mat(cam_msg);
 
-        const auto result = estimate_board_center_from_camera_from_image(image);
+        const auto result = estimate_board_center_from_camera_from_image(image, camera_calibration);
         if (result) {
           const SE3 world_from_camera = *result;
 
