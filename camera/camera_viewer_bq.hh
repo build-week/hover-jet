@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <infrastructure/balsa_queue/balsa_queue.hh>
+#include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "camera/camera_image_message.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 

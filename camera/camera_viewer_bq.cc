@@ -2,8 +2,6 @@
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "camera/camera_viewer_bq.hh"
 
-//%deps(balsa_queue)
-
 namespace jet {
 
 void CameraViewerBq::init(const Config& config) {
