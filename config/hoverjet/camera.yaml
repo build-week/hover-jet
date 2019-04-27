@@ -1,0 +1,13 @@
+width_pixels: 640
+height_pixels: 480
+# Bold, I know!
+frames_per_second: 30
+# Disable autofocus
+auto_focus: 0
+# Disables autoexposure...allegedly?
+auto_exposure: 0.25
+# Set a fixed exposure (The minimum)
+webcam_exposure: 0.1
+
+# Calling our shots: The camera we expect to be running
+serial_number: 5CFD076E
