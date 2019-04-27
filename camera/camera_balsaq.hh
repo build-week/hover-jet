@@ -38,7 +38,6 @@ class CameraBq : public BalsaQ {
   void shutdown();
 
  private:
-
   PublisherPtr publisher_;
   cv::VideoCapture cap;
 

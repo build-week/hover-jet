@@ -10,8 +10,6 @@
 
 namespace jet {
 
-constexpr double WEBCAM_EXPOSURE = 0.01;
-
 namespace {
 
 // Generate a config structure from a yaml config
@@ -51,7 +49,6 @@ void CameraBq::init(const Config& config) {
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
   cap.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
 
-  // 0 is the id of video device.0 if you have only one camera.
   publisher_ = make_publisher("camera_image_channel");
 }
 
