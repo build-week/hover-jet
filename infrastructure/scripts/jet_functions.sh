@@ -8,8 +8,7 @@ get_image_name() {
         IMAGE_NAME="hoverjet/jet"
     fi
     if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
-        IMAGE_NAME="a6fa619781f3"
-        # IMAGE_NAME="hoverjet/jet-arm"
+        IMAGE_NAME="hoverjet/jet-arm"
     fi
     echo "$IMAGE_NAME"
 }
