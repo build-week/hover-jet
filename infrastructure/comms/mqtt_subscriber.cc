@@ -122,6 +122,7 @@ bool MqttSubscriber::read_raw(std::string& message_data, const Duration& timeout
 bool MqttSubscriber::read_latest(Message& message, const Duration& timeout) {
   bool message_found = false;
   while (read(message, timeout)) {
+    message_found = true;
     continue;
   }
   return message_found;
