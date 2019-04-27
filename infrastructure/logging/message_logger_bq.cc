@@ -14,27 +14,8 @@
 namespace jet {
 
 void MessageLoggerBQ::init(const Config& config) {
-  if (const char* env_logged_channels = std::getenv("LOGGED_CHANNELS")) {
-      std::string channels_string(env_logged_channels);
-      std::string delimiter = ",";
-
-      size_t pos = 0;
-      std::string token;
-      while ((pos = channels_string.find(delimiter)) != std::string::npos) {
-          channels_.emplace_back(channels_string.substr(0, pos));
-          channels_string.erase(0, pos + delimiter.length());
-      }
-      channels_.emplace_back(channels_string);
-  } else {
-    throw std::runtime_error("Environment variable LOGGED_CHANNELS must be set.");
-  }
-
-  std::string log_base_path;
-  if (const char* env_log_base_path = std::getenv("LOG_BASE_PATH")) {
-      log_base_path = env_log_base_path;
-  } else {
-    throw std::runtime_error("Environment variable LOG_BASE_PATH must be set.");
-  }
+  logged_channels = config["channels"];
+  log_base_path = config["log_base_path"];
 
   // Generate a log name. Log name will be the UTC date and time in the format YYYYMMDDHHMMSS
   time_t now = time(0);
