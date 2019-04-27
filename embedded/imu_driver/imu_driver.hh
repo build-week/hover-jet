@@ -21,9 +21,9 @@ class ImuDriver {
  public:
   ImuDriver() = default;
 
-  // This function
+  // This function initializes the imu interface
   // WARNING: Must be called before sampling from the IMU
-  bool initialize();
+  bool initialize(const std::string& i2c_bus, const uint8_t i2c_address);
 
   // Sampling more frequently than this will provide no new measurements
   int sample_period_ms() const;
@@ -57,6 +57,7 @@ class ImuDriver {
 
  private:
   bool initialized_ = false;
+  std::string i2c_bus_;
   std::shared_ptr<Adafruit_BNO055> bno_;
 
   constexpr static double GYRO_FREQUENCY_HZ = 116.0;

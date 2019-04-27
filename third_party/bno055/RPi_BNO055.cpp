@@ -82,27 +82,27 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode) {
     uint8_t id = read8(BNO055_CHIP_ID_ADDR);
 
     if(id != BNO055_ID) {
-        usleep(1000*1000);
-        id = read8(BNO055_CHIP_ID_ADDR);
-        if(id != BNO055_ID) {
-            return false;    // still not? ok bail
+      usleep(1000 * 1000);
+      id = read8(BNO055_CHIP_ID_ADDR);
+      if (id != BNO055_ID) {
+        return false;  // still not? ok bail
         }
     }
 
     /* Switch to config mode (just in case since this is the default) */
     setMode(OPERATION_MODE_CONFIG);
 
-    /* Reset */
+    /* Reset -- We expect the device to go down for about half a second */
     write8(BNO055_SYS_TRIGGER_ADDR, 0x20);
+    const int por_time_ms = 10; // Expected reset time, from the documentation
     while (read8(BNO055_CHIP_ID_ADDR) != BNO055_ID) {
-        usleep(1000*10);
+      usleep(1000 * por_time_ms);
     }
     usleep(1000*50);
 
     /* Set to normal power mode */
     write8(BNO055_PWR_MODE_ADDR, POWER_MODE_NORMAL);
     usleep(1000*10);
-
 
     write8(BNO055_PAGE_ID_ADDR, 0);
 
