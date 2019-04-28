@@ -37,7 +37,7 @@ void CameraBq::loop() {
 
   const auto current_time = get_current_time();
   if (cap.read(camera_frame)) {
-    gonogo_.go();
+    gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
     CameraImageMessage message;
     const std::size_t n_elements = camera_frame.rows * camera_frame.cols * 3u;
@@ -54,7 +54,7 @@ void CameraBq::loop() {
     std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
-    gonogo_.nogo("More than 1 second since last camera frame");
+    gonogo().nogo("More than 1 second since last camera frame");
   }
 }
 void CameraBq::shutdown() {

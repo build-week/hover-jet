@@ -15,7 +15,7 @@ namespace jet {
 
 void TimesyncMasterBq::init(const Config& config) {
   publisher_ = make_publisher("timesync_master");
-  gonogo_.go();
+  gonogo().go();
 }
 
 void TimesyncMasterBq::loop() {

@@ -18,7 +18,7 @@ void CameraViewerBq::loop() {
   }
 
   if (got_msg) {
-    gonogo_.go();
+    gonogo().go();
     const cv::Mat camera_frame = get_image_mat(image_message);
 
     cv::imshow("camera image", camera_frame);

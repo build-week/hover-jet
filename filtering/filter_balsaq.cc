@@ -63,7 +63,7 @@ void FilterBq::loop() {
       xp0.time_of_validity = fiducial_time_of_validity;
       jf_.reset(xp0);
 
-      gonogo_.go();
+      gonogo().go();
     }
 
     std::cout << "Free-running" << std::endl;

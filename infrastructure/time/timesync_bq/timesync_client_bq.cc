@@ -20,9 +20,9 @@ void TimesyncClientBq::init(const Config& config) {
   subscriber_ = make_subscriber("timesync_master");
   // gethostname will return 0 if successful, SOCKET_ERROR otherwise
   if (gethostname(client_message_.hostname, HOST_NAME_MAX) != 0) {
-    gonogo_.nogo("Socket Error getting hostname");
+    gonogo().nogo("Socket Error getting hostname");
   } else {
-    gonogo_.go();
+    gonogo().go();
   }
 }
 
@@ -33,9 +33,9 @@ void TimesyncClientBq::loop() {
     client_message_.master_seq_number = master_message.header.sequence_number;
 
     publisher_->publish(client_message_);
-    std::cout << "cl_name:" << client_message_.hostname 
-    << " m_ts:" << client_message_.master_timestamp 
-    << " m_sq:" << client_message_.master_seq_number 
+    std::cout << "cl_name:" << client_message_.hostname
+    << " m_ts:" << client_message_.master_timestamp
+    << " m_sq:" << client_message_.master_seq_number
     << " cl_ts:" << client_message_.header.timestamp_ns
     << " cl_sq:" << client_message_.header.sequence_number
     << " offset:" << (client_message_.header.timestamp_ns - client_message_.master_timestamp) << std::endl;
