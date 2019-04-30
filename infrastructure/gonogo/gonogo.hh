@@ -10,10 +10,10 @@
 namespace jet {
 
 class GoNoGo {
-  public: 
+  public:
    GoNoGo();
    void setName(std::string name);
-   void go();
+   void go(const std::string &status_message = "");
    void nogo(const std::string &status_message);
 
   private:

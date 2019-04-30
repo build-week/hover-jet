@@ -29,7 +29,7 @@ void FidicualDetectionBq::loop() {
   }
 
   if (got_msg) {
-    gonogo_.go();
+    gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
     const Calibration camera_calibration = camera_manager_.get_camera(image_message.camera_serial_number).calibration;
     const cv::Mat camera_frame = get_image_mat(image_message);
@@ -69,7 +69,7 @@ void FidicualDetectionBq::loop() {
     }
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
-    gonogo_.nogo("More than 1 second since last image message");
+    gonogo().nogo("More than 1 second since last image message");
   }
 }
 

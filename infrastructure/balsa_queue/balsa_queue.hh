@@ -4,8 +4,8 @@
 
 #include "infrastructure/comms/comms_factory.hh"
 #include "infrastructure/config/config.hh"
-#include "infrastructure/time/timestamp.hh"
 #include "infrastructure/gonogo/gonogo.hh"
+#include "infrastructure/time/timestamp.hh"
 
 #include <yaml-cpp/yaml.h>
 
@@ -19,13 +19,23 @@ namespace jet {
 class BalsaQ {
  public:
   uint loop_delay_microseconds = 10000;
-  std::string bq_name_;
   BalsaQ() = default;
   virtual void init(const Config& config) = 0;
   virtual void loop() = 0;
   virtual void shutdown() = 0;
 
-  GoNoGo gonogo_ = GoNoGo();
+  const std::string& name() const {
+    return bq_name_;
+  }
+
+  GoNoGo& gonogo() {
+    return gonogo_;
+  }
+
+  void set_name(const std::string& name) {
+    bq_name_ = name;
+  }
+
   void set_comms_factory(std::unique_ptr<CommsFactory> comms_factory);
 
  protected:
@@ -35,6 +45,8 @@ class BalsaQ {
   Timestamp last_msg_recvd_timestamp_;
 
  private:
+  GoNoGo gonogo_ = GoNoGo();
+  std::string bq_name_;
   std::unique_ptr<CommsFactory> comms_factory_;
 };
 

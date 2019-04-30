@@ -7,18 +7,18 @@
 
 namespace jet {
 
-class GoNoGoBQ : public BalsaQ {
+class GoNoGoReportBQ : public BalsaQ {
  public:
-  GoNoGoBQ() = default;
+  GoNoGoReportBQ() = default;
   void init(const Config& config);
   void loop();
   void shutdown();
 
  private:
-  SubscriberPtr gonogo_subscriber_;
-  PublisherPtr gonogo_state_publisher_;
+  SubscriberPtr gonogo_sub_;
+  SubscriberPtr gonogo_state_sub_;
 
-  std::map<std::string, GoNoGoMessage> go_no_go_states_;
+  std::map<std::string, bool> ready_from_bq_name_;
 };
 
 }  // namespace jet

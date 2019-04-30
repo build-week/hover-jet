@@ -33,7 +33,7 @@ void ServoBq::loop() {
   }
 
   if (got_msg) {
-    gonogo_.go();
+    gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
     for (uint i = 0; i < message.servo_indices.size(); i++) {
       auto servo_index = message.servo_indices.at(i);
@@ -43,7 +43,7 @@ void ServoBq::loop() {
     }
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
-    gonogo_.nogo("More than 1 second since last servo command");
+    gonogo().nogo("More than 1 second since last servo command");
   }
 }
 void ServoBq::shutdown() {

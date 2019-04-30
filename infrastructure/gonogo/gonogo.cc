@@ -14,15 +14,15 @@ void GoNoGo::setName(std::string name) {
     gonogomessage_.bq_name = name;
 }
 
-void GoNoGo::go() {
+void GoNoGo::go(const std::string &status_message) {
     // If it's changing state
     if (!gonogomessage_.ready) {
-        std::cout << gonogomessage_.bq_name << ": go=" << gonogomessage_.ready
-        << ", msg=" << gonogomessage_.status_message << std::endl;
+        std::cout << gonogomessage_.bq_name << ": GO!"
+                << ", msg=" << gonogomessage_.status_message << std::endl;
     }
     gonogomessage_.ready = true;
     // for now this is an empty message because the message type won't compile with an optional string
-    gonogomessage_.status_message = "";
+    gonogomessage_.status_message = status_message;
 
     publish_status();
 }
@@ -30,7 +30,7 @@ void GoNoGo::go() {
 void GoNoGo::nogo(const std::string &status_message) {
     // If it's changing state
     if (gonogomessage_.ready){
-      std::cout << gonogomessage_.bq_name << ": go=" << gonogomessage_.ready
+      std::cout << gonogomessage_.bq_name << ": NO GO!"
                 << ", msg=" << gonogomessage_.status_message << std::endl;
     }
     gonogomessage_.ready = false;

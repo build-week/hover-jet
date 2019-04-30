@@ -63,7 +63,7 @@ void FilterVizBq::init(const Config& config) {
   camera_from_body_ = get_camera_extrinsics().camera_from_frame;
 
   std::cout << "Filter Viz starting" << std::endl;
-  gonogo_.go();
+  gonogo().go();
 }
 
 void FilterVizBq::draw_sensors() {

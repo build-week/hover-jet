@@ -20,9 +20,9 @@ void signal_handler(int s) {
     sigIntHandler.sa_flags = 0;                                               \
     sigaction(SIGINT, &sigIntHandler, NULL);                                  \
     bq_type balsa_queue = bq_type();                                          \
-    balsa_queue.bq_name_ = #bq_type;                                          \
-    balsa_queue.gonogo_.setName(#bq_type);                                    \
-    balsa_queue.gonogo_.nogo("init");                                         \
+    balsa_queue.set_name(#bq_type);                                           \
+    balsa_queue.gonogo().setName(#bq_type);                                   \
+    balsa_queue.gonogo().nogo("init");                                        \
     balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
     YAML::Node config;                                                        \
     if (argc > 1) {                                                           \
