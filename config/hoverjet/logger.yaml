@@ -15,5 +15,6 @@ logged_channels:
   - joystick_roll
   - fiducial_detection_channel
   - pose
+  - camera_image_channel
 
 log_base_path: /logs/
