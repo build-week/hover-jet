@@ -69,7 +69,7 @@ echo Building image: $FULL_IMAGE_NAME_TAG
 docker build $NO_CACHE $JET_REPO_PATH/infrastructure/scripts/docker/ -t $FULL_IMAGE_NAME_TAG
 
 if [[ $LATEST -ne 0 ]]; then
-	LATEST_IMAGE_NAME_TAG="hoverjet/$IMAGE_NAME:latest"
+	LATEST_IMAGE_NAME_TAG="$FULL_IMAGE_NAME:latest"
 	echo "Tagging $FULL_IMAGE_NAME_TAG as latest."
 	docker tag $FULL_IMAGE_NAME_TAG $LATEST_IMAGE_NAME_TAG
 fi
