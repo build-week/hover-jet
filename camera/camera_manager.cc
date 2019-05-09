@@ -62,7 +62,11 @@ std::optional<int> CameraManager::follow_v4l_path(const std::string& path) const
   const std::string v4l_path = fs::canonical(path, ec).string();
   const int index = v4l_path.back() - '0'; // note that this will break for >10 cameras
   if (ec) {
-    return std::nullopt;
+    if (getenv("LOG_PATH")) { // if LOG_PATH is set, we can assume that we're in playback mode and the video index won't be used
+      return 0;
+    } else {
+      return std::nullopt;
+    }
   } else {
     return index;
   }
