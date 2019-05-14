@@ -38,8 +38,10 @@ void signal_handler(int s) {
     }                                                                         \
     balsa_queue.gonogo().nogo("init");                                        \
     balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
+    balsa_queue.base_init();                                                  \
     balsa_queue.init(config);                                                 \
     while (!shutdown) {                                                       \
+      balsa_queue.base_loop();                                                \
       balsa_queue.loop();                                                     \
       usleep(balsa_queue.loop_delay_microseconds);                            \
     }                                                                         \

@@ -1,6 +1,7 @@
 logged_channels:
   - camera_image_channel
   - fiducial_detection_channel
+  - bq_state
   - force_sensor_output_channel
   - GoNoGo
   - GoNoGo_output
