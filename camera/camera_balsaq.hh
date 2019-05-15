@@ -40,6 +40,7 @@ class CameraBq : public BalsaQ {
  private:
   PublisherPtr publisher_;
   cv::VideoCapture cap;
+  Timestamp last_msg_recvd_timestamp_;
 
   std::string camera_serial_number_;
   CameraConfiguration camera_config_;

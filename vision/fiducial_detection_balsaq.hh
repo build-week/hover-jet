@@ -23,6 +23,7 @@ class FidicualDetectionBq : public BalsaQ {
   SubscriberPtr subscriber_;
   static constexpr bool OPEN_DEBUG_WINDOWS = false;
   CameraManager camera_manager_ = CameraManager();
+  Timestamp last_msg_recvd_timestamp_;
 };
 
 }  // namespace jet

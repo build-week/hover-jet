@@ -17,6 +17,7 @@ class ServoBq : public BalsaQ {
  private:
   std::vector<ServoDriver> servos;
   SubscriberPtr subscriber;
+  Timestamp last_msg_recvd_timestamp_;
 };
 
 }  // namespace jet
