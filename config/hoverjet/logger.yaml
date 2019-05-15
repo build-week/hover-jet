@@ -1,20 +1,20 @@
 logged_channels:
+  - camera_image_channel
+  - fiducial_detection_channel
   - force_sensor_output_channel
+  - GoNoGo
+  - GoNoGo_output
+  - imu_1
+  - imu_2
+  - joystick_pitch
+  - joystick_roll
+  - joystick_yaw
+  - pose
   - servo_command_channel
+  - timesync_client
+  - timesync_master
   - turbine_ignition
   - turbine_set_throttle
   - turbine_state
-  - imu_1
-  - imu_2
-  - timesync_master
-  - timesync_client
-  - GoNoGo
-  - GoNoGo_output
-  - joystick_yaw
-  - joystick_pitch
-  - joystick_roll
-  - fiducial_detection_channel
-  - pose
-  - camera_image_channel
 
 log_base_path: /logs/
