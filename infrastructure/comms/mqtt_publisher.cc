@@ -23,8 +23,7 @@ MqttPublisher::MqttPublisher(const std::string& channel_name) : Publisher(channe
   }
 
   mqtt_client_id_ = xg::newGuid().str();
-  mqtt_client_ =
-      std::make_unique<mqtt::async_client>(mqtt_server_address_, mqtt_client_id_);
+  mqtt_client_ = std::make_unique<mqtt::async_client>(mqtt_server_address_, mqtt_client_id_);
   connect();
 }
 
@@ -35,21 +34,19 @@ MqttPublisher::~MqttPublisher() {
 }
 
 void MqttPublisher::connect() {
-  std::cout << "Connecting." << std::endl;
   try {
     mqtt::connect_options connection_options;
     mqtt_client_->connect(connection_options);
   } catch (const mqtt::exception& e) {
-    std::cerr << e.what() << std::endl;
+    print_error_rate_limited(++sequential_connect_failures_, "MQTT Publisher failed to connect. Will try again.");
   }
 }
 
 void MqttPublisher::reconnect() {
-  std::cout << "Reconnecting." << std::endl;
   try {
     mqtt_client_->reconnect();
   } catch (const mqtt::exception& e) {
-    std::cerr << e.what() << std::endl;
+    print_error_rate_limited(++sequential_connect_failures_, "MQTT Publisher failed to reconnect. Will try again.");
   }
 }
 
@@ -57,7 +54,7 @@ void MqttPublisher::publish(Message& message) {
   ++sequence_number_;
 
   if (!mqtt_client_->is_connected()) {
-    std::cerr << "Not connected. Skipping publish." << std::endl;
+    print_error_rate_limited(++sequential_failed_publishes_, "MQTT Publisher is not connected. Skipping publish.");
     reconnect();
     return;
   }
@@ -76,7 +73,7 @@ void MqttPublisher::publish_raw(const std::string& data) {
   ++sequence_number_;
 
   if (!mqtt_client_->is_connected()) {
-    std::cerr << "Not connected. Skipping publish." << std::endl;
+    print_error_rate_limited(++sequential_failed_publishes_, "MQTT Publisher is not connected. Skipping publish.");
     reconnect();
     return;
   }
@@ -84,6 +81,8 @@ void MqttPublisher::publish_raw(const std::string& data) {
   mqtt::message_ptr pubmsg = mqtt::make_message(channel_name_, data);
   pubmsg->set_qos(QOS);
   mqtt_client_->publish(pubmsg)->wait();
+  sequential_failed_publishes_ = 0;
+  sequential_connect_failures_ = 0;
 }
 
 }  // namespace jet
