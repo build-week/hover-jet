@@ -70,6 +70,18 @@ bool ImuDriver::initialize() {
   // TODO(jake): Figure out if we can get an "i2c ready" flag
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+
+  bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
+  adafruit_bno055_opmode_t mode = bno->getMode();
+
+  while(mode != Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG) {
+    bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
+    mode = bno->getMode();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+
+  bno_->getSystemStatus(&system_status, &self_test_result, &system_error);
+
   initialized_ = true;
   return initialized_;
 }
