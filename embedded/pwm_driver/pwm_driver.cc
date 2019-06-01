@@ -16,7 +16,7 @@ https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library/
 #include <unistd.h> // usleep
 
 // This is for the PCA9685
-#define PCA9685_I2C_ADDR 0x42
+#define PCA9685_I2C_ADDR 0x43 // Solder bridges for A0 and A1 have been bridged
 #define I2C_SLAVE 0x0703
 #define I2C_SLAVE_FORCE 0x0706
 
