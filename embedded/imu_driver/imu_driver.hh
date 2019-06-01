@@ -56,6 +56,8 @@ class ImuDriver {
   jcc::Vec3 read_magnetometer_utesla();
 
  private:
+
+  bool set_amg_mode(int max_num_tries);
   bool initialized_ = false;
   std::shared_ptr<Adafruit_BNO055> bno_;
 

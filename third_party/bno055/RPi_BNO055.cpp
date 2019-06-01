@@ -145,6 +145,10 @@ void Adafruit_BNO055::setMode(adafruit_bno055_opmode_t mode) {
     usleep(1000*30);;
 }
 
+Adafruit_BNO055::adafruit_bno055_opmode_t Adafruit_BNO055::getMode() {
+    return static_cast<Adafruit_BNO055::adafruit_bno055_opmode_t>(read8(BNO055_OPR_MODE_ADDR));
+}
+
 /**************************************************************************/
 /*!
         @brief    Use the external 32.768KHz crystal

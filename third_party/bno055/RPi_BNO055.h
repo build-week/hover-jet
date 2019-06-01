@@ -281,6 +281,8 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
     bool  getEvent  ( sensors_event_t* );
     void  getSensor ( sensor_t* );
 
+    adafruit_bno055_opmode_t getMode();
+
     /* Functions to deal with raw calibration data */
     bool  getSensorOffsets(uint8_t* calibData);
     bool  getSensorOffsets(adafruit_bno055_offsets_t &offsets_type);
