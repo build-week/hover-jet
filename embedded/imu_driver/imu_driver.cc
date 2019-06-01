@@ -70,16 +70,7 @@ bool ImuDriver::initialize() {
   // TODO(jake): Figure out if we can get an "i2c ready" flag
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-
-  bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
-  Adafruit_BNO055::adafruit_bno055_opmode_t mode = bno_->getMode();
-
-  while(mode != Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG) {
-    bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
-    mode = bno_->getMode();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-  }
-  initialized_ = true;
+  initialized_ = set_amg_mode(MAX_TRIES);
   return initialized_;
 }
 
@@ -109,6 +100,23 @@ jcc::Vec3 ImuDriver::read_magnetometer_utesla() {
   assert(initialized_);
   const imu::Vector<3> mag_utesla = bno_->getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
   return jcc::Vec3(mag_utesla.x(), mag_utesla.y(), mag_utesla.z());
+}
+
+bool ImuDriver::set_amg_mode(int max_num_tries) {
+  bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
+  Adafruit_BNO055::adafruit_bno055_opmode_t mode = bno_->getMode();
+
+  int num_tries = 0;
+  while(mode != Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG) {
+    if (num_tries == max_num_tries) {
+      return false;
+    }
+    bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
+    mode = bno_->getMode();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    num_tries += 1;
+  }
+  return true;
 }
 
 }  // namespace embedded
