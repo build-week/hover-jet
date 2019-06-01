@@ -20,7 +20,7 @@ void CameraManager::load_configs() {
   const std::string config_dir = "/jet/camera/cfg";
   for (const auto & entry : fs::directory_iterator(config_dir)) {
     const std::string filename = entry.path();
-    if (filename == "." || filename == ".."){ 
+    if (filename == "." || filename == ".."){
       continue;
     }
     std::optional<YAML::Node> config = read_YAML(filename);
@@ -45,10 +45,14 @@ std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
   // path & video index
   camera.serial_number = cfg["serial_number"].as<std::string>();
   camera.v4l_path = "/dev/v4l/by-id/" + cfg["v4l_path"].as<std::string>();
-  camera.video_index = *follow_v4l_path(camera.v4l_path);
-  if (!camera.video_index) {
+
+  const auto maybe_video_index = follow_v4l_path(camera.v4l_path);
+  if (maybe_video_index) {
+    std::cout << "Failed to camera index" << std::endl;
     return std::nullopt;
   }
+
+  camera.video_index = *maybe_video_index;
   // calibration values
   std::vector<double> camera_matrix_values = cfg["camera_matrix"].as<std::vector<double>>();
   camera.calibration.camera_matrix = cv::Mat(3, 3, CV_64F, camera_matrix_values.data()).clone();
@@ -62,9 +66,9 @@ std::optional<int> CameraManager::follow_v4l_path(const std::string& path) const
   const std::string v4l_path = fs::canonical(path, ec).string();
   const int index = v4l_path.back() - '0'; // note that this will break for >10 cameras
   if (ec) {
-    return std::nullopt;
-  } else {
     return index;
+  } else {
+    return std::nullopt;
   }
 }
 
