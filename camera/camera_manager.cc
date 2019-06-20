@@ -25,7 +25,7 @@ void CameraManager::load_configs() {
     }
     std::optional<YAML::Node> config = read_YAML(filename);
     std::optional<Camera> camera = parse_config(*config);
-    if (camera) {
+    if (camera.has_value()) {
       camera_map_[camera->serial_number] = *camera;
     }
   }
@@ -43,11 +43,18 @@ std::optional<YAML::Node> CameraManager::read_YAML(const std::string& filepath) 
 std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
   Camera camera;
   // path & video index
+  std::cout << "  " << std::endl;
   camera.serial_number = cfg["serial_number"].as<std::string>();
   camera.v4l_path = "/dev/v4l/by-id/" + cfg["v4l_path"].as<std::string>();
-  camera.video_index = *follow_v4l_path(camera.v4l_path);
-  if (!camera.video_index) {
+  const auto optional_camera_index = follow_v4l_path(camera.v4l_path);
+  
+  if (!optional_camera_index.has_value()){
+    std::cout << "Could not get video index from v4l." << std::endl;
+    std::cout << "  " << cfg["v4l_path"].as<std::string>() << std::endl;
     return std::nullopt;
+  }
+  else{
+    camera.video_index = optional_camera_index.value();
   }
   // calibration values
   std::vector<double> camera_matrix_values = cfg["camera_matrix"].as<std::vector<double>>();
@@ -60,8 +67,13 @@ std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
 std::optional<int> CameraManager::follow_v4l_path(const std::string& path) const {
   std::error_code ec;
   const std::string v4l_path = fs::canonical(path, ec).string();
+  std::cout << "   input path:" << path << std::endl;
+  std::cout << "   v4l path:" << v4l_path << std::endl;
+  std::cout << "   v4l ec: " << ec << std::endl;
   const int index = v4l_path.back() - '0'; // note that this will break for >10 cameras
+  std::cout << "   v4l index " << index << std::endl;
   if (ec) {
+    std::cout << "  got an error when making v4l path canonical" << std::endl;
     return std::nullopt;
   } else {
     return index;

@@ -44,7 +44,7 @@ void CameraBq::init(const Config& config) {
   cap = cv::VideoCapture(camera.video_index);
 
   camera_config_ = generate_capture_config(config);
-
+  std::cout << "returned camera config to camera bq" << std::endl;
   cap.set(cv::CAP_PROP_FRAME_WIDTH, camera_config_.width_pixels);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
   cap.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
