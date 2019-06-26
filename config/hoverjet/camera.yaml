@@ -7,7 +7,7 @@ auto_focus: 0
 # Disables autoexposure...allegedly?
 auto_exposure: 0.25
 # Set a fixed exposure (The minimum)
-exposure: 0.1
+webcam_exposure: 0.1
 
 # Calling our shots: The camera we expect to be running
-serial_number: CA38DB5E
+serial_number: 5CFD076E
