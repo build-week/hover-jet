@@ -49,8 +49,6 @@ std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
   const auto optional_camera_index = follow_v4l_path(camera.v4l_path);
   
   if (!optional_camera_index.has_value()){
-    std::cout << "Could not get video index from v4l." << std::endl;
-    std::cout << "  " << cfg["v4l_path"].as<std::string>() << std::endl;
     return std::nullopt;
   }
   else{
