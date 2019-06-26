@@ -43,7 +43,6 @@ std::optional<YAML::Node> CameraManager::read_YAML(const std::string& filepath) 
 std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
   Camera camera;
   // path & video index
-  std::cout << "  " << std::endl;
   camera.serial_number = cfg["serial_number"].as<std::string>();
   camera.v4l_path = "/dev/v4l/by-id/" + cfg["v4l_path"].as<std::string>();
   const auto optional_camera_index = follow_v4l_path(camera.v4l_path);
