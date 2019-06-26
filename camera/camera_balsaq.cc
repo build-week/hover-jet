@@ -40,10 +40,11 @@ CameraConfiguration generate_capture_config(const Config& config) {
 void CameraBq::init(const Config& config) {
   const Camera camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   camera_serial_number_ = camera.serial_number;
-
+  std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
   cap = cv::VideoCapture(camera.video_index);
 
   camera_config_ = generate_capture_config(config);
+
   cap.set(cv::CAP_PROP_FRAME_WIDTH, camera_config_.width_pixels);
   cap.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
   cap.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
