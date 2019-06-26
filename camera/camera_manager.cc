@@ -67,17 +67,13 @@ std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
 std::optional<int> CameraManager::follow_v4l_path(const std::string& path) const {
   std::error_code ec;
   const std::string v4l_path = fs::canonical(path, ec).string();
-  std::cout << "   input path:" << path << std::endl;
-  std::cout << "   v4l path:" << v4l_path << std::endl;
-  std::cout << "   v4l ec: " << ec << std::endl;
-  const int index = v4l_path.back() - '0'; // note that this will break for >10 cameras
-  std::cout << "   v4l index " << index << std::endl;
   if (ec) {
-    std::cout << "  got an error when making v4l path canonical" << std::endl;
     return std::nullopt;
-  } else {
-    return index;
-  }
+  } 
+  // note that this will break for >10 cameras
+  // TODO better way
+  const int index = v4l_path.back() - '0';
+  return index;
 }
 
 Camera CameraManager::get_camera(const std::string& serial_number) const {
