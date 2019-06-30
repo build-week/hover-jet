@@ -16,11 +16,13 @@
 namespace jet {
 namespace embedded {
 
-const std::string i2c_addr = "/dev/i2c-1";
-bool ImuDriver::initialize() {
-  const char* c_str = i2c_addr.c_str();
+bool ImuDriver::initialize(const std::string& i2c_bus, const uint8_t i2c_address) {
+  i2c_bus_ = i2c_bus;
 
-  bno_ = std::make_shared<Adafruit_BNO055>(c_str);
+  // Note: The adafruit driver does not take ownership over this string.
+  // TODO(Jake): Rewrite the adafruit imu driver, it's bananas.
+  constexpr int32_t MEANINGLESS_SENSOR_ID = -1;  // Stupid driver.
+  bno_ = std::make_shared<Adafruit_BNO055>(i2c_bus_.c_str(), MEANINGLESS_SENSOR_ID, i2c_address);
 
   //
   // Wait until we have stable comms with the IMU
@@ -30,16 +32,14 @@ bool ImuDriver::initialize() {
   do {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // TODO
-    std::cout << "Attempting to reconnect to bno" << std::endl;
+    std::cout << "Attempting to reconnect to bno (If this happens more than once, power reset the IMU)"
+              << std::endl;
     ++tries;
   } while (!bno_->begin(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG) && (tries < MAX_TRIES));
 
   if (tries >= MAX_TRIES) {
     return false;
   }
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(20));
-  bno_->setExtCrystalUse(true);
 
   //
   // Configure gyro range and sample rate
@@ -71,6 +71,18 @@ bool ImuDriver::initialize() {
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
   initialized_ = set_amg_mode(MAX_TRIES);
+  std::array<unsigned char, 16> bytes;
+  for (uint8_t addr = 0x50; addr <= 0x5F; ++addr) {
+    const uint8_t uid = bno_->read_page_1(addr);
+    bytes[addr - 0x50] = uid;
+  }
+
+  guid_ = xg::Guid(bytes);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  bno_->setExtCrystalUse(true);
+
+  initialized_ = true;
   return initialized_;
 }
 

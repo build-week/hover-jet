@@ -8,6 +8,19 @@
 namespace jet {
 namespace embedded {
 
+struct ManagedDriver {
+  ImuDriver driver;
+  PublisherPtr publisher;
+  int imu_unique_identifier;
+
+  uint8_t i2c_address;
+  std::string i2c_bus;
+
+  bool reset() {
+    return driver.initialize(i2c_bus, i2c_address);
+  }
+};
+
 class ImuBq : public BalsaQ {
  public:
   ImuBq() = default;
@@ -19,8 +32,7 @@ class ImuBq : public BalsaQ {
   const static uint loop_delay_microseconds = 1000;
 
  private:
-  PublisherPtr publisher_;
-  ImuDriver imu_driver_;
+  std::vector<ManagedDriver> imu_drivers_;
 };
 
 }  // namespace embedded

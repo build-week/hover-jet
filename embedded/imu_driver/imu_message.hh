@@ -24,6 +24,9 @@ struct ImuMessage : Message {
   // Timestamp that the observation was *generated*
   Timestamp timestamp;
 
+  // Unique identifier: Leading byte of serial number
+  uint8_t imu_id_leading_byte;
+
   MESSAGE(ImuMessage,
           accel_mpss_x,
           accel_mpss_y,
@@ -34,7 +37,8 @@ struct ImuMessage : Message {
           mag_utesla_x,
           mag_utesla_y,
           mag_utesla_z,
-          timestamp);
+          timestamp,
+          imu_id_leading_byte);
 };
 
 }  // namespace jet

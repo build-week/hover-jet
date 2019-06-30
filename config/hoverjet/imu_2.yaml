@@ -1,0 +1,6 @@
+bus: "/dev/i2c-5"
+imus:
+  - channel: "imu_2"
+    location_description: "Beneath the primary camera"
+    i2c_address: 0x29
+    unique_id: 240ebc03-4b46-4d51-2020-204c18340aff
