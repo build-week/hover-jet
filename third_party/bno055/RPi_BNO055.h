@@ -291,6 +291,7 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
     bool  isFullyCalibrated(void);
 
     void configure_page_1(int address, uint8_t value);
+    uint8_t read_page_1(int address);
 
     int16_t _HandleBNO;
     int _i2cChannel;
