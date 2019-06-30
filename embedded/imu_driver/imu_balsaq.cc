@@ -21,7 +21,9 @@ void ImuBq::init(const Config& config) {
     std::cout << "IMU starting (" << sub_config["location_description"].as<std::string>() << ")" << std::endl;
     // Must be read as an int, then narrowing conversion.
     const uint8_t i2c_address = static_cast<uint8_t>(sub_config["i2c_address"].as<int>());
-    const int unique_identifier = xg::Guid(sub_config["unique_id"].as<std::string>()).bytes()[0];
+
+    const xg::Guid expected_imu_guid(sub_config["unique_id"].as<std::string>());
+    const int unique_identifier = expected_imu_guid.bytes()[0];
 
     std::cout << "Starting IMU '" << unique_identifier << "' on:" << bus << ":" << std::hex
               << static_cast<int>(i2c_address) << std::endl;
@@ -34,10 +36,19 @@ void ImuBq::init(const Config& config) {
                             .i2c_bus = bus});
 
     const bool init_success = imu_drivers_.back().reset();
+
+
     if (!init_success) {
       gonogo().nogo("Failed to intialize IMU driver");
       all_go = false;
+      break;
     }
+
+    const bool got_correct_guid = (imu_drivers_.back().driver.imu_guid() == expected_imu_guid);
+    if (!got_correct_guid) {
+      throw std::runtime_error("GUID mismatch with IMU");
+    }
+
   }
 
   if (all_go) {

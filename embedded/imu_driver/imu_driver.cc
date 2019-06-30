@@ -13,9 +13,6 @@
 #include "third_party/bno055/utility/imumaths.h"
 #include "third_party/experiments/eigen.hh"
 
-// TODO
-#include <iomanip>
-
 namespace jet {
 namespace embedded {
 
