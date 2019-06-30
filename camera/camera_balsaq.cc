@@ -41,13 +41,13 @@ void CameraBq::init(const Config& config) {
   const Camera camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   camera_serial_number_ = camera.serial_number;
   std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
-  cap = cv::VideoCapture(camera.video_index);
+  cap_ = cv::VideoCapture(camera.v4l_path);
 
   camera_config_ = generate_capture_config(config);
 
-  cap.set(cv::CAP_PROP_FRAME_WIDTH, camera_config_.width_pixels);
-  cap.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
-  cap.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
+  cap_.set(cv::CAP_PROP_FRAME_WIDTH, camera_config_.width_pixels);
+  cap_.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
+  cap_.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
 
   publisher_ = make_publisher("camera_image_channel");
 }
@@ -56,12 +56,12 @@ void CameraBq::loop() {
   cv::Mat camera_frame;
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
 
-  cap.set(cv::CAP_PROP_AUTOFOCUS, camera_config_.auto_focus);
-  cap.set(cv::CAP_PROP_AUTO_EXPOSURE, camera_config_.auto_exposure);
-  cap.set(cv::CAP_PROP_EXPOSURE, camera_config_.exposure);
+  cap_.set(cv::CAP_PROP_AUTOFOCUS, camera_config_.auto_focus);
+  cap_.set(cv::CAP_PROP_AUTO_EXPOSURE, camera_config_.auto_exposure);
+  cap_.set(cv::CAP_PROP_EXPOSURE, camera_config_.exposure);
 
   const auto current_time = get_current_time();
-  if (cap.read(camera_frame)) {
+  if (cap_.read(camera_frame)) {
     gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
     CameraImageMessage message;

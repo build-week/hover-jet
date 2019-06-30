@@ -14,14 +14,14 @@ struct CameraImageMessage : Message {
   uint width, height;
   std::string camera_serial_number;
 
-  MESSAGE(CameraImageMessage, 
-          image_data, 
+  MESSAGE(CameraImageMessage,
+          image_data,
           timestamp,
-          width, 
+          width,
           height,
           camera_serial_number);
 };
 
-cv::Mat get_image_mat(CameraImageMessage message);
+cv::Mat get_image_mat(const CameraImageMessage& message);
 
 }  //  namespace jet
