@@ -25,7 +25,7 @@ void CameraManager::load_configs() {
     }
     std::optional<YAML::Node> config = read_YAML(filename);
     std::optional<Camera> camera = parse_config(*config);
-    if (camera) {
+    if (camera.has_value()) {
       camera_map_[camera->serial_number] = *camera;
     }
   }
@@ -45,9 +45,13 @@ std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
   // path & video index
   camera.serial_number = cfg["serial_number"].as<std::string>();
   camera.v4l_path = "/dev/v4l/by-id/" + cfg["v4l_path"].as<std::string>();
-  camera.video_index = *follow_v4l_path(camera.v4l_path);
-  if (!camera.video_index) {
+  const auto optional_camera_index = follow_v4l_path(camera.v4l_path);
+  
+  if (!optional_camera_index.has_value()){
     return std::nullopt;
+  }
+  else{
+    camera.video_index = optional_camera_index.value();
   }
   // calibration values
   std::vector<double> camera_matrix_values = cfg["camera_matrix"].as<std::vector<double>>();
@@ -60,12 +64,13 @@ std::optional<Camera> CameraManager::parse_config(const YAML::Node& cfg) const {
 std::optional<int> CameraManager::follow_v4l_path(const std::string& path) const {
   std::error_code ec;
   const std::string v4l_path = fs::canonical(path, ec).string();
-  const int index = v4l_path.back() - '0'; // note that this will break for >10 cameras
   if (ec) {
     return std::nullopt;
-  } else {
-    return index;
-  }
+  } 
+  // note that this will break for >10 cameras
+  // TODO better way
+  const int index = v4l_path.back() - '0';
+  return index;
 }
 
 Camera CameraManager::get_camera(const std::string& serial_number) const {
