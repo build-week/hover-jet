@@ -25,7 +25,7 @@ void go(const std::string& bus, const uint8_t imu_id) {
     if (drv == Eigen::Vector3d::Zero()) {
       std::cout << "(1) All zeros, this is the problem, @Mason" << std::endl;
       // Reinitializing seems to fix it, uncomment the next line if you want to try that
-      driver.initialize("/dev/i2c-1", imu_id);
+      driver.initialize(bus, imu_id);
     }
 
     driver.read_accel_mpss().transpose();

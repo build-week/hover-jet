@@ -32,7 +32,7 @@ bool ImuDriver::initialize(const std::string& i2c_bus, const uint8_t i2c_address
   do {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // TODO
-    std::cout << "Attempting to reconnect to bno (If this happens more than once, hold the RST pin high for 5 sec)"
+    std::cout << "Attempting to reconnect to bno (If this happens more than once, power reset the IMU)"
               << std::endl;
     ++tries;
   } while (!bno_->begin(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG) && (tries < MAX_TRIES));
