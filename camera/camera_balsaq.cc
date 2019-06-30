@@ -18,7 +18,7 @@ namespace {
 // Has no defaulting behavior.
 CameraConfiguration generate_capture_config(const Config& config) {
   assert(config["frames_per_second"]);
-  assert(config["exposure"]);
+  assert(config["webcam_exposure"]);
   assert(config["auto_focus"]);
   assert(config["auto_exposure"]);
   assert(config["width_pixels"]);
@@ -27,7 +27,7 @@ CameraConfiguration generate_capture_config(const Config& config) {
   CameraConfiguration camera_config;
   {
     camera_config.frames_per_second = config["frames_per_second"].as<int>();
-    camera_config.exposure = config["exposure"].as<double>();
+    camera_config.exposure = config["webcam_exposure"].as<double>();
     camera_config.auto_focus = config["auto_focus"].as<int>();
     camera_config.auto_exposure = config["auto_exposure"].as<double>();
     camera_config.width_pixels = config["width_pixels"].as<int>();

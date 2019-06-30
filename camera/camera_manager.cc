@@ -43,8 +43,8 @@ std::optional<Camera> extract_v4l_path(const YAML::Node& cfg) {
 
 CameraManager::CameraManager() {
   load_configs();
-  if (camera_map_.size() == 0) {
-    std::string err = std::string("No camera configs read!");
+  if (calibration_map_.size() == 0) {
+    std::string err = std::string("No calibrations read!");
     throw std::runtime_error(err);
   }
 }
