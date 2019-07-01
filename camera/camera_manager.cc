@@ -72,8 +72,9 @@ void CameraManager::load_configs() {
       camera_from_serial_[camera->serial_number] = *camera;
     }
 
+    const auto serial_number = (*config)["serial_number"].as<std::string>();
     const auto calibration = extract_calibration(*config);
-    camera_calibration_from_serial_[camera->serial_number] = calibration;
+    camera_calibration_from_serial_[serial_number] = calibration;
   }
 }
 

@@ -19,8 +19,9 @@ void MessageLoggerBQ::init(const Config& config) {
   assert(config["log_base_path"]);
 
   // Load log channels
-  const std::vector<std::string> logged_channels = config["logged_channels"].as<std::vector<std::string>>();
+  channels_ = config["logged_channels"].as<std::vector<std::string>>();
   const std::string log_base_path = config["log_base_path"].as<std::string>();
+
 
   // Generate a log name. Log name will be the UTC date and time in the format YYYYMMDDHHMMSS
   time_t now = time(0);

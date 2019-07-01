@@ -17,7 +17,6 @@ struct Calibration {
 struct Camera {
   std::string serial_number;
   std::string v4l_path;
-  Calibration calibration;
 };
 
 class CameraManager {
