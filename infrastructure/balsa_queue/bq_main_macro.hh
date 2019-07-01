@@ -29,9 +29,9 @@ void signal_handler(int s) {
       }                                                                       \
     }                                                                         \
     bq_type balsa_queue = bq_type();                                          \
-    if (config["id"]) {                                                       \
-      balsa_queue.set_name(config["id"].as<std::string>());                   \
-      balsa_queue.gonogo().setName(config["id"].as<std::string>());           \
+    if (config["bq_name"]) {                                                  \
+      balsa_queue.set_name(config["bq_name"].as<std::string>());              \
+      balsa_queue.gonogo().setName(config["bq_name"].as<std::string>());      \
     } else {                                                                  \
       balsa_queue.set_name(#bq_type);                                         \
       balsa_queue.gonogo().setName(#bq_type);                                 \
