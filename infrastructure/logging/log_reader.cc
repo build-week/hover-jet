@@ -59,10 +59,15 @@ bool LogReader::read_next_message(const std::string& channel_name, Message& mess
   auto channel_it = channels_.find(channel_name);
   if (channel_it != channels_.end()) {
     auto& file = channel_it->second.current_file;
+
     uint32_t channel_id;
     uint32_t message_length;
     file.read((char*) &channel_id, sizeof(uint32_t));
     file.read((char*) &message_length, sizeof(uint32_t));
+
+    if (file.eof()) {
+      return false;
+    }
     std::string message_data(message_length, ' ');
     file.read(&message_data[0], message_length);
     if (!file) {
