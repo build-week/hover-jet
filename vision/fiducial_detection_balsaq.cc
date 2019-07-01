@@ -31,7 +31,7 @@ void FidicualDetectionBq::loop() {
   if (got_msg) {
     gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
-    const Calibration camera_calibration = camera_manager_.get_camera(image_message.camera_serial_number).calibration;
+    const Calibration camera_calibration = camera_manager_.get_calibration(image_message.camera_serial_number);
     const cv::Mat camera_frame = get_image_mat(image_message);
     const std::optional<SE3> board_from_camera = estimate_board_center_from_camera_from_image(camera_frame, camera_calibration);
     if (board_from_camera) {

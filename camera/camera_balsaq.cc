@@ -77,8 +77,6 @@ void CameraBq::loop() {
     message.camera_serial_number = camera_serial_number_;
     publisher_->publish(message);
 
-    cv::imshow("Banana", camera_frame);
-    cv::waitKey(1);
     std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
