@@ -28,9 +28,9 @@
 #include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
 
 //
+#include "camera/camera_manager.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
-#include "camera/camera_manager.hh"
 
 namespace jet {
 namespace filtering {
@@ -435,6 +435,7 @@ void go() {
       }
     }
 
+    /*
     if (USE_CAMERA_IMAGES) {
       CameraImageMessage cam_msg;
       if (reader.read_next_message("camera_image_channel", cam_msg)) {
@@ -460,6 +461,7 @@ void go() {
         }
       }
     }
+    */
 
     if (USE_FIDUCIAL_DETECTIONS) {
       FiducialDetectionMessage fiducial_msg;
