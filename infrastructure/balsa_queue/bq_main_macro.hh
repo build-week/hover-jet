@@ -19,11 +19,6 @@ void signal_handler(int s) {
     sigemptyset(&sigIntHandler.sa_mask);                                      \
     sigIntHandler.sa_flags = 0;                                               \
     sigaction(SIGINT, &sigIntHandler, NULL);                                  \
-    bq_type balsa_queue = bq_type();                                          \
-    balsa_queue.set_name(#bq_type);                                           \
-    balsa_queue.gonogo().setName(#bq_type);                                   \
-    balsa_queue.gonogo().nogo("init");                                        \
-    balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
     YAML::Node config;                                                        \
     if (argc > 1) {                                                           \
       try {                                                                   \
@@ -33,6 +28,16 @@ void signal_handler(int s) {
         config = YAML::Node();                                                \
       }                                                                       \
     }                                                                         \
+    bq_type balsa_queue = bq_type();                                          \
+    if (config["id"]) {                                                       \
+      balsa_queue.set_name(config["id"].as<std::string>());                   \
+      balsa_queue.gonogo().setName(config["id"].as<std::string>());           \
+    } else {                                                                  \
+      balsa_queue.set_name(#bq_type);                                         \
+      balsa_queue.gonogo().setName(#bq_type);                                 \
+    }                                                                         \
+    balsa_queue.gonogo().nogo("init");                                        \
+    balsa_queue.set_comms_factory(std::make_unique<jet::MqttCommsFactory>()); \
     balsa_queue.init(config);                                                 \
     while (!shutdown) {                                                       \
       balsa_queue.loop();                                                     \
