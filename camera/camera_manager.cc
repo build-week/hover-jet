@@ -8,6 +8,10 @@ namespace fs = std::experimental::filesystem;
 namespace jet {
 namespace {
 
+std::string config_search_location() {
+  return "/jet/camera/cfg";
+}
+
 std::optional<YAML::Node> read_YAML(const std::string& filepath) {
   try {
     return YAML::LoadFile(filepath);
@@ -28,7 +32,6 @@ Calibration extract_calibration(const YAML::Node& cfg) {
 
 std::optional<Camera> extract_v4l_path(const YAML::Node& cfg) {
   Camera camera;
-  // path & video index
   camera.serial_number = cfg["serial_number"].as<std::string>();
   camera.v4l_path = "/dev/v4l/by-id/" + cfg["v4l_path"].as<std::string>();
 
@@ -43,7 +46,7 @@ std::optional<Camera> extract_v4l_path(const YAML::Node& cfg) {
 
 CameraManager::CameraManager() {
   load_configs();
-  if (calibration_map_.size() == 0) {
+  if (camera_calibration_from_serial_.size() == 0) {
     std::string err = std::string("No calibrations read!");
     throw std::runtime_error(err);
   }
@@ -52,7 +55,7 @@ CameraManager::CameraManager() {
 void CameraManager::load_configs() {
   // directory iteration from
   // https://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c/37494654#37494654
-  const std::string config_dir = "/jet/camera/cfg";
+  const std::string config_dir = config_search_location();
   for (const auto& entry : fs::directory_iterator(config_dir)) {
     const std::string filename = entry.path();
     if (filename == "." || filename == "..") {
@@ -61,33 +64,33 @@ void CameraManager::load_configs() {
 
     const std::optional<YAML::Node> config = read_YAML(filename);
     if (!config) {
-      throw std::runtime_error("Could not open config");
+      continue;
     }
 
     const std::optional<Camera> camera = extract_v4l_path(*config);
     if (camera.has_value()) {
-      camera_map_[camera->serial_number] = *camera;
+      camera_from_serial_[camera->serial_number] = *camera;
     }
 
     const auto calibration = extract_calibration(*config);
-    calibration_map_[camera->serial_number] = calibration;
+    camera_calibration_from_serial_[camera->serial_number] = calibration;
   }
 }
 
 Calibration CameraManager::get_calibration(const std::string& serial_number) const {
-  if (calibration_map_.count(serial_number) == 0) {
-    const std::string err = std::string("Camera serial number is not known.");
+  if (camera_calibration_from_serial_.count(serial_number) == 0) {
+    const std::string err = std::string("Could not find a camera serial number in: ") + config_search_location();
     throw std::runtime_error(err);
   }
-  return calibration_map_.at(serial_number);
+  return camera_calibration_from_serial_.at(serial_number);
 }
 
 Camera CameraManager::get_camera(const std::string& serial_number) const {
-  if (camera_map_.count(serial_number) == 0) {
-    const std::string err = std::string("Camera is not plugged in");
-    throw std::runtime_error(err);
+  if (camera_from_serial_.count(serial_number) == 0) {
+    std::stringstream ss;
+    ss << "The camera we are looking for (" << serial_number << ") is not present in /dev/v4l";
+    throw std::runtime_error(ss.str());
   }
-  return camera_map_.at(serial_number);
+  return camera_from_serial_.at(serial_number);
 }
-
 }  // namespace jet

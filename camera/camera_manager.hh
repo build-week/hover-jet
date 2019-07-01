@@ -17,6 +17,7 @@ struct Calibration {
 struct Camera {
   std::string serial_number;
   std::string v4l_path;
+  Calibration calibration;
 };
 
 class CameraManager {
@@ -27,8 +28,8 @@ class CameraManager {
 
  private:
   void load_configs();
-  std::map<std::string, Camera> camera_map_;
-  std::map<std::string, Calibration> calibration_map_;
+  std::map<std::string, Camera> camera_from_serial_;
+  std::map<std::string, Calibration> camera_calibration_from_serial_;
 };
 
 }  // namespace jet
