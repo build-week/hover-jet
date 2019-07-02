@@ -5,7 +5,7 @@ Hover-Jet
 Most of the commands in this file are copied from there.
 https://github.com/build-week/hover-jet/wiki
 
-# How to get the docker image
+# How to get the Docker image
 ### Installing Docker Community Edition
 ```shell
 # Install prerequisites to add the Docker CE PPA
@@ -50,8 +50,8 @@ git pull --rebase origin master
 
 # How to Build
 
-All compiling and running should be done *inside the docker*. There should be no exception to this.
-It's typically that managing git and editing files is done outside of the docker, on the host machine
+All compiling and running should be done *inside the Docker container*. There should be no exception to this.
+It's typically that managing git and editing files is done outside of the Docker container, on the host machine
 
 ### How to build *nominally*
 ```shell
@@ -62,18 +62,18 @@ jet run <bash command>
 
 If this fails, you may have to do the submodule init steps.
 
-### Using the shell inside the docker image (Sometimes useful for debugging)
+### Using the shell inside the Docker container (Sometimes useful for debugging)
 Note: You should be using jet build or jet run, instead of these bash scripts
 ```shell
-# Make sure the docker image is up to date
+# Make sure the Docker image is up to date
 docker pull hoverjet/jet
-# Enter the docker image
+# Enter the Docker image
 docker run -it -v ~/repos/hover-jet:/jet hoverjet/jet
 ```
 
-Now, inside thedocker image
+Now, inside the Docker container
 ```shell
-# Make sure you're in the docker image!!!!!!!
+# Make sure you're in the Docker container!!!!!!!
 cd hover-jet
 
 mkdir -p bin

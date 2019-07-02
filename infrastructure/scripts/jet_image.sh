@@ -6,11 +6,11 @@ function help () {
 cat <<-END
 Usage: jet build
 
-Builds a new jet docker image for your host's architecture.
+Builds a new jet Docker image for your host's architecture.
 
 -h| --help           Show this message
-pull| --pull         Pull the most recent version of the hoverjet/jet docker image
--p| --push           Push this image to dockerhub on build completion
+pull| --pull         Pull the most recent version of the hoverjet/jet Docker image
+-p| --push           Push this image to Docker Hub on build completion
 --latest             Tag the image as "latest" on build completion
 --no-cache           Run a clean build of the image, reperforming every cached step
 END
