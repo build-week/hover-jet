@@ -6,20 +6,32 @@ Most of the commands in this file are copied from there.
 https://github.com/build-week/hover-jet/wiki
 
 # How to get the docker image
+### Installing Docker Community Edition
 ```shell
+# Install prerequisites to add the Docker CE PPA
 sudo apt-get update
-sudo apt-get install apt-transport-https ca-certificates curl software-properties-common -y
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo apt-key fingerprint 0EBFCD88
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
 
-# replace amd64 with armhf for odroid on this next line
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+# Add the Docker CE PPA's GPG key using GPG as a middleman
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --import
+gpg --export 0EBFCD88 | sudo apt-key add
 
+# Add the Docker CE PPA's APT sources list
+sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+# Install the Docker CE package
 sudo apt-get update
-sudo apt-get install docker-ce -y
-sudo usermod -aG docker $USER
+sudo apt-get install docker-ce
 
+# Add the user to the "docker" group so they can orchestrate the daemon
+sudo usermod -aG docker "$USER"
+```
 
+### Pulling the latest image
+
+You will need to log out and back in for the `docker` group to be added before you can pull the image.
+
+```shell
 docker pull hoverjet/jet
 ```
 
