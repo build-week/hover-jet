@@ -66,7 +66,7 @@ void CameraBq::loop() {
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
 
   if (cap_.read(camera_frame)) {
-    // Get the image capture timestamp
+    // Get the image capture timestamp, which is the time that the first byte was captured, as returned by clock_gettime(). 
     const long int cap_time_msec = cap_.get(cv::CAP_PROP_POS_MSEC);
     const Timestamp cap_time_vehicle = msec_monotonic_to_vehicle_monotonic(cap_time_msec);
     gonogo().go();
