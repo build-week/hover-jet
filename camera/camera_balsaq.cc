@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 namespace jet {
 
@@ -27,9 +28,9 @@ CameraConfiguration generate_capture_config(const Config& config) {
   CameraConfiguration camera_config;
   {
     camera_config.frames_per_second = config["frames_per_second"].as<int>();
-    camera_config.exposure = config["webcam_exposure"].as<double>();
+    camera_config.exposure = config["webcam_exposure"].as<int>();
     camera_config.auto_focus = config["auto_focus"].as<int>();
-    camera_config.auto_exposure = config["auto_exposure"].as<double>();
+    camera_config.auto_exposure = config["auto_exposure"].as<int>();
     camera_config.width_pixels = config["width_pixels"].as<int>();
     camera_config.height_pixels = config["height_pixels"].as<int>();
   }
@@ -48,6 +49,14 @@ void CameraBq::init(const Config& config) {
   cap_.set(cv::CAP_PROP_FRAME_WIDTH, camera_config_.width_pixels);
   cap_.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
   cap_.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
+  cap_.set(cv::CAP_PROP_AUTOFOCUS, camera_config_.auto_focus);
+  cap_.set(cv::CAP_PROP_AUTO_EXPOSURE, camera_config_.auto_exposure);
+
+  // Must grab a frame to fully turn on the camera
+  cap_.grab();
+
+  // After the camera is turned on, we set the exposure.
+  cap_.set(cv::CAP_PROP_EXPOSURE, camera_config_.exposure);
 
   publisher_ = make_publisher("camera_image_channel");
 }
@@ -56,18 +65,12 @@ void CameraBq::loop() {
   cv::Mat camera_frame;
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
 
-  cap_.set(cv::CAP_PROP_AUTOFOCUS, camera_config_.auto_focus);
-  cap_.set(cv::CAP_PROP_AUTO_EXPOSURE, camera_config_.auto_exposure);
-  cap_.set(cv::CAP_PROP_EXPOSURE, camera_config_.exposure);
-
-  if (cap.read(camera_frame)) {
+  if (cap_.read(camera_frame)) {
     // Get the image capture timestamp
-    const long int cap_time_msec = cap.get(cv::CAP_PROP_POS_MSEC);
+    const long int cap_time_msec = cap_.get(cv::CAP_PROP_POS_MSEC);
     const Timestamp cap_time_vehicle = msec_monotonic_to_vehicle_monotonic(cap_time_msec);
     gonogo().go();
     last_msg_recvd_timestamp_ = cap_time_vehicle;
-
-    std::cout << "T: " << cap_time_vehicle << std::endl;
 
     // Pack a message
     CameraImageMessage message;
@@ -107,11 +110,6 @@ Timestamp CameraBq::msec_monotonic_to_vehicle_monotonic(long int cap_time_msec) 
   const auto cap_time_vehicle = cur_time_vehicle - cur_time_from_cap_time;
 
   const auto wall_from_monotonic = (cur_time_vehicle.time_since_epoch()) - (cur_time_monotonic.time_since_epoch());
-
-  std::cout << "Offset:              " << cur_time_from_cap_time.count() << std::endl;
-  std::cout << "Cap msec:            " << cap_time_msec << std::endl;
-  std::cout << "Monotonic:           " << cur_time_monotonic.time_since_epoch().count() << std::endl;
-  std::cout << "Wall from monotonic: " << wall_from_monotonic.count() << std::endl;
 
   return Timestamp(cap_time_vehicle);
 }
