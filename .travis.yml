@@ -1,6 +1,6 @@
 language: cpp
 script: ./run_docker.sh
-# 18.04 not supported by travis yet; todo: docker
+# 18.04 not supported by travis yet; todo: Docker
 dist: xenial
 services:
   - docker
