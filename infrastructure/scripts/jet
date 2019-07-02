@@ -4,14 +4,14 @@ function help () {
 cat <<-END
 Usage: jet COMMAND
 
-Builds a new jet docker image for your host's architecture.
+Builds a new jet Docker image for your host's architecture.
 
 -h| --help           Show this message
 
 commands:
 build                Build the jet code
-image                Build a new jet docker image
-run                  Run an executable inside of a docker container
+image                Build a new jet Docker image
+run                  Run an executable inside of a Docker container
 deploy               Run jet software on a vehicle or bench
 broker               Configure the IPC Broker on this host
 END

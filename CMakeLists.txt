@@ -22,7 +22,7 @@ execute_process(
 )
 if(ret EQUAL "1")
     message(FATAL_ERROR "Could not run pymake; Suggested solutions:
-        Are you running in the docker image?
+        Are you running in the Docker container?
         Have you run `sudo pip install generate-cmake`?
         Talk to Ben or Jake if you expect this to work.
     ")

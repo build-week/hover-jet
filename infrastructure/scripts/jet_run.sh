@@ -6,7 +6,7 @@ function help () {
 cat <<-END
 Usage: jet run COMMAND
 
-Starts a docker container from the jet image, then executes the specified command inside of it. If no command is specified, bash will be run.
+Starts a Docker container based on the jet image, then executes the specified command inside of it. If no command is specified, bash will be run.
 
 -h| --help           Show this message
 END
