@@ -9,8 +9,8 @@ namespace jet {
 class Timestamp {
  public:
   // So that everything uses the same block
-  using Clock = std::chrono::system_clock;
-  using ClockPoint = Clock::time_point;
+  using SystemClock = std::chrono::system_clock;
+  using ClockPoint = SystemClock::time_point;
   using TimestampRatio = std::chrono::nanoseconds;
 
   Timestamp() = default;
@@ -18,7 +18,7 @@ class Timestamp {
     timestamp_ = nanoseconds_since_epoch;
   };
 
-  // Construct from a std::chrono timepoint, namely the `Clock` specified in this header
+  // Construct from a std::chrono timepoint, namely the `SystemClock` specified in this header
   Timestamp(const ClockPoint& time) {
     const auto time_nanos = std::chrono::duration_cast<TimestampRatio>(time.time_since_epoch());
     timestamp_ = time_nanos.count();
@@ -42,7 +42,7 @@ class Timestamp {
  private:
   // Get the current time from the timestamp clock as a time point
   static ClockPoint current_time_point() {
-    return Clock::now();
+    return SystemClock::now();
   }
 
   uint64_t timestamp_{0};
