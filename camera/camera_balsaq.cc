@@ -67,10 +67,10 @@ void CameraBq::init(const Config& config) {
 }
 
 void CameraBq::loop() {
-  cv::Mat camera_frame;
+  cv::Mat camera_frame_rgb;
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
 
-  if (cap_.read(camera_frame)) {
+  if (cap_.read(camera_frame_rgb)) {
     // Get the image capture timestamp, which is the time that the first byte was captured, as returned by clock_gettime(). 
     const long int cap_time_msec = cap_.get(cv::CAP_PROP_POS_MSEC);
     const Timestamp cap_time_vehicle = msec_monotonic_to_vehicle_monotonic(cap_time_msec);
@@ -79,15 +79,21 @@ void CameraBq::loop() {
 
     // Pack a message
     CameraImageMessage message;
-    const std::size_t n_elements = camera_frame.rows * camera_frame.cols * 3u;
-    message.image_data.resize(n_elements);
+    cv::Mat image_gray;
+    cv::cvtColor(camera_frame_rgb, image_gray, cv::COLOR_BGR2GRAY);
+
+    constexpr uint8_t IMAGE_DEPTH = 1u;
+    const std::size_t n_elements = image_gray.rows * image_gray.cols * IMAGE_DEPTH;
     constexpr std::size_t SIZE_OF_UCHAR = sizeof(uint8_t);
-    if (camera_frame.isContinuous()) {
-      std::memcpy(message.image_data.data(), camera_frame.data, SIZE_OF_UCHAR * n_elements);
+    message.image_data.resize(n_elements);
+    if (image_gray.isContinuous()) {
+      std::memcpy(message.image_data.data(), image_gray.data, SIZE_OF_UCHAR * n_elements);
+    } else {
+      std::cerr << "Cannot possibly make good frames" << std::endl;
     }
     message.timestamp = cap_time_vehicle;
-    message.height = camera_frame.size().height;
-    message.width = camera_frame.size().width;
+    message.height = image_gray.size().height;
+    message.width = image_gray.size().width;
     message.camera_serial_number = camera_serial_number_;
     publisher_->publish(message);
     std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
