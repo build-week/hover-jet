@@ -7,6 +7,39 @@ Hover-Jet
 Most of the commands in this file are copied from [there](https://github.com/build-week/hover-jet/wiki).
 
 
+# How to pull
+
+### Pulling the first time
+
+This step assumes that you don't have a Git Hub account, but feel free to use
+SSH to pull the repository, as is described in the wiki, if you do.
+
+```shell
+# Clone the hover-jet repository
+git clone https://github.com/build-week/hover-jet.git
+cd hover-jet
+
+# Initialize the experiments submodule
+git submodule init third_party/experiments/
+git submodule update third_party/experiments/
+```
+
+### Pulling in new changes from upstream
+
+```shell
+# Rebase any local changes onto upstream's master branch
+git pull --rebase origin master
+```
+
+
+# How to bootstrap your shell environment
+
+```shell
+# Run the bootstrap script to modify the "$PATH" this shell and all new shells
+./hover-jet/infrastructure/scripts/environment_bootstrap.sh
+```
+
+
 # How to get the Docker image
 
 ### Installing Docker Community Edition
@@ -38,28 +71,6 @@ You will need to log out and back in for the `docker` group to be added before y
 ```shell
 # Pull the latest jet Docker image
 docker pull hoverjet/jet
-```
-
-
-# How to pull
-
-### Pulling the first time
-
-```shell
-# Clone the hover-jet repository
-git clone https://github.com/build-week/hover-jet.git
-cd hover-jet
-
-# Initialize the experiments submodule
-git submodule init third_party/experiments/
-git submodule update third_party/experiments/
-```
-
-# Pulling in new changes from upstream
-
-```shell
-# Rebase any local changes onto upstream's master branch
-git pull --rebase origin master
 ```
 
 
