@@ -34,10 +34,6 @@ void FidicualDetectionBq::loop() {
     const Calibration camera_calibration = camera_manager_.get_camera(image_message.camera_serial_number).calibration;
     const cv::Mat camera_frame = get_image_mat(image_message);
     const auto ids_corners = get_ids_and_corners(camera_frame);
-    std::cout << ids_corners.ids.size() << std::endl;
-    for (auto & element : ids_corners.ids) {
-      std::cout << "  " << element << std::endl;
-    }
     const std::optional<SE3> board_from_camera =
         estimate_board_center_from_camera_from_image(ids_corners, camera_calibration);
     if (board_from_camera) {
@@ -54,7 +50,6 @@ void FidicualDetectionBq::loop() {
       detection_message.timestamp = image_message.header.timestamp_ns;
 
       std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(ids_corners);
-      std::cout << "associated pts" << board_point_assocs.size() << std::endl;
       detection_message.board_points_image_points = board_point_assocs;
 
       publisher_->publish(detection_message);
