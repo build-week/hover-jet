@@ -348,6 +348,47 @@ imu::Vector<3> Adafruit_BNO055::getVector(adafruit_vector_type_t vector_type) {
   return xyz;
 }
 
+bool Adafruit_BNO055::getVectors( jcc::Vec3& accel, jcc::Vec3& gyro, jcc::Vec3& mag ) {
+  constexpr uint8_t num_registers_to_read = 6 * 3;
+
+  uint8_t buffer[num_registers_to_read];
+  int16_t ax, ay, az, gx, gy, gz, mx, my, mz;
+  ax = ay = az = gx = gy = gz = mx = my = mz = 0;
+
+  if (!readLen((adafruit_bno055_reg_t)BNO055_ACCEL_DATA_X_LSB_ADDR, buffer, num_registers_to_read)) {
+    return false;
+  }
+
+  ax = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
+  ay = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
+  az = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
+
+  gx = ((int16_t)buffer[6]) | (((int16_t)buffer[7]) << 8);
+  gy = ((int16_t)buffer[8]) | (((int16_t)buffer[9]) << 8);
+  gz = ((int16_t)buffer[10]) | (((int16_t)buffer[11]) << 8);
+
+  mx = ((int16_t)buffer[12]) | (((int16_t)buffer[13]) << 8);
+  my = ((int16_t)buffer[14]) | (((int16_t)buffer[15]) << 8);
+  mz = ((int16_t)buffer[16]) | (((int16_t)buffer[19]) << 8);
+
+  constexpr double RADPS_PER_LSB = get_rad_per_lsb_gyro();
+  constexpr double MPSS_PER_LSB = get_mpss_per_lsb_accel();
+
+  accel[0] = static_cast<double>(ax) * MPSS_PER_LSB;
+  accel[1] = static_cast<double>(ay) * MPSS_PER_LSB;
+  accel[2] = static_cast<double>(az) * MPSS_PER_LSB;
+
+  gyro[0] = static_cast<double>(gx) * RADPS_PER_LSB;
+  gyro[1] = static_cast<double>(gy) * RADPS_PER_LSB;
+  gyro[2] = static_cast<double>(gz) * RADPS_PER_LSB;
+
+  mag[0] = ((double)mx) / 16.0;
+  mag[1] = ((double)my) / 16.0;
+  mag[2] = ((double)mz) / 16.0;
+
+  return true;
+}
+
 /**************************************************************************/
 /*!
         @brief    Gets a quaternion reading from the specified source

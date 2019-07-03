@@ -25,6 +25,8 @@
 #include "RPi_Sensor.h"
 #include "third_party/i2c/i2c.h"
 #include "third_party/bno055/utility/imumaths.h"
+#include "third_party/experiments/eigen.hh"
+
 
 #define BNO055_ADDRESS_A (0x28)
 #define BNO055_ADDRESS_B (0x29)
@@ -274,6 +276,7 @@ class Adafruit_BNO055 : public Adafruit_Sensor {
     void  getCalibration      ( uint8_t* system, uint8_t* gyro, uint8_t* accel, uint8_t* mag);
 
     imu::Vector<3>  getVector ( adafruit_vector_type_t vector_type );
+    bool            getVectors( jcc::Vec3& accel, jcc::Vec3& gyro, jcc::Vec3& mag );
     imu::Quaternion getQuat   ( void );
     int8_t          getTemp   ( void );
 

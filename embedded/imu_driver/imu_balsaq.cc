@@ -3,6 +3,8 @@
 #include "embedded/imu_driver/imu_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
+
+
 #include <cstddef>
 #include <iostream>
 #include <iomanip>
@@ -44,8 +46,10 @@ void ImuBq::init(const Config& config) {
       break;
     }
 
-    const bool got_correct_guid = (imu_drivers_.back().driver.imu_guid() == expected_imu_guid);
+    const xg::Guid actual_guid = imu_drivers_.back().driver.imu_guid();
+    const bool got_correct_guid = (actual_guid == expected_imu_guid);
     if (!got_correct_guid) {
+      std::cout << "Recieved GUID: " << actual_guid << std::endl;;
       throw std::runtime_error("GUID mismatch with IMU");
     }
 
@@ -60,11 +64,16 @@ void ImuBq::loop() {
   bool all_go = true;
   for (auto& imu : imu_drivers_) {
     ImuMessage msg;
+
     msg.timestamp = get_current_time();
 
-    const jcc::Vec3 accel_mpss = imu.driver.read_accel_mpss();
-    const jcc::Vec3 angvel_radps = imu.driver.read_gyro_radps();
-    const jcc::Vec3 mag_utesla = imu.driver.read_magnetometer_utesla();
+    jcc::Vec3 accel_mpss = {};
+    jcc::Vec3 angvel_radps = {};
+    jcc::Vec3 mag_utesla = {};
+
+    if (!imu.driver.read_agm(accel_mpss, angvel_radps, mag_utesla)) {
+      throw std::runtime_error("Error reading IMU I2C");
+    }
 
     msg.accel_mpss_x = accel_mpss.x();
     msg.accel_mpss_y = accel_mpss.y();
