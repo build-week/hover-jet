@@ -38,15 +38,21 @@ class BalsaQ {
 
   void set_comms_factory(std::unique_ptr<CommsFactory> comms_factory);
 
+  void base_init();
+  void base_loop();
+
+  void publish_state();
+
  protected:
   std::unique_ptr<Publisher> make_publisher(const std::string& channel_name);
   std::unique_ptr<Subscriber> make_subscriber(const std::string& channel_name);
-  Timestamp get_current_time();
+  Timestamp get_current_time() const;
 
  private:
   GoNoGo gonogo_ = GoNoGo();
   std::string bq_name_;
   std::unique_ptr<CommsFactory> comms_factory_;
+  std::unique_ptr<Publisher> bq_state_publisher_;
 };
 
 }  // namespace jet

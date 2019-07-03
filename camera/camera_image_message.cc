@@ -2,7 +2,7 @@
 
 namespace jet {
 
-cv::Mat get_image_mat(CameraImageMessage message) {
+cv::Mat get_image_mat(const CameraImageMessage& message) {
   cv::Mat result = cv::Mat(message.height, message.width, CV_8UC3);
   const std::size_t n_elements = message.height * message.width * 3u;
   constexpr std::size_t SIZE_OF_UCHAR = sizeof(uint8_t);

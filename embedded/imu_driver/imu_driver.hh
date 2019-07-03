@@ -5,6 +5,9 @@
 #include "third_party/bno055/RPi_BNO055.h"
 #include "third_party/experiments/eigen.hh"
 
+// %deps(crossguid)
+#include <crossguid/guid.hpp>
+
 namespace jet {
 namespace embedded {
 
@@ -21,9 +24,9 @@ class ImuDriver {
  public:
   ImuDriver() = default;
 
-  // This function
+  // This function initializes the imu interface
   // WARNING: Must be called before sampling from the IMU
-  bool initialize();
+  bool initialize(const std::string& i2c_bus, const uint8_t i2c_address);
 
   // Sampling more frequently than this will provide no new measurements
   int sample_period_ms() const;
@@ -55,11 +58,18 @@ class ImuDriver {
   // @returns: Estimated magnetic field strength in the IMU frame
   jcc::Vec3 read_magnetometer_utesla();
 
+  const xg::Guid& imu_guid() const {
+    return guid_;
+  }
+
  private:
 
   bool set_amg_mode(int max_num_tries);
   bool initialized_ = false;
+  std::string i2c_bus_;
   std::shared_ptr<Adafruit_BNO055> bno_;
+
+  xg::Guid guid_;
 
   constexpr static double GYRO_FREQUENCY_HZ = 116.0;
   constexpr static double ACCEL_FREQUENCY_HZ = 125.0;

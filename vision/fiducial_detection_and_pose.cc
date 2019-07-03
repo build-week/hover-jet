@@ -2,9 +2,9 @@
 #include <cassert>
 #include <cstdlib>
 
-namespace jet { 
+namespace jet {
 
-std::tuple<std::vector<int>, std::vector<std::vector<cv::Point2f>>> get_ids_and_corners(const cv::Mat &input_image) {
+BoardIdsAndCorners get_ids_and_corners(const cv::Mat &input_image) {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   const auto params = cv::aruco::DetectorParameters::create();
@@ -14,15 +14,14 @@ std::tuple<std::vector<int>, std::vector<std::vector<cv::Point2f>>> get_ids_and_
   // TODO isaac make aruco_dictionary parameter of this method to allow for
   // multiple unique boards
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
-  return std::make_tuple(ids, corners);
+  BoardIdsAndCorners result = {ids, corners};
+  return result;
 }
 
-std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const cv::Mat &input_image) {
-  const auto ids_corners = get_ids_and_corners(input_image);
-  const auto ids = std::get<0>(ids_corners);
-  const auto corners = std::get<1>(ids_corners);
+std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const BoardIdsAndCorners& ids_corners) {
   cv::Mat boardPoints, imgPoints;
-  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), corners, ids, boardPoints, imgPoints);
+  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), ids_corners.corners, ids_corners.ids, boardPoints,
+                                          imgPoints);
   std::vector<BoardPointImagePointAssociation> result;
   for (int i = 0; i < boardPoints.rows; i++) {
     BoardPointImagePointAssociation association = {};
@@ -34,12 +33,8 @@ std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(co
   return result;
 }
 
-std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &input_image,
+std::optional<SE3> estimate_board_center_from_camera_from_image(const BoardIdsAndCorners& ids_corners,
                                                                 const Calibration &calibration) {
-  const auto ids_corners = get_ids_and_corners(input_image);
-  const auto ids = std::get<0>(ids_corners);
-  const auto corners = std::get<1>(ids_corners);
-
   const cv::Mat camera_matrix = calibration.camera_matrix;
   const cv::Mat distortion_coefficients = calibration.distortion_coefficients;
 
@@ -48,9 +43,8 @@ std::optional<SE3> estimate_board_center_from_camera_from_image(const cv::Mat &i
   cv::Mat rvec;
   cv::Mat tvec;
 
-  const int num_fiducials_detected_on_board =
-      cv::aruco::estimatePoseBoard(corners, ids, get_aruco_board(),
-        camera_matrix, distortion_coefficients, rvec, tvec);
+  const int num_fiducials_detected_on_board = cv::aruco::estimatePoseBoard(
+      ids_corners.corners, ids_corners.ids, get_aruco_board(), camera_matrix, distortion_coefficients, rvec, tvec);
   (void)num_fiducials_detected_on_board;
 
   if (tvec.size().height > 0) {

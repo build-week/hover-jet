@@ -28,9 +28,9 @@
 #include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
 
 //
+#include "camera/camera_manager.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
-#include "camera/camera_manager.hh"
 
 namespace jet {
 namespace filtering {
@@ -435,13 +435,15 @@ void go() {
       }
     }
 
+    /*
     if (USE_CAMERA_IMAGES) {
       CameraImageMessage cam_msg;
       if (reader.read_next_message("camera_image_channel", cam_msg)) {
         Calibration camera_calibration = camera_manager_.get_camera(cam_msg.camera_serial_number).calibration;
         const auto image = get_image_mat(cam_msg);
 
-        const auto result = estimate_board_center_from_camera_from_image(image, camera_calibration);
+        const auto result =
+            estimate_board_center_from_camera_from_image(get_ids_and_corners(image), camera_calibration);
         if (result) {
           const SE3 world_from_camera = *result;
 
@@ -460,6 +462,7 @@ void go() {
         }
       }
     }
+    */
 
     if (USE_FIDUCIAL_DETECTIONS) {
       FiducialDetectionMessage fiducial_msg;

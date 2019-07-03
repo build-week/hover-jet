@@ -1,0 +1,7 @@
+bus: "/dev/i2c-1"
+imus:
+  - channel: "imu_1"
+    location_description: "In the flight computer avionics bay"
+    i2c_address: 0x28
+    unique_id: 4e0475ea-5046-4d51-2020-203426290fff
+bq_name: flight_computer_imu
