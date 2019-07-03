@@ -1,12 +1,16 @@
 Hover-Jet
 =========
 
+
 # Look at the wiki for learning how to get started
-Most of the commands in this file are copied from there.
-https://github.com/build-week/hover-jet/wiki
+
+Most of the commands in this file are copied from [there](https://github.com/build-week/hover-jet/wiki).
+
 
 # How to get the Docker image
+
 ### Installing Docker Community Edition
+
 ```shell
 # Install prerequisites to add the Docker CE PPA
 sudo apt-get update
@@ -35,18 +39,22 @@ You will need to log out and back in for the `docker` group to be added before y
 docker pull hoverjet/jet
 ```
 
+
 # How to pull
+
 ### Pulling the first time
-```
+
+```shell
 git clone https://github.com/build-week/hover-jet.git
 cd hover-jet
 git submodule init
 git submodule update
 ```
 
-```
+```shell
 git pull --rebase origin master
 ```
+
 
 # How to Build
 
@@ -54,24 +62,28 @@ All compiling and running should be done *inside the Docker container*. There sh
 It's typically that managing git and editing files is done outside of the Docker container, on the host machine
 
 ### How to build *nominally*
+
 ```shell
 jet build <target>
-
 jet run <bash command>
 ```
 
 If this fails, you may have to do the submodule init steps.
 
 ### Using the shell inside the Docker container (Sometimes useful for debugging)
+
 Note: You should be using jet build or jet run, instead of these bash scripts
+
 ```shell
 # Make sure the Docker image is up to date
 docker pull hoverjet/jet
+
 # Enter the Docker image
 docker run -it -v ~/repos/hover-jet:/jet hoverjet/jet
 ```
 
 Now, inside the Docker container
+
 ```shell
 # Make sure you're in the Docker container!!!!!!!
 cd hover-jet
@@ -94,11 +106,11 @@ make -j7  # Where the 7 is the number of cores to use when building
     * Then you must manually specify, in either the `.hh` or `.cc` of your library, `%deps(the_lib_i_want)`
 
 ##### Using External Libraries
+
 * Third party libraries are typically not auto-linked through pymake, though this is an upcoming feature.
 * Instead, we must manually specify dependencies
 * Examples:
     * `%deps(opengl, glfw)`, `%deps(opencv)`
-
 
 ##### Defining Libraries
 
@@ -106,7 +118,6 @@ make -j7  # Where the 7 is the number of cores to use when building
     * For example: `my_lib.hh`, and `my_lib.cc`
     * The library will be called `my_lib`
     * All library names must be unique (This is, in principle, a CMake limitation)
-
 * An implicit *header-only* library will be discovered whenever only a `.hh` exists
     * Things that include the header-only library will implicitly link against libraries used by the header-only lib
 
@@ -132,27 +143,22 @@ make -j7  # Where the 7 is the number of cores to use when building
     * Make sure that when `cmake ..` is run, there is no error generated. Sometimes it will be buried in a bit of text
     * Is there a `// %ignore` in your file (Check both the header and cc!)
     * Do `pymake -v info` in the `hover-jet` directory, and make sure your file is getting discovered
-
 * My build takes a long time
     * The cmake cache gets invalidated often
     * Try `make -j3 <just_the_target_i_want>`, and rely on CI to asynchronously build *everything*
-
 * There's a weird `target already exists` error, or something like it
     * This usually happens because your library name is not globally unique. Keep in mind, CMake effectively requires all library names to be globally unique.
     * If this is a big problem, we can use pymake to auto-generate unique library names
-
 * There's a `header XXXXXX.hh unknown in YYYYYY.cc`
     * Usually, this means `YYYYYY.cc` is including a header that isn't real
     * If it's an external library that isn't in our repository, use `<>` includes, then pymake won't require its existence
     * Make sure the `#include` path is from the root of the repo, and not relative
         * `#include "infrastructure/comms/mqtt_subscriber.hh"` instead of `#include "mqtt_subscriber.hh"`
-
 * No definition for XXXX error, or could not find library `-lmy_library`, or `failed to link`
     * This is *usually* because `%deps()` is being used for a library name that doesn't exist
         * If it's external, check `ldconfig -p | grep <lib_name_I_expect_to_exist>`
             * If ldconfig has the lib, but you still see the error, you must add `find_package(lib-name)` in the top-level CMake
         * If it's internal, try `git grep -rni "add_library(lib_name_I_expect_to_exist"` (With the closing parenthesis excluded)
         * If these are not the case, go find Jake, this is a bug
-
 * third_party/experiments does not contain a CMakeLists.txt file
     * do `git submodule init; git submodule update`
