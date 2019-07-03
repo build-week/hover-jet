@@ -36,7 +36,7 @@ git pull --rebase origin master
 
 ```shell
 # Run the bootstrap script to modify the "$PATH" this shell and all new shells
-./hover-jet/infrastructure/scripts/environment_bootstrap.sh
+./infrastructure/scripts/environment_bootstrap.sh
 ```
 
 
@@ -70,7 +70,7 @@ You will need to log out and back in for the `docker` group to be added before y
 
 ```shell
 # Pull the latest jet Docker image
-docker pull hoverjet/jet
+jet image --pull
 ```
 
 
@@ -82,22 +82,22 @@ It's typically that managing git and editing files is done outside of the Docker
 ### How to build *nominally*
 
 ```shell
-# Build a specific target of the project
-jet build <target>
+# Build the entire project
+jet build
 
-# Execute a specific command in the jet Docker container
-jet run <bash command>
+# Execute a shell in the jet Docker container
+jet run
 ```
 
 If this fails, you may have to do the submodule init steps.
 
 ### Using the shell inside the Docker container (Sometimes useful for debugging)
 
-Note: You should be using jet build or jet run, instead of these bash scripts
+Note: You should be using `jet build` or `jet run`, instead of these bash scripts
 
 ```shell
 # Make sure the Docker image is up to date
-docker pull hoverjet/jet
+jet image --pull
 
 # Start a Docker container and attach to an interactive shell in it
 docker run -it -v ~/repos/hover-jet:/jet hoverjet/jet
