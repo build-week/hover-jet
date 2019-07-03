@@ -18,7 +18,7 @@ BoardIdsAndCorners get_ids_and_corners(const cv::Mat &input_image) {
   return result;
 }
 
-std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const BoardIdsAndCorners ids_corners) {
+std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const BoardIdsAndCorners& ids_corners) {
   cv::Mat boardPoints, imgPoints;
   cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), ids_corners.corners, ids_corners.ids, boardPoints,
                                           imgPoints);
@@ -33,7 +33,7 @@ std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(co
   return result;
 }
 
-std::optional<SE3> estimate_board_center_from_camera_from_image(const BoardIdsAndCorners ids_corners,
+std::optional<SE3> estimate_board_center_from_camera_from_image(const BoardIdsAndCorners& ids_corners,
                                                                 const Calibration &calibration) {
   const cv::Mat camera_matrix = calibration.camera_matrix;
   const cv::Mat distortion_coefficients = calibration.distortion_coefficients;

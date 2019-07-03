@@ -76,9 +76,9 @@ BoardIdsAndCorners get_ids_and_corners(const cv::Mat &input_image);
 
 std::vector<MarkerInWorld> get_world_from_marker_centers(const cv::Mat& camera_image, const SE3& world_from_camera);
 
-std::optional<SE3> estimate_board_center_from_camera_from_image(BoardIdsAndCorners ids_corners, const Calibration& calibration);
+std::optional<SE3> estimate_board_center_from_camera_from_image(const BoardIdsAndCorners& ids_corners, const Calibration& calibration);
 
-std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(BoardIdsAndCorners ids_corners);
+std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const BoardIdsAndCorners& ids_corners);
 
 constexpr float FIDUCIAL_WIDTH_METERS = 99.0 / 1000;
 constexpr float FIDUCIAL_GAP_WIDTH_METERS = 50.0 / 1000;
