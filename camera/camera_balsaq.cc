@@ -39,6 +39,7 @@ CameraConfiguration generate_capture_config(const Config& config) {
 }  // namespace
 
 void CameraBq::init(const Config& config) {
+  loop_delay_microseconds = 0;
   const Camera camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   camera_serial_number_ = camera.serial_number;
   std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
@@ -48,6 +49,8 @@ void CameraBq::init(const Config& config) {
 
   // Set the buffer to a single image so that we are always grabbing the latest frame
   cap_.set(cv::CAP_PROP_BUFFERSIZE, 1);
+
+  cap_.set(cv::CAP_PROP_FOURCC ,cv::VideoWriter::fourcc('M', 'J', 'P', 'G') );
   cap_.set(cv::CAP_PROP_FRAME_WIDTH, camera_config_.width_pixels);
   cap_.set(cv::CAP_PROP_FRAME_HEIGHT, camera_config_.height_pixels);
   cap_.set(cv::CAP_PROP_FPS, camera_config_.frames_per_second);
