@@ -4,7 +4,7 @@
 
 namespace jet {
 
-board_ids_and_corners get_ids_and_corners(const cv::Mat &input_image) {
+BoardIdsAndCorners get_ids_and_corners(const cv::Mat &input_image) {
   std::vector<int> ids;
   std::vector<std::vector<cv::Point2f>> corners;
   const auto params = cv::aruco::DetectorParameters::create();
@@ -14,11 +14,11 @@ board_ids_and_corners get_ids_and_corners(const cv::Mat &input_image) {
   // TODO isaac make aruco_dictionary parameter of this method to allow for
   // multiple unique boards
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
-  board_ids_and_corners result = {ids, corners};
+  BoardIdsAndCorners result = {ids, corners};
   return result;
 }
 
-std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const board_ids_and_corners ids_corners) {
+std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const BoardIdsAndCorners ids_corners) {
   cv::Mat boardPoints, imgPoints;
   cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), ids_corners.corners, ids_corners.ids, boardPoints,
                                           imgPoints);
@@ -33,7 +33,7 @@ std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(co
   return result;
 }
 
-std::optional<SE3> estimate_board_center_from_camera_from_image(const board_ids_and_corners ids_corners,
+std::optional<SE3> estimate_board_center_from_camera_from_image(const BoardIdsAndCorners ids_corners,
                                                                 const Calibration &calibration) {
   const cv::Mat camera_matrix = calibration.camera_matrix;
   const cv::Mat distortion_coefficients = calibration.distortion_coefficients;
