@@ -31,11 +31,12 @@ sudo apt-get install docker-ce
 sudo usermod -aG docker "$USER"
 ```
 
-### Pulling the latest image
+### Pulling the latest jet Docker image
 
 You will need to log out and back in for the `docker` group to be added before you can pull the image.
 
 ```shell
+# Pull the latest jet Docker image
 docker pull hoverjet/jet
 ```
 
@@ -45,13 +46,19 @@ docker pull hoverjet/jet
 ### Pulling the first time
 
 ```shell
+# Clone the hover-jet repository
 git clone https://github.com/build-week/hover-jet.git
 cd hover-jet
-git submodule init
-git submodule update
+
+# Initialize the experiments submodule
+git submodule init third_party/experiments/
+git submodule update third_party/experiments/
 ```
 
+# Pulling in new changes from upstream
+
 ```shell
+# Rebase any local changes onto upstream's master branch
 git pull --rebase origin master
 ```
 
@@ -64,7 +71,10 @@ It's typically that managing git and editing files is done outside of the Docker
 ### How to build *nominally*
 
 ```shell
+# Build a specific target of the project
 jet build <target>
+
+# Execute a specific command in the jet Docker container
 jet run <bash command>
 ```
 
@@ -78,7 +88,7 @@ Note: You should be using jet build or jet run, instead of these bash scripts
 # Make sure the Docker image is up to date
 docker pull hoverjet/jet
 
-# Enter the Docker image
+# Start a Docker container and attach to an interactive shell in it
 docker run -it -v ~/repos/hover-jet:/jet hoverjet/jet
 ```
 
@@ -88,6 +98,7 @@ Now, inside the Docker container
 # Make sure you're in the Docker container!!!!!!!
 cd hover-jet
 
+# Build the project manually
 mkdir -p bin
 cd bin
 cmake ..
