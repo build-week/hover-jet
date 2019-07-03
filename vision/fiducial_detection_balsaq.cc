@@ -3,12 +3,12 @@
 
 #include "vision/fiducial_detection_balsaq.hh"
 #include "camera/camera_image_message.hh"
+#include "config/fiducial_map/read_fiducial_map.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
+#include "infrastructure/time/duration.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 #include "vision/fiducial_detection_message.hh"
-#include "infrastructure/time/duration.hh"
-#include "config/fiducial_map/read_fiducial_map.hh"
 
 #include <iostream>
 
@@ -33,7 +33,13 @@ void FidicualDetectionBq::loop() {
     last_msg_recvd_timestamp_ = get_current_time();
     const Calibration camera_calibration = camera_manager_.get_camera(image_message.camera_serial_number).calibration;
     const cv::Mat camera_frame = get_image_mat(image_message);
-    const std::optional<SE3> board_from_camera = estimate_board_center_from_camera_from_image(camera_frame, camera_calibration);
+    const auto ids_corners = get_ids_and_corners(camera_frame);
+    std::cout << ids_corners.ids.size() << std::endl;
+    for (auto & element : ids_corners.ids) {
+      std::cout << "  " << element << std::endl;
+    }
+    const std::optional<SE3> board_from_camera =
+        estimate_board_center_from_camera_from_image(ids_corners, camera_calibration);
     if (board_from_camera) {
       // publish a fiducial message using *board_from_camera
       FiducialDetectionMessage detection_message;
@@ -47,7 +53,8 @@ void FidicualDetectionBq::loop() {
 
       detection_message.timestamp = image_message.header.timestamp_ns;
 
-      std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(camera_frame);
+      std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(ids_corners);
+      std::cout << "associated pts" << board_point_assocs.size() << std::endl;
       detection_message.board_points_image_points = board_point_assocs;
 
       publisher_->publish(detection_message);
