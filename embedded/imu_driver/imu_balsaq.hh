@@ -28,10 +28,11 @@ class ImuBq : public BalsaQ {
   void shutdown();
 
   // Every millisecond
-  const static uint loop_delay_microseconds = 1000;
+  const static uint loop_delay_microseconds = 0;
 
  private:
   std::vector<ManagedDriver> imu_drivers_;
+  bool go_transmitted_ = false;
 };
 
 }  // namespace embedded

@@ -10,7 +10,7 @@
 
 
 /* I2C default delay */
-#define I2C_DEFAULT_DELAY 1
+#define I2C_DEFAULT_DELAY 0
 
 /* I2C internal address max length */
 #define INT_ADDR_MAX_BYTES 4
@@ -365,6 +365,6 @@ int i2c_select(int bus, unsigned long dev_addr, unsigned long tenbit)
 */
 static void i2c_delay(unsigned char msec)
 {
-	usleep(msec * 1000);
+	usleep(msec * 20);
 }
 

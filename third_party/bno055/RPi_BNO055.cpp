@@ -79,7 +79,7 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode) {
     _i2cDevice.addr = _address;
     _i2cDevice.iaddr_bytes = 1;
     _i2cDevice.page_bytes = 16;
-
+    _i2cDevice.delay = 1;
 
     uint8_t id = read8(BNO055_CHIP_ID_ADDR);
 
