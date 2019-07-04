@@ -51,6 +51,9 @@ void CameraBq::loop() {
     if (detection_message) {
       fiducial_detection_publisher_->publish(*detection_message);
     }
+    else{
+      std::cout << "no fiducial detected";
+    }
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo().nogo("More than 1 second since last camera frame");

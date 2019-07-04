@@ -18,7 +18,8 @@ class CameraViewerBq : public BalsaQ {
   void shutdown();
 
  private:
-  SubscriberPtr subscriber_;
+  SubscriberPtr camera_subscriber_;
+  SubscriberPtr fiducial_subscriber_;
  	
 };
 
