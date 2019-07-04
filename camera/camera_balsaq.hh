@@ -6,6 +6,7 @@
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "camera/camera_manager.hh"
+#include "camera/webcam_interface.hh"
 
 //%deps(opencv)
 #include <opencv2/aruco.hpp>
@@ -20,16 +21,6 @@ namespace jet {
 //
 // The fields are left intentionally uninitialized, so that
 // their use before initialization can be detected with Valgrind
-struct CameraConfiguration {
-  int frames_per_second;
-  double exposure;
-
-  int auto_focus;
-  double auto_exposure;
-
-  int width_pixels;
-  int height_pixels;
-};
 
 class CameraBq : public BalsaQ {
  public:
@@ -46,13 +37,12 @@ class CameraBq : public BalsaQ {
   // The camera capture times are reported in millseconds from monotonic clock start
   // This function reconstructs a a reasonable approximation of the *vehicle* time
   // associated with that monotonic time
-  Timestamp msec_monotonic_to_vehicle_monotonic(long int msec_monotonic) const;
   static const int CAMERA_FPS = 10;
   PublisherPtr publisher_;
   cv::VideoCapture cap_;
   Timestamp last_msg_recvd_timestamp_;
 
-  std::string camera_serial_number_;
+  Camera camera_;
   CameraConfiguration camera_config_;
   CameraManager camera_manager_ = CameraManager();
 };

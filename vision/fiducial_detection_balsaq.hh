@@ -5,11 +5,16 @@
 
 #include "camera/camera_image_message.hh"
 #include "vision/fiducial_detection_and_pose.hh"
+#include "vision/fiducial_detection_message.hh"
 
-#include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "camera/camera_manager.hh"
+#include "infrastructure/comms/mqtt_comms_factory.hh"
 
 namespace jet {
+
+std::optional<FiducialDetectionMessage> create_detection_message(const cv::Mat& camera_frame,
+                                                                 const Calibration& camera_calibration,
+                                                                 const Timestamp timestamp);
 
 class FidicualDetectionBq : public BalsaQ {
  public:
