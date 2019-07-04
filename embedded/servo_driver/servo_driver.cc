@@ -37,7 +37,7 @@ ServoDriver::ServoDriver(const Config& config) {
     calibrated_max_ = config["calibrated_max"].as<float>();
     servo_index_ = config["index"].as<int>();
     assert(servo_index_ >= 0);
-  } catch (YAML::BadFile e) {
+  } catch (YAML::BadFile &e) {
     std::string err = std::string("Could not find YAML file ");
     throw std::runtime_error(err);
   }

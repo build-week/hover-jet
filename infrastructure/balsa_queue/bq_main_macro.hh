@@ -23,7 +23,7 @@ void signal_handler(int s) {
     if (argc > 1) {                                                           \
       try {                                                                   \
         config = YAML::LoadFile(argv[1]);                                     \
-      } catch (YAML::BadFile e) {                                             \
+      } catch (YAML::BadFile &e) {                                             \
         std::cerr << "Could not find YAML file " << std::endl;                \
         config = YAML::Node();                                                \
       }                                                                       \

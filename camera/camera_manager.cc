@@ -15,7 +15,7 @@ std::string config_search_location() {
 std::optional<YAML::Node> read_YAML(const std::string& filepath) {
   try {
     return YAML::LoadFile(filepath);
-  } catch (YAML::BadFile e) {
+  } catch (YAML::BadFile &e) {
     const std::string err = std::string("Could not find YAML file ") + filepath;
     throw std::runtime_error(err);
   }

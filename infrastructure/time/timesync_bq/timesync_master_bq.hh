@@ -1,6 +1,6 @@
 #pragma once
 
-#include <infrastructure/balsa_queue/balsa_queue.hh>
+#include "infrastructure/balsa_queue/balsa_queue.hh"
 
 namespace jet {
 
