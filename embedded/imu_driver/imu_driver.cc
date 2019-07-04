@@ -114,6 +114,11 @@ jcc::Vec3 ImuDriver::read_magnetometer_utesla() {
   return jcc::Vec3(mag_utesla.x(), mag_utesla.y(), mag_utesla.z());
 }
 
+const jcc::Optional<ImuMeasurements> ImuDriver::read_accel_mag_gyro() {
+  assert(initialized_);
+  return bno_->getVectors();
+}
+
 bool ImuDriver::set_amg_mode(int max_num_tries) {
   bno_->setMode(Adafruit_BNO055::adafruit_bno055_opmode_t::OPERATION_MODE_AMG);
   Adafruit_BNO055::adafruit_bno055_opmode_t mode = bno_->getMode();

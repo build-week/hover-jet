@@ -1,5 +1,6 @@
 //%bin(imu_balsaq_main)
 #include "embedded/imu_driver/imu_balsaq.hh"
+#include "embedded/imu_driver/imu_definitions.hh"
 #include "embedded/imu_driver/imu_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
@@ -44,9 +45,12 @@ void ImuBq::init(const Config& config) {
       break;
     }
 
-    const bool got_correct_guid = (imu_drivers_.back().driver.imu_guid() == expected_imu_guid);
+    const xg::Guid actual_guid = imu_drivers_.back().driver.imu_guid();
+    const bool got_correct_guid = (actual_guid == expected_imu_guid);
     if (!got_correct_guid) {
-      throw std::runtime_error("GUID mismatch with IMU");
+      std::stringstream error_msg;
+      error_msg << "GUID Mismatch, expected: "<< expected_imu_guid << " got: " << actual_guid << std::endl;;
+      throw std::runtime_error(error_msg.str());
     }
 
   }
@@ -62,21 +66,23 @@ void ImuBq::loop() {
     ImuMessage msg;
     msg.timestamp = get_current_time();
 
-    const jcc::Vec3 accel_mpss = imu.driver.read_accel_mpss();
-    const jcc::Vec3 angvel_radps = imu.driver.read_gyro_radps();
-    const jcc::Vec3 mag_utesla = imu.driver.read_magnetometer_utesla();
+    const jcc::Optional<ImuMeasurements> measurements = imu.driver.read_accel_mag_gyro();
 
-    msg.accel_mpss_x = accel_mpss.x();
-    msg.accel_mpss_y = accel_mpss.y();
-    msg.accel_mpss_z = accel_mpss.z();
+    if (!measurements) {
+      throw std::runtime_error("Error reading IMU I2C");
+    }
 
-    msg.gyro_radps_x = angvel_radps.x();
-    msg.gyro_radps_y = angvel_radps.y();
-    msg.gyro_radps_z = angvel_radps.z();
+    msg.accel_mpss_x = measurements->accel_mpss.x();
+    msg.accel_mpss_y = measurements->accel_mpss.y();
+    msg.accel_mpss_z = measurements->accel_mpss.z();
 
-    msg.mag_utesla_x = mag_utesla.x();
-    msg.mag_utesla_y = mag_utesla.y();
-    msg.mag_utesla_z = mag_utesla.z();
+    msg.gyro_radps_x = measurements->angvel_radps.x();
+    msg.gyro_radps_y = measurements->angvel_radps.y();
+    msg.gyro_radps_z = measurements->angvel_radps.z();
+
+    msg.mag_utesla_x = measurements->mag_utesla.x();
+    msg.mag_utesla_y = measurements->mag_utesla.y();
+    msg.mag_utesla_z = measurements->mag_utesla.z();
 
     msg.imu_id_leading_byte = imu.imu_unique_identifier;
 
