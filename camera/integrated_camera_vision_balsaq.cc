@@ -22,13 +22,15 @@ void CameraBq::init(const Config& config) {
   camera_config_ = generate_capture_config(config);
   initialize_camera_hardware(camera_config_, cap_);
   image_publisher_ = make_publisher("camera_image_channel");
-  
   fiducial_detection_publisher_ = make_publisher("fiducial_detection_channel");
 
   
 }
 
 void CameraBq::loop() {
+  const auto t2 = time::get_current_time();
+
+
   cv::Mat camera_frame;
   std::cout << "Camera BQ: trying to get a frame" << std::endl;
 
@@ -39,25 +41,31 @@ void CameraBq::loop() {
     const Timestamp cap_time_vehicle = time::msec_monotonic_to_vehicle_monotonic(cap_time_msec);
     gonogo().go();
     last_msg_recvd_timestamp_ = cap_time_vehicle;
+    const auto t0 = time::get_current_time();
     CameraImageMessage message = create_camera_image_message(camera_frame, camera_.serial_number, cap_time_vehicle);
+    std::cout << "to do create_camera_image_message " << (float)(time::get_current_time() - t0) / 1000000 << "ms" << std::endl;
 
     image_publisher_->publish(message);
     std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
 
     const Calibration camera_calibration = camera_manager_.get_calibration(message.camera_serial_number);
     const cv::Mat camera_frame = get_image_mat(message);
+
+    const auto t1 = time::get_current_time();
     std::optional<FiducialDetectionMessage> detection_message =
         create_fiducial_detection_message(camera_frame, camera_calibration, message.header.timestamp_ns);
+    std::cout << "to do create detection message " << (float)(time::get_current_time() - t1) / 1000000 << "ms" << std::endl;
     if (detection_message) {
       fiducial_detection_publisher_->publish(*detection_message);
     }
     else{
-      std::cout << "no fiducial detected";
+      std::cout << "no fiducial detected" << std::endl;
     }
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo().nogo("More than 1 second since last camera frame");
   }
+  std::cout << "to do integrated BQ loop " << (float)(time::get_current_time() - t2) / 1000000 << "ms" << std::endl;
 }
 void CameraBq::shutdown() {
   std::cout << "Camera BQ shutting down." << std::endl;
