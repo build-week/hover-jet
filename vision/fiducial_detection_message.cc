@@ -20,7 +20,7 @@ std::optional<FiducialDetectionMessage> create_fiducial_detection_message(const 
       detection_message.fiducial_from_camera_log[i] = log_fiducial_from_camera[i];
     }
     detection_message.timestamp = timestamp;
-    std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(ids_corners);
+    const std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(ids_corners);
     detection_message.board_points_image_points = board_point_assocs;
 
     return detection_message;
