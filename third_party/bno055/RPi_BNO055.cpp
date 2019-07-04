@@ -353,16 +353,16 @@ imu::Vector<3> Adafruit_BNO055::getVector(adafruit_vector_type_t vector_type) {
 const jcc::Optional<jet::embedded::ImuMeasurements> Adafruit_BNO055::getVectors() {
   constexpr uint8_t NUM_SENSORS = 3;
   constexpr uint8_t NUM_REGISTERS_PER_AXIS = 2;
-  constexpr uint8_t NUM_AXIS = 3
-  constexpr uint8_t NUM_REGISTERS = NUM_SENSORS * NUM_REGISTERS_PER_AXIS * NUM_AXIS;
+  constexpr uint8_t NUM_AXES = 3;
+  constexpr uint8_t NUM_REGISTERS = NUM_SENSORS * NUM_REGISTERS_PER_AXIS * NUM_AXES;
 
   uint8_t buffer[NUM_REGISTERS];
   int16_t accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z;
   accel_x = accel_y = accel_z = gyro_x = gyro_y = gyro_z = mag_x = mag_y = mag_z = 0;
 
-  jcc::Optional<jet::embedded::ImuMeasurements> measurements = {};
-  if (!readLen((adafruit_bno055_reg_t)BNO055_ACCEL_DATA_X_LSB_ADDR, buffer, NUM_REGISTERS)) {
-    return measurements;
+  jcc::Optional<jet::embedded::ImuMeasurements> measurements;
+  if (!readLen(adafruit_bno055_reg_t::BNO055_ACCEL_DATA_X_LSB_ADDR, buffer, NUM_REGISTERS)) {
+    return {};
   }
 
   accel_x =  static_cast<int16_t>((0xFF00 & (buffer[1]  << 8)) | (0xFF & buffer[0]));
@@ -380,17 +380,19 @@ const jcc::Optional<jet::embedded::ImuMeasurements> Adafruit_BNO055::getVectors(
   constexpr double RADPS_PER_LSB = get_rad_per_lsb_gyro();
   constexpr double MPSS_PER_LSB = get_mpss_per_lsb_accel();
 
-  measurements->accel_mpss[0] = static_cast<double>(accel_x) * MPSS_PER_LSB;
-  measurements->accel_mpss[1] = static_cast<double>(accel_y) * MPSS_PER_LSB;
-  measurements->accel_mpss[2] = static_cast<double>(accel_z) * MPSS_PER_LSB;
+  measurements = jet::embedded::ImuMeasurements();
 
-  measurements->angvel_radps[0] = static_cast<double>(gyro_x) * RADPS_PER_LSB;
-  measurements->angvel_radps[1] = static_cast<double>(gyro_y) * RADPS_PER_LSB;
-  measurements->angvel_radps[2] = static_cast<double>(gyro_z) * RADPS_PER_LSB;
+  measurements->accel_mpss.x() = static_cast<double>(accel_x) * MPSS_PER_LSB;
+  measurements->accel_mpss.y() = static_cast<double>(accel_y) * MPSS_PER_LSB;
+  measurements->accel_mpss.z() = static_cast<double>(accel_z) * MPSS_PER_LSB;
 
-  measurements->mag_utesla[0] = static_cast<double>(mag_x) / MICROTESLA_PER_LSB;
-  measurements->mag_utesla[1] = static_cast<double>(mag_y) / MICROTESLA_PER_LSB;
-  measurements->mag_utesla[2] = static_cast<double>(mag_z) / MICROTESLA_PER_LSB;
+  measurements->angvel_radps.x() = static_cast<double>(gyro_x) * RADPS_PER_LSB;
+  measurements->angvel_radps.y() = static_cast<double>(gyro_y) * RADPS_PER_LSB;
+  measurements->angvel_radps.z() = static_cast<double>(gyro_z) * RADPS_PER_LSB;
+
+  measurements->mag_utesla.x() = static_cast<double>(mag_x) * MICROTESLA_PER_LSB;
+  measurements->mag_utesla.y() = static_cast<double>(mag_y) * MICROTESLA_PER_LSB;
+  measurements->mag_utesla.z() = static_cast<double>(mag_z) * MICROTESLA_PER_LSB;
 
   return measurements;
 }
@@ -668,8 +670,9 @@ uint8_t Adafruit_BNO055::read8(adafruit_bno055_reg_t reg ) {
 bool Adafruit_BNO055::readLen(adafruit_bno055_reg_t reg, uint8_t * buffer, uint8_t len) {
     int BRead = i2c_read(&_i2cDevice, reg, (char*)buffer, len);
 
-    if (BRead != (int) len)
-	   return -1;
+    if (BRead != (int) len) {
+	   return false;
+    }
 
     /* ToDo: Check for errors! */
     return true;
