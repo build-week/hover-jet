@@ -1,7 +1,6 @@
-#include "camera/camera_utils.hh"
+#include "camera/webcam_interface.hh"
 
 namespace jet {
-
 
 // Generate a config structure from a yaml config
 //
@@ -25,11 +24,9 @@ CameraConfiguration generate_capture_config(const Config& config) {
     camera_config.height_pixels = config["height_pixels"].as<int>();
   }
   return camera_config;
-
 }
 
-
-void initialize_camera_hardware(CameraConfiguration camera_config, cv::VideoCapture cap){
+void initialize_camera_hardware(const CameraConfiguration& camera_config, cv::VideoCapture& cap) {
   // Set the buffer to a single image so that we are always grabbing the latest frame
   cap.set(cv::CAP_PROP_BUFFERSIZE, 1);
 
@@ -44,8 +41,7 @@ void initialize_camera_hardware(CameraConfiguration camera_config, cv::VideoCapt
   cap.grab();
 
   // After the camera is turned on, we set the exposure.
-  cap.set(cv::CAP_PROP_EXPOSURE, camera_config.exposure);  
+  cap.set(cv::CAP_PROP_EXPOSURE, camera_config.exposure);
 }
 
-
-}  // namespace
+}  // namespace jet

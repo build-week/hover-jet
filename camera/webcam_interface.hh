@@ -1,7 +1,7 @@
+#pragma once
+#include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/config/config.hh"
 #include "infrastructure/time/timestamp.hh"
-// #include "infrastructure/time/duration.hh"
-#include "infrastructure/balsa_queue/balsa_queue.hh"
 
 //%deps(opencv)
 #include <opencv2/opencv.hpp>
@@ -20,7 +20,6 @@ struct CameraConfiguration {
 
 CameraConfiguration generate_capture_config(const Config& config);
 
-void initialize_camera_hardware(CameraConfiguration camera_config, cv::VideoCapture cap);
-
+void initialize_camera_hardware(const CameraConfiguration& camera_config, cv::VideoCapture& cap);
 
 }  // namespace jet

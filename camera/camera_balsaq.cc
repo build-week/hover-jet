@@ -13,9 +13,9 @@
 namespace jet {
 
 void CameraBq::init(const Config& config) {
-  camera = camera_manager_.get_camera(config["serial_number"].as<std::string>());
+  camera_ = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
-  cap_ = cv::VideoCapture(camera.v4l_path);
+  cap_ = cv::VideoCapture(camera_.v4l_path);
   camera_config_ = generate_capture_config(config);
   initialize_camera_hardware(camera_config_, cap_);
   publisher_ = make_publisher("camera_image_channel");
@@ -32,7 +32,7 @@ void CameraBq::loop() {
     const Timestamp cap_time_vehicle = time::msec_monotonic_to_vehicle_monotonic(cap_time_msec);
     gonogo().go();
     last_msg_recvd_timestamp_ = cap_time_vehicle;
-    CameraImageMessage message = create_camera_image_message(camera_frame, camera.serial_number, cap_time_vehicle);
+    CameraImageMessage message = create_camera_image_message(camera_frame, camera_.serial_number, cap_time_vehicle);
 
     publisher_->publish(message);
     std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;

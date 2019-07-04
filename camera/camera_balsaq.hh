@@ -6,7 +6,7 @@
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "camera/camera_manager.hh"
-#include "camera/camera_utils.hh"
+#include "camera/webcam_interface.hh"
 
 //%deps(opencv)
 #include <opencv2/aruco.hpp>
@@ -42,7 +42,7 @@ class CameraBq : public BalsaQ {
   cv::VideoCapture cap_;
   Timestamp last_msg_recvd_timestamp_;
 
-  Camera camera;
+  Camera camera_;
   CameraConfiguration camera_config_;
   CameraManager camera_manager_ = CameraManager();
 };
