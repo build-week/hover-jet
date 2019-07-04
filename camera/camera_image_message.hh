@@ -24,4 +24,10 @@ struct CameraImageMessage : Message {
 
 cv::Mat get_image_mat(const CameraImageMessage& message);
 
+
+CameraImageMessage create_camera_image_message(const cv::Mat& camera_frame,
+                                               const std::string& serial_number,
+                                               const Timestamp cap_time_vehicle);
+
+
 }  //  namespace jet
