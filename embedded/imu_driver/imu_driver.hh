@@ -4,6 +4,8 @@
 
 #include "third_party/bno055/RPi_BNO055.h"
 #include "third_party/experiments/eigen.hh"
+#include "third_party/experiments/util/optional.hh"
+#include "embedded/imu_driver/imu_definitions.hh"
 
 // %deps(crossguid)
 #include <crossguid/guid.hpp>
@@ -63,7 +65,7 @@ class ImuDriver {
   //       more frequently than the IMU sample rate
   // NOTE: This function is non-const because the BNO055 API
   //       is not const-correct
-  bool read_agm(jcc::Vec3& accel_mpss, jcc::Vec3& gyro_radps, jcc::Vec3& mag_utesla);
+  const jcc::Optional<ImuMeasurements> read_accel_mag_gyro();
 
   const xg::Guid& imu_guid() const {
     return guid_;

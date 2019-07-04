@@ -114,12 +114,9 @@ jcc::Vec3 ImuDriver::read_magnetometer_utesla() {
   return jcc::Vec3(mag_utesla.x(), mag_utesla.y(), mag_utesla.z());
 }
 
-bool ImuDriver::read_agm(jcc::Vec3& accel_mpss, jcc::Vec3& gyro_radps, jcc::Vec3& mag_utesla) {
+const jcc::Optional<ImuMeasurements> ImuDriver::read_accel_mag_gyro() {
   assert(initialized_);
-  if (!bno_->getVectors(accel_mpss, gyro_radps, mag_utesla)) {
-    return false;
-  }
-  return true;
+  return bno_->getVectors();
 }
 
 bool ImuDriver::set_amg_mode(int max_num_tries) {

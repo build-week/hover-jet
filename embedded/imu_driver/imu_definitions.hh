@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include "third_party/experiments/eigen.hh"
+
 
 namespace jet {
 namespace embedded {
@@ -33,6 +35,12 @@ struct ConfigAdresses {
   static constexpr uint8_t GYR_CONFIG_1 = 0x00;
   static constexpr uint8_t ACC_CONFIG = 0x0D;
   static constexpr uint8_t MAG_CONFIG = 0x6D;
+};
+
+struct ImuMeasurements {
+  jcc::Vec3 accel_mpss;
+  jcc::Vec3 angvel_radps;
+  jcc::Vec3 mag_utesla;
 };
 
 }  // namespace embedded

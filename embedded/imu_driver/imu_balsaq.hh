@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "embedded/imu_driver/imu_driver.hh"
