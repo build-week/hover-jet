@@ -3,8 +3,6 @@
 #include "embedded/imu_driver/imu_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
-
-
 #include <cstddef>
 #include <iostream>
 #include <iomanip>
@@ -64,7 +62,6 @@ void ImuBq::loop() {
   bool all_go = true;
   for (auto& imu : imu_drivers_) {
     ImuMessage msg;
-
     msg.timestamp = get_current_time();
 
     jcc::Vec3 accel_mpss = {};

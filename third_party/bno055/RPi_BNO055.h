@@ -27,7 +27,6 @@
 #include "third_party/bno055/utility/imumaths.h"
 #include "third_party/experiments/eigen.hh"
 
-
 #define BNO055_ADDRESS_A (0x28)
 #define BNO055_ADDRESS_B (0x29)
 #define BNO055_ID        (0xA0)
