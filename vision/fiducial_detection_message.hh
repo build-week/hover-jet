@@ -22,4 +22,8 @@ struct FiducialDetectionMessage : Message {
   MESSAGE(FiducialDetectionMessage, fiducial_from_camera_log, timestamp,board_points_image_points);
 };
 
+std::optional<FiducialDetectionMessage> create_fiducial_detection_message(const cv::Mat& camera_frame,
+                                                              const Calibration& camera_calibration,
+                                                              const Timestamp timestamp);
+
 }  //  namespace jet

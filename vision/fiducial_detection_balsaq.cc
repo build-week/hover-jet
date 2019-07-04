@@ -12,33 +12,12 @@
 
 namespace jet {
 
+
+
+
 void FidicualDetectionBq::init(const Config& config) {
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
-}
-
-std::optional<FiducialDetectionMessage> create_detection_message(const cv::Mat& camera_frame,
-                                                              const Calibration& camera_calibration,
-                                                              const Timestamp timestamp) {
-  const auto ids_corners = get_ids_and_corners(camera_frame);
-  const std::optional<SE3> board_from_camera =
-      estimate_board_center_from_camera_from_image(ids_corners, camera_calibration);
-  if (board_from_camera) {
-    // publish a fiducial message using *board_from_camera
-    FiducialDetectionMessage detection_message;
-    const jcc::Vec6 log_fiducial_from_camera = board_from_camera->log();
-    for (int i = 0; i < 6; i++) {
-      detection_message.fiducial_from_camera_log[i] = log_fiducial_from_camera[i];
-    }
-    detection_message.timestamp = timestamp;
-    std::vector<BoardPointImagePointAssociation> board_point_assocs = obj_points_img_points_from_image(ids_corners);
-    detection_message.board_points_image_points = board_point_assocs;
-
-    return detection_message;
-    // reconstruct with eg
-    // board_from_camera = SE3::exp(Eigen::Map<jcc::Vec6>>(array));
-  }
-  return {};
 }
 
 void FidicualDetectionBq::loop() {
@@ -56,7 +35,7 @@ void FidicualDetectionBq::loop() {
     const Calibration camera_calibration = camera_manager_.get_calibration(image_message.camera_serial_number);
     const cv::Mat camera_frame = get_image_mat(image_message);
     std::optional<FiducialDetectionMessage> detection_message =
-        create_detection_message(camera_frame, camera_calibration, image_message.header.timestamp_ns);
+        create_fiducial_detection_message(camera_frame, camera_calibration, image_message.header.timestamp_ns);
     if (detection_message) {
       publisher_->publish(*detection_message);
     }
