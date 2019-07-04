@@ -32,7 +32,6 @@ class ImuBq : public BalsaQ {
 
  private:
   std::vector<ManagedDriver> imu_drivers_;
-  bool go_transmitted_ = false;
 };
 
 }  // namespace embedded

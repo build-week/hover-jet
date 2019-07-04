@@ -91,15 +91,13 @@ void ImuBq::loop() {
     if (msg.accel_mpss_x == 0 && msg.accel_mpss_y == 0 && msg.accel_mpss_z == 0) {
       gonogo().nogo("IMU reading all zeroes (We will attempt a reset)!");
       all_go = false;
-      go_transmitted_ = false;
       imu.reset();
     } else {
       imu.publisher->publish(msg);
     }
   }
 
-  if (!go_transmitted_ && all_go) {
-    go_transmitted_ = true;
+  if (all_go) {
     gonogo().go("Recovered IMU");
   }
 }

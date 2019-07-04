@@ -19,12 +19,12 @@ void GoNoGo::go(const std::string &status_message) {
     if (!gonogomessage_.ready) {
         std::cout << gonogomessage_.bq_name << ": GO!"
                 << ", msg=" << status_message << std::endl;
+        publish_status();
     }
     gonogomessage_.ready = true;
     // for now this is an empty message because the message type won't compile with an optional string
     gonogomessage_.status_message = status_message;
 
-    publish_status();
 }
 
 void GoNoGo::nogo(const std::string &status_message) {
@@ -32,11 +32,11 @@ void GoNoGo::nogo(const std::string &status_message) {
     if (gonogomessage_.ready){
         std::cout << gonogomessage_.bq_name << ": NO GO!"
                 << ", msg=" << status_message << std::endl;
+        publish_status();
     }
     gonogomessage_.ready = false;
     gonogomessage_.status_message = status_message;
 
-    publish_status();
 }
 
 void GoNoGo::publish_status() {
