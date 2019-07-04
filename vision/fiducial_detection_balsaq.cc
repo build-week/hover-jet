@@ -29,6 +29,7 @@ void FidicualDetectionBq::loop() {
   if (got_msg) {
     gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
+    std::cerr << "Image age: " << (last_msg_recvd_timestamp_ - image_message.timestamp) / 1000000.0 << "ms" << std::endl;
     const Calibration camera_calibration = camera_manager_.get_calibration(image_message.camera_serial_number);
     const cv::Mat camera_frame = get_image_mat(image_message);
     std::optional<FiducialDetectionMessage> detection_message =
