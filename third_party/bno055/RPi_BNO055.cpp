@@ -38,7 +38,7 @@ constexpr double get_mpss_per_lsb_accel() {
   return MPSS_PER_LSB;
 }
 
-constexpr double MICROTESLA_PER_LSB = 16.0;
+constexpr double MICROTESLA_PER_LSB = 1.0 / 16.0;
 }  // namespace
 
 /***************************************************************************
@@ -368,14 +368,14 @@ const jcc::Optional<jet::embedded::ImuMeasurements> Adafruit_BNO055::getVectors(
   accel_x =  static_cast<int16_t>((0xFF00 & (buffer[1]  << 8)) | (0xFF & buffer[0]));
   accel_y =  static_cast<int16_t>((0xFF00 & (buffer[3]  << 8)) | (0xFF & buffer[2]));
   accel_z =  static_cast<int16_t>((0xFF00 & (buffer[5]  << 8)) | (0xFF & buffer[4]));
-
-  gyro_x  =  static_cast<int16_t>((0xFF00 & (buffer[7]  << 8)) | (0xFF & buffer[6]));
-  gyro_y  =  static_cast<int16_t>((0xFF00 & (buffer[9]  << 8)) | (0xFF & buffer[8]));
-  gyro_z  =  static_cast<int16_t>((0xFF00 & (buffer[11] << 8)) | (0xFF & buffer[10]));
   
-  mag_x   =  static_cast<int16_t>((0xFF00 & (buffer[13] << 8)) | (0xFF & buffer[12]));
-  mag_y   =  static_cast<int16_t>((0xFF00 & (buffer[15] << 8)) | (0xFF & buffer[14]));
-  mag_z   =  static_cast<int16_t>((0xFF00 & (buffer[17] << 8)) | (0xFF & buffer[16]));
+  mag_x   =  static_cast<int16_t>((0xFF00 & (buffer[7]  << 8)) | (0xFF & buffer[6]));
+  mag_y   =  static_cast<int16_t>((0xFF00 & (buffer[9]  << 8)) | (0xFF & buffer[8]));
+  mag_z   =  static_cast<int16_t>((0xFF00 & (buffer[11] << 8)) | (0xFF & buffer[10]));
+
+  gyro_x  =  static_cast<int16_t>((0xFF00 & (buffer[13] << 8)) | (0xFF & buffer[12]));
+  gyro_y  =  static_cast<int16_t>((0xFF00 & (buffer[15] << 8)) | (0xFF & buffer[14]));
+  gyro_z  =  static_cast<int16_t>((0xFF00 & (buffer[17] << 8)) | (0xFF & buffer[16]));
 
   constexpr double RADPS_PER_LSB = get_rad_per_lsb_gyro();
   constexpr double MPSS_PER_LSB = get_mpss_per_lsb_accel();
