@@ -5,42 +5,42 @@
 namespace jet {
 
 GoNoGo::GoNoGo() {
-    gonogomessage_.bq_name = "";
-    comms_factory_ = std::move(std::make_unique<jet::MqttCommsFactory>());
-    publisher_ = comms_factory_->make_publisher("GoNoGo");
+  gonogomessage_.bq_name = "";
+  comms_factory_ = std::move(std::make_unique<jet::MqttCommsFactory>());
+  publisher_ = comms_factory_->make_publisher("GoNoGo");
 }
 
 void GoNoGo::setName(std::string name) {
-    gonogomessage_.bq_name = name;
+  gonogomessage_.bq_name = name;
 }
 
 void GoNoGo::go(const std::string &status_message) {
-    // If it's changing state
-    if (!gonogomessage_.ready) {
-        std::cout << gonogomessage_.bq_name << ": GO!"
-                << ", msg=" << status_message << std::endl;
-    }
+  // If it's changing state
+  if (!gonogomessage_.ready) {
+    std::cout << gonogomessage_.bq_name << ": GO!"
+              << ", msg=" << status_message << std::endl;
     gonogomessage_.ready = true;
     // for now this is an empty message because the message type won't compile with an optional string
     gonogomessage_.status_message = status_message;
-
     publish_status();
+  }
+
 }
 
 void GoNoGo::nogo(const std::string &status_message) {
-    // If it's changing state
-    if (gonogomessage_.ready){
-        std::cout << gonogomessage_.bq_name << ": NO GO!"
-                << ", msg=" << status_message << std::endl;
-    }
+  // If it's changing state
+  if (gonogomessage_.ready){
+    std::cout << gonogomessage_.bq_name << ": NO GO!"
+              << ", msg=" << status_message << std::endl;
     gonogomessage_.ready = false;
     gonogomessage_.status_message = status_message;
-
     publish_status();
+  }
+
 }
 
 void GoNoGo::publish_status() {
-    publisher_->publish(gonogomessage_);
+  publisher_->publish(gonogomessage_);
 }
 
 } // namespace jet

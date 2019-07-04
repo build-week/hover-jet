@@ -361,10 +361,10 @@ int i2c_select(int bus, unsigned long dev_addr, unsigned long tenbit)
 
 /*
 **	@brief	:	i2c delay
-**	#msec	:	milliscond to be delay
+**	#msec	:	multiple of 20 microseconds to be delayed
 */
-static void i2c_delay(unsigned char msec)
+static void i2c_delay(unsigned char multiple)
 {
-	usleep(msec * 1000);
+	usleep(multiple * 20);
 }
 

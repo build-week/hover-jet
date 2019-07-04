@@ -52,7 +52,6 @@ void ImuBq::init(const Config& config) {
       error_msg << "GUID Mismatch, expected: "<< expected_imu_guid << " got: " << actual_guid << std::endl;;
       throw std::runtime_error(error_msg.str());
     }
-
   }
 
   if (all_go) {
