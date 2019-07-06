@@ -24,7 +24,7 @@ void MessageLoggerBQ::init(const Config& config) {
 
 
   // Generate a log name. Log name will be the UTC date and time in the format YYYYMMDDHHMMSS
-  time_t now = time(0);
+  time_t now = ::time(0);
   tm* gmtm = gmtime(&now);
   std::ostringstream str_time;
   str_time << std::put_time(gmtm, "%Y%m%d%H%M%S");

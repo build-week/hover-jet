@@ -36,6 +36,10 @@ class BalsaQ {
     bq_name_ = name;
   }
 
+  void emplace_loop_duration(const Duration& duration) {
+    loop_durations_.emplace_back(duration);
+  }
+
   void set_comms_factory(std::unique_ptr<CommsFactory> comms_factory);
 
   void base_init();
@@ -53,6 +57,8 @@ class BalsaQ {
   std::string bq_name_;
   std::unique_ptr<CommsFactory> comms_factory_;
   std::unique_ptr<Publisher> bq_state_publisher_;
+
+  std::vector<Duration> loop_durations_;
 };
 
 }  // namespace jet
