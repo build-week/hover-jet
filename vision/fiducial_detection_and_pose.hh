@@ -41,7 +41,7 @@ struct MatWrapper {
   explicit MatWrapper(const Mat& mtx) {
     for (int r = 0; r < ROWS; r++) {
       for (int c = 0; c < COLS; c++) {
-        vals[c + (r * c)] = mtx(r, c);
+        vals[c + (r * COLS)] = mtx(r, c);
       }
     }
   }
@@ -57,7 +57,7 @@ struct MatWrapper {
     return true_mtx;
   }
 
-  std::array<double, ROWS * COLS> vals;
+  std::array<float, ROWS * COLS> vals;
 
   SERIALIZABLE_STRUCTURE(MatWrapper, vals);
 };
