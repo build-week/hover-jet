@@ -21,26 +21,27 @@ void set_up_signal_handler() {
   sigaction(SIGINT, &sigIntHandler, NULL);
 }
 
-std::string parse_commandline_arguments(int argc, char* argv[]) {
+std::optional<std::string> parse_commandline_arguments(int argc, char* argv[]) {
   if (argc > 1) {
     return argv[1];
   }
-  return "";
+  return {};
 }
 
 void parse_config(const std::string& config_path, Config& config) {
   try {
     config = YAML::LoadFile(config_path);
   } catch (YAML::BadFile e) {
-    std::cerr << "Could not find YAML file. Using empty config." << std::endl;
-    config = YAML::Node();
+    throw std::runtime_error("Could not find BQ Config specified: " + config_path);
   }
 }
 
 template <typename BQ_TYPE>
-void run_bq(const std::string& bq_typename, const std::string& config_path) {
+void run_bq(const std::string& bq_typename, const std::optional<std::string>& config_path) {
   Config bq_config;
-  parse_config(config_path, bq_config);
+  if (config_path.has_value()) {
+    parse_config(config_path.value(), bq_config);
+  }
 
   BQ_TYPE balsa_queue = BQ_TYPE();
   if (bq_config["bq_name"]) {
