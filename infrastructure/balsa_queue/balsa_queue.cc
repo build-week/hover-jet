@@ -7,16 +7,24 @@
 
 namespace jet {
 
+namespace {
+  double nanoseconds_to_seconds(double nanoseconds) {
+    return nanoseconds / 1000000000.0;
+  }
+}
+
 void BalsaQ::set_comms_factory(std::unique_ptr<CommsFactory> comms_factory) {
   comms_factory_ = std::move(comms_factory);
 }
 
 void BalsaQ::base_init() {
   bq_state_publisher_ = make_publisher("bq_state");
+  timestamp_last_report_ = get_current_time();
 }
 
 void BalsaQ::base_loop() {
   publish_state();
+  ++loop_count_since_last_report_;
 }
 
 void BalsaQ::publish_state() {
@@ -41,6 +49,12 @@ void BalsaQ::publish_state() {
       message.loop_execution_times.median_time = loop_durations_[median_element_index];
 
       loop_durations_.clear();
+    }
+
+    if (loop_count_since_last_report_ > 0) {
+      message.loop_rate_hz = loop_count_since_last_report_ / nanoseconds_to_seconds(get_current_time() - timestamp_last_report_);
+      loop_count_since_last_report_ = 0;
+      timestamp_last_report_ = get_current_time();
     }
 
     bq_state_publisher_->publish(message);

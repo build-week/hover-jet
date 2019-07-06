@@ -59,6 +59,9 @@ class BalsaQ {
   std::unique_ptr<Publisher> bq_state_publisher_;
 
   std::vector<Duration> loop_durations_;
+
+  uint32_t loop_count_since_last_report_{0};
+  Timestamp timestamp_last_report_{0};
 };
 
 }  // namespace jet

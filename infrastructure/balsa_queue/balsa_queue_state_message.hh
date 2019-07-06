@@ -18,8 +18,9 @@ struct ExecutionTime {
 struct BQStateMessage : Message {
   std::string bq_instance_name;
   ExecutionTime loop_execution_times;
+  double loop_rate_hz;
 
-  MESSAGE(BQStateMessage, bq_instance_name, loop_execution_times);
+  MESSAGE(BQStateMessage, bq_instance_name, loop_execution_times, loop_rate_hz);
 };
 
 }  //  namespace jet

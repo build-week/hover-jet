@@ -21,6 +21,9 @@ int main(int argc, char* argv[]) {
                 << "] loop duration (ms) Min: " << ns_to_ms(message.loop_execution_times.min_time)
                 << " Max: " << ns_to_ms(message.loop_execution_times.max_time)
                 << " Median: " << ns_to_ms(message.loop_execution_times.median_time) << std::endl;
+
+      std::cout << std::fixed << std::setprecision(1) << "[" << message.bq_instance_name
+                << "] loop rate: " << message.loop_rate_hz << "hz" << std::endl;
     }
   }
 }
