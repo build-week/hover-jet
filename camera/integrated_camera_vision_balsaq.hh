@@ -3,7 +3,6 @@
 
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "camera/camera_image_message.hh"
-#include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "camera/camera_manager.hh"
 #include "camera/webcam_interface.hh"
@@ -14,17 +13,10 @@
 
 namespace jet {
 
-// A C++ form of the yaml config
-//
-// Stored this way to avoid parsing overhead when re-reading the
-// config each frame
-//
-// The fields are left intentionally uninitialized, so that
-// their use before initialization can be detected with Valgrind
 
-class CameraBq : public BalsaQ {
+class IntegratedCameraVisionBq : public BalsaQ {
  public:
-  CameraBq() = default;
+  IntegratedCameraVisionBq() = default;
   void init(const Config& config);
   void loop();
   void shutdown();
@@ -45,7 +37,7 @@ class CameraBq : public BalsaQ {
 
   Camera camera_;
   CameraConfiguration camera_config_;
-  CameraManager camera_manager_ = CameraManager();
+  CameraManager camera_manager_;
 };
 
 }  // namespace jet

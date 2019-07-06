@@ -10,12 +10,10 @@
 
 #include <cstddef>
 #include <iostream>
-#include <sstream>
-#include <thread>
 
 namespace jet {
 
-void CameraBq::init(const Config& config) {
+void IntegratedCameraVisionBq::init(const Config& config) {
   camera_ = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
   cap_ = cv::VideoCapture(camera_.v4l_path);
@@ -27,7 +25,7 @@ void CameraBq::init(const Config& config) {
   
 }
 
-void CameraBq::loop() {
+void IntegratedCameraVisionBq::loop() {
   const auto t2 = time::get_current_time();
 
 
@@ -67,10 +65,10 @@ void CameraBq::loop() {
   }
   std::cout << "to do integrated BQ loop " << (float)(time::get_current_time() - t2) / 1000000 << "ms" << std::endl;
 }
-void CameraBq::shutdown() {
+void IntegratedCameraVisionBq::shutdown() {
   std::cout << "Camera BQ shutting down." << std::endl;
 }
 
 }  // namespace jet
 
-BALSA_QUEUE_MAIN_FUNCTION(jet::CameraBq)
+BALSA_QUEUE_MAIN_FUNCTION(jet::IntegratedCameraVisionBq)
