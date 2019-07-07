@@ -37,7 +37,6 @@ class CameraBq : public BalsaQ {
   // The camera capture times are reported in millseconds from monotonic clock start
   // This function reconstructs a a reasonable approximation of the *vehicle* time
   // associated with that monotonic time
-  static const int CAMERA_FPS = 10;
   PublisherPtr publisher_;
   cv::VideoCapture cap_;
   Timestamp last_msg_recvd_timestamp_;

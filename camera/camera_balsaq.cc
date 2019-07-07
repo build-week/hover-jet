@@ -13,6 +13,8 @@
 namespace jet {
 
 void CameraBq::init(const Config& config) {
+  // 20Hz Update Rate
+  loop_delay_microseconds = 50000;
   camera_ = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
   cap_ = cv::VideoCapture(camera_.v4l_path);
