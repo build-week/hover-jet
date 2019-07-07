@@ -60,8 +60,12 @@ void run_bq(const std::string& bq_typename, const std::optional<std::string>& co
     jet::Timestamp loop_start_time = jet::time::get_current_time();
     balsa_queue.base_loop();
     balsa_queue.loop();
-    balsa_queue.emplace_loop_duration(jet::time::get_current_time() - loop_start_time);
-    usleep(balsa_queue.loop_delay_microseconds);
+    const std::chrono::nanoseconds loop_duration_ns = std::chrono::nanoseconds(jet::time::get_current_time() - loop_start_time);
+    const std::chrono::microseconds loop_duration_us = std::chrono::duration_cast<std::chrono::microseconds>(loop_duration_ns);
+    balsa_queue.emplace_loop_duration(loop_duration_ns.count());
+    if (balsa_queue.loop_delay_microseconds > loop_duration_us.count()) {
+      usleep(balsa_queue.loop_delay_microseconds - loop_duration_us.count());
+    }
   }
   balsa_queue.shutdown();
 }
