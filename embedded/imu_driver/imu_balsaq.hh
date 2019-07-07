@@ -27,7 +27,7 @@ class ImuBq : public BalsaQ {
   void loop();
   void shutdown();
 
-  // Every millisecond
+  // Every 10 milliseconds
   const static uint loop_delay_microseconds = 10000;
 
  private:
