@@ -28,7 +28,6 @@ class CameraBq : public BalsaQ {
   void init(const Config& config);
   void loop();
   void shutdown();
-  const static uint loop_delay_microseconds = 50000;
 
  private:
   // Use this to convert a capture time to a wall time
@@ -38,7 +37,6 @@ class CameraBq : public BalsaQ {
   // The camera capture times are reported in millseconds from monotonic clock start
   // This function reconstructs a a reasonable approximation of the *vehicle* time
   // associated with that monotonic time
-  static const int CAMERA_FPS = 10;
   PublisherPtr publisher_;
   cv::VideoCapture cap_;
   Timestamp last_msg_recvd_timestamp_;

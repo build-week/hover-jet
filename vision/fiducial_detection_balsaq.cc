@@ -13,6 +13,8 @@
 namespace jet {
 
 void FiducialDetectionBq::init(const Config& config) {
+  // 20Hz Update Rate
+  loop_delay_microseconds = 50000;
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 }
