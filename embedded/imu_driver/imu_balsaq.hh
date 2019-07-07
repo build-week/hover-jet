@@ -27,8 +27,8 @@ class ImuBq : public BalsaQ {
   void loop();
   void shutdown();
 
-  // Every millisecond
-  const static uint loop_delay_microseconds = 0;
+  // Every 10 milliseconds
+  const static uint loop_delay_microseconds = 10000;
 
  private:
   std::vector<ManagedDriver> imu_drivers_;
