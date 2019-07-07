@@ -2,21 +2,21 @@
 namespace jet {
 
 SharedStructSubscriber::SharedStructSubscriber(const std::string& object_name) : Subscriber(object_name) {
-  int oflags = O_RDWR;
-  int fd_ = shm_open(object_name.c_str(), oflags, 0644);
-  if (fd_ < 0) {
+  int o_flags = O_RDWR;
+  int shmem_file_descriptor_ = shm_open(object_name.c_str(), o_flags, 0644);
+  if (shmem_file_descriptor_ < 0) {
     std::cerr << "Error " <<  errno << ": " << errno << std::endl;
   }
 
   struct stat sb;
-  fstat(fd_, &sb);
+  fstat(shmem_file_descriptor_, &sb);
   off_t length = sb.st_size ;
-  shmem_region_ptr_ = (SharedStructMemoryRegion *) mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
+  shmem_region_ptr_ = (SharedStructMemoryRegion *) mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_SHARED, shmem_file_descriptor_, 0);
   assert(shmem_region_ptr_);
 }
 
 SharedStructSubscriber::~SharedStructSubscriber() {
-  close(fd_);
+  close(shmem_file_descriptor_);
 }
 
 bool SharedStructSubscriber::read(Message& message, const Duration& timeout) {

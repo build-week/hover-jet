@@ -12,7 +12,7 @@
 namespace jet {
 
 namespace {
-constexpr int QOS = 0;
+constexpr int QOS = 1;
 }
 
 MqttPublisher::MqttPublisher(const std::string& channel_name) : Publisher(channel_name) {
@@ -63,34 +63,10 @@ void MqttPublisher::publish(Message& message) {
   message.header.timestamp_ns = time::get_current_time();
 
   std::string data;
-
-
-  auto serialize_start_time = time::get_current_time();
   message.serialize(data);
-  uint64_t time_to_serialize = time::get_current_time() - serialize_start_time;
-  if (time_to_serialize > 2000000){
-    std::cout << "Time to serialize: " << std::fixed << std::setprecision(1) << time_to_serialize << "ns" << std::endl;
-  }
-
-
-
-  auto make_message_start_time = time::get_current_time();
   mqtt::message_ptr pubmsg = mqtt::make_message(channel_name_, data);
-  uint64_t time_to_make_message = time::get_current_time() - make_message_start_time;
-  if (time_to_make_message > 2000000){
-    std::cout << "Time to make_message: " << std::fixed << std::setprecision(1) << time_to_make_message << "ns" << std::endl;
-  }
-
-
   pubmsg->set_qos(QOS);
-
-
-  auto mqtt_client_publish_start_time = time::get_current_time();
   mqtt_client_->publish(pubmsg)->wait();
-  uint64_t time_to_mqtt_client_publish_time = time::get_current_time() - mqtt_client_publish_start_time;
-  if (time_to_mqtt_client_publish_time > 2000000){
-    std::cout << "Time to mqtt_client publish: " << std::fixed << std::setprecision(1) << time_to_mqtt_client_publish_time << "ns" << std::endl;
-  }
 }
 
 void MqttPublisher::publish_raw(const std::string& data) {

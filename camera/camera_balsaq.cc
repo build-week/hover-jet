@@ -21,9 +21,9 @@ void CameraBq::init(const Config& config) {
   initialize_camera_hardware(camera_config_, cap_);
 
   if (config["use_shmem"]) {
-    shared_image_ = std::make_unique<jet::SharedStructPublisher>("camera_image_channel");
+    camera_shmem_publisher_ = std::make_unique<jet::SharedStructPublisher>("camera_image_channel");
   } else {
-    camera_shmem_publisher_ = make_publisher("camera_image_channel");
+    publisher_ = make_publisher("camera_image_channel");
   }
 }
 
@@ -46,8 +46,7 @@ void CameraBq::loop() {
     if (camera_shmem_publisher_) {
       camera_shmem_publisher_->publish(message);
     }
-
-    std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
+  } else {
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo().nogo("More than 1 second since last camera frame");

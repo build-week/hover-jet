@@ -13,7 +13,14 @@
 namespace jet {
 
 void FidicualDetectionBq::init(const Config& config) {
-  subscriber_ = make_subscriber("camera_image_channel");
+  assert(config["use_shmem"]);
+
+  if (config["use_shmem"].as<bool>()) {
+    camera_shmem_subscriber_ = std::make_unique<SharedStructSubscriber>("camera_image_channel");
+  } else {
+    subscriber_ = make_subscriber("camera_image_channel");
+  }
+
   publisher_ = make_publisher("fiducial_detection_channel");
 }
 
@@ -22,14 +29,21 @@ void FidicualDetectionBq::loop() {
 
   // Wait until we have the latest image_message
   bool got_msg = false;
-  while (subscriber_->read(image_message, 1)) {
-    got_msg = true;
+  if (subscriber_)
+  {
+    // Wait until we have the latest image_message
+    while (subscriber_->read(image_message, 1)) {
+      got_msg = true;
+    }
+  } else {
+    while (camera_shmem_subscriber_->read(image_message, 0)) {
+      got_msg = true;
+    }
   }
 
   if (got_msg) {
     gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
-    std::cerr << "Image age: " << (last_msg_recvd_timestamp_ - image_message.timestamp) / 1000000.0 << "ms" << std::endl;
     const Calibration camera_calibration = camera_manager_.get_calibration(image_message.camera_serial_number);
     const cv::Mat camera_frame = get_image_mat(image_message);
     std::optional<FiducialDetectionMessage> detection_message =

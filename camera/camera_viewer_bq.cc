@@ -30,7 +30,6 @@ void CameraViewerBq::loop() {
     }
   } else {
     while (camera_shmem_subscriber_->read(image_message, 0)) {
-      shmem_read_time = get_current_time();
       got_msg = true;
     }
   }
