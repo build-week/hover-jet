@@ -22,6 +22,7 @@ class FiducialDetectionBq : public BalsaQ {
   void init(const Config& config) override;
   void loop() override;
   void shutdown() override;
+  const static uint loop_delay_microseconds = 50000;
 
  private:
   PublisherPtr publisher_;

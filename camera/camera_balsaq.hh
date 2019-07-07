@@ -28,6 +28,7 @@ class CameraBq : public BalsaQ {
   void init(const Config& config);
   void loop();
   void shutdown();
+  const static uint loop_delay_microseconds = 50000;
 
  private:
   // Use this to convert a capture time to a wall time
