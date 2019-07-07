@@ -7,23 +7,19 @@
 #include "control/control_utilities.hh"
 #include "control/jet_vane_mapper.hh"
 #include "control/servo_interface.hh"
+
 #include "filtering/pose_message.hh"
+#include "filtering/yaml_matrix.hh"
+
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "infrastructure/engine/turbine_state_message.hh"
-
-#include "third_party/experiments/estimation/time_point.hh"
 
 namespace jet {
 namespace control {
 
 namespace {
 
-estimation::TimePoint to_time_point(const Timestamp& ts) {
-  const auto epoch_offset = std::chrono::nanoseconds(uint64_t(ts));
-  const estimation::TimePoint time_point = estimation::TimePoint{} + epoch_offset;
-  return time_point;
-}
-
+/*
 jcc::Vec3 sigmoid(const jcc::Vec3& v) {
   const double v_nrm = v.norm();
 
@@ -31,11 +27,18 @@ jcc::Vec3 sigmoid(const jcc::Vec3& v) {
 
   return interp_value * v.normalized();
 }
+*/
 
-QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pose, const JetStatus& jet_status) {
+QuadraframeStatus generate_control(const SO3& world_from_target,
+                                   const Pose& pose,
+                                   const JetStatus& jet_status,
+                                   const GainConfig& cfg) {
   JetVaneMapper mapper_;
 
-  const MatNd<3, 3> K = jcc::Vec3(0.3, 0.3, 0.4).asDiagonal();
+  const jcc::Vec3 w_jet_frame = pose.world_from_jet.inverse() * pose.w_world_frame;
+
+  const MatNd<3, 3> Kp = cfg.k_proportional.asDiagonal();
+  const MatNd<3, 3> Kd = cfg.k_derivative.asDiagonal();
 
   //
   // Compute the current expected jet force (All servos zero'd)
@@ -53,7 +56,7 @@ QuadraframeStatus generate_control(const SO3& world_from_target, const Pose& pos
   const jcc::Vec3 desired_force_jet_frame = wrench_for_zero.force_N;
 
   const SO3 target_from_jet = world_from_target.inverse() * pose.world_from_jet.so3();
-  const jcc::Vec3 desired_torque_jet_frame = -K * target_from_jet.log();
+  const jcc::Vec3 desired_torque_jet_frame = -(Kp * target_from_jet.log()) + -(Kd * w_jet_frame);
 
   Wrench target_wrench;
   target_wrench.torque_Nm = desired_torque_jet_frame;
@@ -99,6 +102,9 @@ void ControllerBq::init(const Config& config) {
   std::cout << "Subscribing Turbine State" << std::endl;
   turbine_state_sub_ = make_subscriber("turbine_state");
 
+  read_matrix(config["k_proportional"], gain_cfg_.k_proportional);
+  read_matrix(config["k_derivative"], gain_cfg_.k_derivative);
+
   std::cout << "Controller starting" << std::endl;
 }
 
@@ -125,7 +131,7 @@ void ControllerBq::loop() {
 
   if (got_pose_msg && got_turbine_status_) {
     const Pose pose = pose_msg.to_pose();
-    const auto target_qframe_status = generate_control(target_from_world, pose, jet_status_);
+    const auto target_qframe_status = generate_control(target_from_world, pose, jet_status_, gain_cfg_);
     SetServoMessage servo_message = create_servo_command(target_qframe_status);
     servo_pub_->publish(servo_message);
   }

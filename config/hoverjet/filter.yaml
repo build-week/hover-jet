@@ -1,0 +1,106 @@
+use_accelerometer: false
+use_gyro: true
+use_imus:
+  - 78
+use_fiducial: true
+max_fiducial_latency_s: 0.4
+
+transforms:
+  - source: imu_36
+    destination: camera
+    source_from_destination:
+      log_R_source_from_destination:
+        - -1.616591025757221
+        - 0.05134578843446101
+        - 0.05091124055477719
+      translation_source_from_destination:
+        - -0.001292535846636506
+        - -0.0009267741933531443
+        - -0.0199366607203838
+  - source_from_destination:
+      log_R_source_from_destination:
+        - -2.207252187700393
+        - 2.221627059568664
+        - 0.0729343244927283
+      translation_source_from_destination:
+        - -0.1457315425013999
+        - 0.07004447260546187
+        - -0.2286505835933628
+    destination: camera
+    source: imu_78
+  - destination: camera
+    source_from_destination:
+      log_R_source_from_destination:
+        - 1.209199576156145
+        - 1.209199576156145
+        - 1.209199576156145
+      translation_source_from_destination:
+        - 0.11
+        - 0
+        - 0.32
+    source: vehicle
+imus:
+  36:
+    source_log: /jet/logs/calibration-log-jul6-7
+    accelerometer_gains_p0:
+      - 0
+      - 0
+      - 0
+    magnetometer_gains_p0:
+      - -79.29922702237944
+      - -4.476413645049656
+      - -46.83316633469963
+    id: 36
+    magnetometer_gains_scaling:
+      - 32.1877202815169
+      - 3.408923758371102
+      - 10.62688468310214
+      - 0
+      - 33.17611158621461
+      - -13.05820640963059
+      - 0
+      - 0
+      - 34.80217509591158
+    name: imu_36
+    accelerometer_gains_scaling:
+      - 9.480392053156724
+      - -0.367804276102152
+      - 0.1097718806953435
+      - 0
+      - 9.392748712511086
+      - -0.223199776102899
+      - 0
+      - 0
+      - 9.674406404535416
+  78:
+    magnetometer_gains_scaling:
+      - 27.28940423457934
+      - -8.791590927283378
+      - 2.517804983200733
+      - 0
+      - 32.00283422687422
+      - 2.359513709031368
+      - 0
+      - 0
+      - 27.18480244848202
+    name: imu_78
+    accelerometer_gains_p0:
+      - 0
+      - 0
+      - 0
+    id: 78
+    accelerometer_gains_scaling:
+      - 9.699410372939981
+      - -1.712699829531295
+      - -0.3186110085605555
+      - 0
+      - 9.844189129580382
+      - -0.1136357460553914
+      - 0
+      - 0
+      - 8.810237581896597
+    magnetometer_gains_p0:
+      - 45.59041987760968
+      - 53.1135550856215
+      - 21.82576956097864
+    source_log: /jet/logs/calibration-log-jul6-7

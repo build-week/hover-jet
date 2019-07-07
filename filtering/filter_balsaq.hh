@@ -1,18 +1,16 @@
 
 #pragma once
 
-#include <memory>
-#include <queue>
-
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 
-//%deps(jet_filter)
-#include "third_party/experiments/estimation/jet/jet_filter.hh"
+//%deps(jet_filter_manager)
+#include "third_party/experiments/estimation/jet/jet_filter_manager.hh"
 
 namespace jet {
 namespace filtering {
 
+namespace ejf = estimation::jet_filter;
 class FilterBq : public BalsaQ {
  public:
   FilterBq();
@@ -25,13 +23,13 @@ class FilterBq : public BalsaQ {
 
  private:
   SubscriberPtr fiducial_sub_;
-  SubscriberPtr imu_sub_;
+
+  std::map<int, SubscriberPtr> imu_sub_from_id_;
+
+  ejf::FilterManager filter_manager_;
 
   PublisherPtr pose_pub_;
-
-  SE3 camera_from_vehicle_;
-  SE3 tag_from_world_;
-  estimation::jet_filter::JetFilter jf_;
+  PublisherPtr state_pub_;
 };
 
 }  // namespace filtering

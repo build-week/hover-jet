@@ -9,6 +9,7 @@ FIND_PACKAGE(crossguid REQUIRED)
 
 # CMakeLists
 find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 
@@ -29,7 +30,7 @@ if(ret EQUAL "1")
 endif()
 
 set(CMAKE_CXX_COMPILER "g++-7")
-set(CMAKE_CXX_FLAGS "--std=c++17 -g -O1 -fno-omit-frame-pointer -Wall -Wno-deprecated-declarations ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "--std=c++17 -g -O1 -fno-omit-frame-pointer -Wall -Wno-deprecated-declarations -Wno-psabi ${CMAKE_CXX_FLAGS}")
 
 
 # Wait! Don't edit this file! Use pymake of updating this cmake.

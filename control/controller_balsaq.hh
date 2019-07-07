@@ -8,6 +8,11 @@
 namespace jet {
 namespace control {
 
+struct GainConfig {
+  jcc::Vec3 k_proportional;
+  jcc::Vec3 k_derivative;
+};
+
 class ControllerBq : public BalsaQ {
  public:
   ControllerBq();
@@ -19,6 +24,8 @@ class ControllerBq : public BalsaQ {
   const static uint loop_delay_microseconds = 10000;
 
  private:
+  GainConfig gain_cfg_;
+
   SubscriberPtr roll_sub_;
   SubscriberPtr pitch_sub_;
   SubscriberPtr yaw_sub_;

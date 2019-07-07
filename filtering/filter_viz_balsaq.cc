@@ -5,7 +5,6 @@
 #include "control/servo_interface.hh"
 #include "embedded/imu_driver/imu_message.hh"
 #include "embedded/servo_bq/set_servo_message.hh"
-#include "filtering/pose_message.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "vision/fiducial_detection_message.hh"
 #include "visualization/thrust_stand_visualizer.hh"
@@ -20,6 +19,9 @@
 #include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
+
+//%deps(jet_model)
+#include "third_party/experiments/planning/jet/jet_model.hh"
 
 namespace jet {
 namespace embedded {
@@ -45,9 +47,16 @@ void FilterVizBq::init(const Config& config) {
   sensor_geo_ = view->add_primitive<viewer::SimpleGeometry>();
   pose_geo_ = view->add_primitive<viewer::SimpleGeometry>();
   servo_geo_ = view->add_primitive<viewer::SimpleGeometry>();
+  jet_tree_ = view->add_primitive<viewer::SceneTree>();
+
+  const planning::jet::JetModel jet_3dmodel;
+  constexpr bool DRAW_VEHICLE = true;
+  if constexpr (DRAW_VEHICLE) {
+    jet_3dmodel.insert(*jet_tree_);
+  }
 
   std::cout << "Subscribing IMU" << std::endl;
-  imu_sub_ = make_subscriber("imu");
+  imu_sub_ = make_subscriber("imu_1");
   std::cout << "Subscribing Fiducial" << std::endl;
   fiducial_sub_ = make_subscriber("fiducial_detection_channel");
 
@@ -56,8 +65,6 @@ void FilterVizBq::init(const Config& config) {
 
   std::cout << "Subscribing servos" << std::endl;
   servo_sub_ = make_subscriber("servo_command_channel");
-
-  tag_from_world_ = get_fiducial_pose().tag_from_world;
   camera_from_body_ = get_camera_extrinsics().camera_from_frame;
 
   std::cout << "Filter Viz starting" << std::endl;
@@ -71,42 +78,17 @@ void FilterVizBq::draw_sensors() {
   FiducialDetectionMessage detection_msg;
   if (true && fiducial_sub_->read(detection_msg, 1)) {
     const SE3 fiducial_from_camera = detection_msg.fiducial_from_camera();
-    const SE3 fiducial_from_body = fiducial_from_camera * camera_from_body_;
-
-    // This is used to generate a config
-    const jcc::Vec3 log_translation_tag_from_world = fiducial_from_body.translation();
-    const jcc::Vec3 log_rotation_tag_from_world = fiducial_from_body.so3().log();
-    std::cout << "log_translation_tag_from_world: [" << log_translation_tag_from_world[0] << ", "
-              << log_translation_tag_from_world[1] << ", " << log_translation_tag_from_world[2] << "] " << std::endl;
-
-    std::cout << "log_rotation_tag_from_world: [" << log_rotation_tag_from_world[0] << ", "
-              << log_rotation_tag_from_world[1] << ", " << log_rotation_tag_from_world[2] << "] " << std::endl;
-
-    const auto fiducial_time_of_validity = to_time_point(detection_msg.timestamp);
 
     fiducial_history_.push_back(fiducial_from_camera);
   }
-
-  MatNd<3, 3> L;
-  {  // clang-format off
-    L.row(0) << 9.67735, 0, 0;
-    L.row(1) << 0.136597, 9.59653, 0;
-    L.row(2) << -0.216635, 0.00400047, 9.64812;
-    // clang-format on
-  }
-  const jcc::Vec3 offset(0.0562102, 0.42847, -0.119841);
-  const geometry::shapes::Ellipse ellipse{L, offset};
 
   while (imu_sub_->read(imu_msg, 1)) {
     const jcc::Vec3 accel_mpss(imu_msg.accel_mpss_x, imu_msg.accel_mpss_y, imu_msg.accel_mpss_z);
     const jcc::Vec3 mag_utesla(imu_msg.mag_utesla_x, imu_msg.mag_utesla_y, imu_msg.mag_utesla_z);
     const jcc::Vec3 gyro_radps(imu_msg.gyro_radps_x, imu_msg.gyro_radps_y, imu_msg.gyro_radps_z);
 
-    accel_history_.push_back(
-        {geometry::shapes::deform_ellipse_to_unit_sphere(accel_mpss, ellipse) * 9.81, gyro_radps, mag_utesla});
+    accel_history_.push_back({accel_mpss, gyro_radps, mag_utesla});
     mag_utesla_.push_back({mag_utesla});
-
-    std::cout << accel_mpss.transpose() << ", " << accel_mpss.norm() << std::endl;
   }
 
   while (accel_history_.size() > 25000u) {
@@ -120,21 +102,6 @@ void FilterVizBq::draw_sensors() {
     sensor_geo_->add_point({meas.accel_mpss, jcc::Vec4(0.1, 0.7, 0.3, 0.9)});
   }
 
-  if (accel_history_.size() > 2500u) {
-    const auto visitor = [this, &view](const geometry::shapes::EllipseFit& fit) {
-      sensor_geo_->add_ellipsoid({fit.ellipse, jcc::Vec4(0.4, 0.6, 0.4, 0.7), 2.0});
-      sensor_geo_->flush();
-    };
-    // std::cout << "Optimizing" << std::endl;
-    const auto result = geometry::shapes::fit_ellipse(accels);
-    sensor_geo_->add_ellipsoid({result.ellipse, jcc::Vec4(0.2, 0.9, 0.2, 1.0), 5.0});
-
-    std::cerr << "chol" << std::endl;
-    std::cerr << result.ellipse.cholesky_factor << std::endl;
-    std::cerr << "p0" << std::endl;
-    std::cerr << result.ellipse.p0.transpose() << std::endl;
-  }
-
   while (fiducial_history_.size() > 10u) {
     fiducial_history_.pop_front();
   }
@@ -143,35 +110,15 @@ void FilterVizBq::draw_sensors() {
     mag_utesla_.pop_front();
   }
 
-  sensor_geo_->add_sphere({tag_from_world_.inverse().translation(), 0.3});
-  sensor_geo_->add_axes({tag_from_world_.inverse()});
-
-  sensor_geo_->add_sphere({camera_from_body_.inverse().translation(), 0.3});
-  sensor_geo_->add_axes({camera_from_body_.inverse()});
-
   if (!fiducial_history_.empty()) {
-    const SE3 fiducial_from_camera = fiducial_history_.back();
+    const SE3 camera_from_fiducial = fiducial_history_.back().inverse();
 
-    constexpr bool DRAW_FIDUCIAL_POSE = false;
-    constexpr bool DRAW_VEHICLE_POSE = true;
-    constexpr bool DRAW_FIDUCIAL_IN_BODY_FRAME = false;
+    const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
+    const Pose pose = last_pose_message_.to_pose();
+    const SE3 world_from_jet(pose.world_from_jet.so3(), jet_origin);
 
-    if (DRAW_FIDUCIAL_POSE) {  // Draw the fiducial axes in the camera frame
-      sensor_geo_->add_sphere({fiducial_from_camera.inverse().translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
-      sensor_geo_->add_axes({fiducial_from_camera.inverse(), 0.025, 3.0});
-    }
-
-    if (DRAW_VEHICLE_POSE) {  // Draw the vehicle axes in the world frame
-      const SE3 world_from_vehicle = tag_from_world_.inverse() * fiducial_from_camera * camera_from_body_;
-      sensor_geo_->add_sphere({world_from_vehicle.translation(), 0.2, jcc::Vec4(1.0, 0.0, 0.2, 0.8)});
-      sensor_geo_->add_axes({world_from_vehicle, 0.6, 3.0, true});
-    }
-
-    if (DRAW_FIDUCIAL_IN_BODY_FRAME) {  // Draw the body axes in the fiducial frame
-      const SE3 fiducial_from_body = fiducial_from_camera * camera_from_body_;
-      sensor_geo_->add_axes({fiducial_from_body.inverse()});
-      sensor_geo_->add_sphere({fiducial_from_body.inverse().translation(), 0.2, jcc::Vec4(0.0, 0.0, 1.0, 0.8)});
-    }
+    sensor_geo_->add_sphere({world_from_jet * camera_from_fiducial.translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
+    sensor_geo_->add_axes({world_from_jet * camera_from_fiducial, 0.025, 3.0});
   }
 
   if (!accel_history_.empty()) {
@@ -186,13 +133,23 @@ void FilterVizBq::draw_pose() {
   PoseMessage pose_msg;
   bool got_pose_msg = false;
   while (pose_sub_->read(pose_msg, 1)) {
+    last_pose_message_ = pose_msg;
     got_pose_msg = true;
   }
 
   if (got_pose_msg) {
     const Pose pose = pose_msg.to_pose();
-    pose_geo_->add_axes({pose.world_from_jet, 0.055, 3.0, true});
+    const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
+
+    pose_geo_->add_axes({pose.world_from_jet, 0.55, 3.0, true});
+
+    const SE3 world_from_jet(pose.world_from_jet.so3(), jet_origin);
+    pose_geo_->add_axes({world_from_jet, 0.55, 3.0, true});
+
     pose_geo_->flip();
+
+    const SE3 jetmodel_from_body = jcc::exp_x(0.0);
+    jet_tree_->set_world_from_root(world_from_jet * jetmodel_from_body.inverse());
   }
 }
 

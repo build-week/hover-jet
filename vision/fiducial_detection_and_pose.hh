@@ -57,7 +57,7 @@ struct MatWrapper {
     return true_mtx;
   }
 
-  std::array<float, ROWS * COLS> vals;
+  std::array<double, ROWS * COLS> vals;
 
   SERIALIZABLE_STRUCTURE(MatWrapper, vals);
 };

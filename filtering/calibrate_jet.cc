@@ -3,24 +3,25 @@
 //%deps(nonlinear_camera_model)
 //%deps(warn_sensor_rates)
 //%deps(make_interpolator)
-#include "third_party/experiments/estimation/sensors/make_interpolator.hh"
-
 #include "third_party/experiments/estimation/calibration/nonlinear_camera_model.hh"
 #include "third_party/experiments/estimation/calibration/warn_sensor_rates.hh"
 #include "third_party/experiments/estimation/jet/jet_filter.hh"
 #include "third_party/experiments/estimation/jet/jet_optimizer.hh"
+#include "third_party/experiments/estimation/sensors/make_interpolator.hh"
 
-//%deps(calibrate_single_imu)
+//%deps(create_static_jet_model)
 //%deps(robust_pnp)
 //%deps(visualize_calibration)
 //%deps(visualize_camera_calibration)
-#include "third_party/experiments/estimation/calibration/calibrate_single_imu.hh"
+#include "third_party/experiments/estimation/jet/create_static_jet_model.hh"
 #include "third_party/experiments/estimation/vision/robust_pnp.hh"
 #include "third_party/experiments/estimation/visualization/visualize_calibration.hh"
 #include "third_party/experiments/estimation/visualization/visualize_camera_calibration.hh"
 
 //%deps(form_coordinate_frame)
+//%deps(put_transform_network)
 #include "third_party/experiments/geometry/spatial/form_coordinate_frame.hh"
+#include "third_party/experiments/geometry/visualization/put_transform_network.hh"
 
 //%deps(simple_geometry)
 //%deps(ui2d)
@@ -38,6 +39,9 @@
 
 #include "camera/camera_manager.hh"
 #include "vision/fiducial_detection_and_pose.hh"
+
+#include "filtering/transform_network_from_yaml.hh"
+#include "filtering/yaml_matrix.hh"
 
 // - Validate reprojection of fiducial detection using the packaged calibration
 // - Validate opencv calibration
@@ -83,20 +87,6 @@ std::vector<estimation::ObjectImageAssociations> object_image_assoc_from_board_p
   return obj_image;
 }
 
-void align_crappy_jake(const std::shared_ptr<viewer::SimpleGeometry>& geo,
-                       const std::shared_ptr<viewer::Ui2d>& ui2d,
-                       const estimation::NonlinearCameraModel& model,
-                       const SE3& fiducial_from_camera_init,
-                       const std::vector<BoardPointImagePointAssociation>& obj_pt_associations) {
-  std::vector<jcc::Vec2> observed;
-  std::vector<jcc::Vec3> object;
-
-  const auto associations = object_image_assoc_from_board_point(obj_pt_associations);
-
-  const auto pnp_visitor = estimation::make_pnp_visitor(model, object, observed);
-  const auto pnp_result = estimation::robust_pnp(model, fiducial_from_camera_init, object, observed, pnp_visitor);
-}
-
 }  // namespace
 
 const estimation::CreateSingleImuModelConfig imu_cal_cfg{
@@ -111,10 +101,12 @@ const estimation::CameraCalibrationConfig camera_cal_cfg{
     .visualize_camera_frustum = false      //
 };
 
+bool visualize_filter = true;
+
 bool visualize() {
   return (camera_cal_cfg.visualize_camera || camera_cal_cfg.visualize_camera_distortion ||
           camera_cal_cfg.visualize_camera_frustum || imu_cal_cfg.visualize_imu_model || imu_cal_cfg.visualize_gyro ||
-          imu_cal_cfg.visualize_magnetometer);
+          imu_cal_cfg.visualize_magnetometer || visualize_filter);
 }
 
 void setup() {
@@ -128,16 +120,41 @@ void setup() {
   }
 }
 
-struct JetModel {
-  std::map<int, estimation::SingleImuCalibration> imu_calibration_from_imu_id;
-};
+void emit_yaml_for_imu_calibrations(const estimation::jet::JetModel& jet_model, const std::string& source_log_name) {
+  YAML::Node node;
+  YAML::Node imus_node = node["imus"];
 
-jcc::Optional<ejf::FiducialMeasurement> find_nearest_fiducial(
-    const estimation::calibration::CalibrationMeasurements& cal_meas, const estimation::TimePoint& t) {
-  JASSERT_FALSE(cal_meas.fiducial_meas.empty(), "Cannot calibrate with empty fiducial measurements");
-  for (const auto& fiducial_meas : cal_meas.fiducial_meas) {
-    if (t < fiducial_meas.timestamp) {
-      return {fiducial_meas.measurement};
+  for (const auto& imu_pair : jet_model.imu_calibration_from_imu_id) {
+    const auto& single_cal = imu_pair.second;
+
+    const std::string imu_id_str = estimation::jet::make_imu_id_string(single_cal.imu_id);
+    {
+      YAML::Node single_imu_node = imus_node[single_cal.imu_id];
+      const auto intrinsics = single_cal.imu_model.intrinsics();
+
+      set_matrix(single_imu_node, "accelerometer_gains_scaling", intrinsics.imu_gains.cholesky_factor);
+      set_matrix(single_imu_node, "accelerometer_gains_p0", intrinsics.imu_gains.p0);
+      set_matrix(single_imu_node, "magnetometer_gains_scaling", intrinsics.magnetometer_gains.cholesky_factor);
+      set_matrix(single_imu_node, "magnetometer_gains_p0", intrinsics.magnetometer_gains.p0);
+
+      single_imu_node["id"] = single_cal.imu_id;
+      single_imu_node["name"] = imu_id_str;
+      single_imu_node["source_log"] = source_log_name;
+    }
+  }
+
+  transform_network_to_yaml(node, jet_model.transform_network);
+
+  std::cout << node << std::endl;
+}
+
+jcc::Optional<ejf::FiducialMeasurement> find_nearest_fiducial_in_time(
+    const std::vector<estimation::TimedMeasurement<ejf::FiducialMeasurement>> fiducial_measurements,
+    const estimation::TimePoint& t) {
+  JASSERT_FALSE(fiducial_measurements.empty(), "Cannot calibrate with empty fiducial measurements");
+  for (const auto& fiducial_measurements : fiducial_measurements) {
+    if (t < fiducial_measurements.timestamp) {
+      return {fiducial_measurements.measurement};
     }
   }
   return {};
@@ -149,17 +166,18 @@ SE3 compute_world_from_camera(const estimation::SingleImuCalibration& imu_cal) {
   return SE3(world_from_camera, jcc::Vec3::Zero());
 }
 
-ejf::Parameters compute_parameters(const estimation::calibration::CalibrationMeasurements& cal_meas,
-                                   const JetModel& jet_model) {
+ejf::Parameters compute_filter_fixed_parameters(
+    const std::vector<estimation::TimedMeasurement<ejf::FiducialMeasurement>> fiducial_measurements,
+    const estimation::jet::JetModel& jet_model) {
   const auto& imu_cal_1 = jet_model.imu_calibration_from_imu_id.at(IMU_1);
   const auto& imu_cal_2 = jet_model.imu_calibration_from_imu_id.at(IMU_2);
 
   const SO3 world_from_camera_1 = compute_world_from_camera(imu_cal_1).so3();
   const SO3 world_from_camera_2 = compute_world_from_camera(imu_cal_2).so3();
   jcc::Warning() << "[Filter Setup] IMU->IMU Alignment Error: "
-                 << (world_from_camera_1 * world_from_camera_2.inverse()).log().norm() << std::endl;
+                 << (world_from_camera_1 * world_from_camera_2.inverse()).log().norm() << " Radians" << std::endl;
 
-  const auto maybe_nearest_fiducial = find_nearest_fiducial(cal_meas, imu_cal_1.g_estimate.time);
+  const auto maybe_nearest_fiducial = find_nearest_fiducial_in_time(fiducial_measurements, imu_cal_1.g_estimate.time);
   assert(maybe_nearest_fiducial);
   const auto fiducial_at_g_estimate = *maybe_nearest_fiducial;
   const SO3 fiducial_from_camera = fiducial_at_g_estimate.T_fiducial_from_camera.so3();
@@ -168,14 +186,16 @@ ejf::Parameters compute_parameters(const estimation::calibration::CalibrationMea
   auto p = ejf::JetFilter::reasonable_parameters();
   {
     p.T_world_from_fiducial = SE3(world_from_fiducial, jcc::Vec3::Zero());
-    p.T_imu1_from_vehicle = SE3(imu_cal_1.camera_from_gyro.inverse(), jcc::Vec3::Zero());
-    p.T_imu2_from_vehicle = SE3(imu_cal_2.camera_from_gyro.inverse(), jcc::Vec3::Zero());
+
+    p.T_imu1_from_vehicle = jet_model.transform_network.find_source_from_destination("imu_78", "vehicle");
+    p.T_imu2_from_vehicle = jet_model.transform_network.find_source_from_destination("imu_36", "vehicle");
+    p.T_camera_from_vehicle = jet_model.transform_network.find_source_from_destination("camera", "vehicle");
   }
 
   return p;
 }
 
-void test_filter(const estimation::calibration::CalibrationMeasurements& cal_meas, const JetModel& jet_model) {
+void test_filter(const estimation::CalibrationMeasurements& cal_meas, const estimation::jet::JetModel& jet_model) {
   const auto view = viewer::get_window3d("Calibration");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
 
@@ -186,7 +206,6 @@ void test_filter(const estimation::calibration::CalibrationMeasurements& cal_mea
 
   const planning::jet::JetModel jet_3dmodel;
   constexpr bool DRAW_VEHICLE = true;
-  const SO3 jetmodel_from_body = jcc::exp_x(M_PI * 0.5).so3();
   if constexpr (DRAW_VEHICLE) {
     jet_3dmodel.insert(*jet_tree);
   }
@@ -201,34 +220,45 @@ void test_filter(const estimation::calibration::CalibrationMeasurements& cal_mea
   const auto t0 = cal_meas.first();
   // const auto t0 = imu_1_meas.accel_meas.front().timestamp;
 
+  const auto p = compute_filter_fixed_parameters(cal_meas.fiducial_meas, jet_model);
+
   auto xp0 = ejf::JetFilter::reasonable_initial_state(t0);
-  {  //
-    xp0.x.R_world_from_body = compute_world_from_camera(jet_model.imu_calibration_from_imu_id.at(IMU_2)).so3();
+  {
+    const SE3 world_from_vehicle =
+        compute_world_from_camera(jet_model.imu_calibration_from_imu_id.at(IMU_2)) * p.T_camera_from_vehicle;
+    xp0.x.R_world_from_body = world_from_vehicle.so3();
+    xp0.x.x_world = world_from_vehicle.translation();
   }
-  const auto p = compute_parameters(cal_meas, jet_model);
+
   ejf::JetFilter jf(xp0, p);
 
   for (const auto& fiducial_meas : cal_meas.fiducial_meas) {
     jf.measure_fiducial(fiducial_meas.measurement, fiducial_meas.timestamp);
   }
 
-  for (const auto& accel : cal_meas.imu_cal.at(IMU_1).accel_meas) {
-    const jcc::Vec3 corrected_accel = imu_1_model.correct_measured_accel(accel.measurement.observed_acceleration);
-    // jf.measure_imu({corrected_accel}, accel.timestamp);
+  constexpr bool USE_ACCELEROMETER = false;
+  if (USE_ACCELEROMETER) {
+    for (const auto& accel : cal_meas.imu_cal.at(IMU_1).accel_meas) {
+      const jcc::Vec3 corrected_accel = imu_1_model.correct_measured_accel(accel.measurement.observed_acceleration);
+      jf.measure_imu({corrected_accel}, accel.timestamp);
+    }
   }
 
   for (const auto& gyro : cal_meas.imu_cal.at(IMU_1).gyro_meas) {
     jf.measure_gyro(gyro.measurement, gyro.timestamp);
   }
 
-  const auto& imu_2_model = imu_2_cal.imu_model;
-  for (const auto& accel : cal_meas.imu_cal.at(IMU_2).accel_meas) {
-    const jcc::Vec3 corrected_accel = imu_2_model.correct_measured_accel(accel.measurement.observed_acceleration);
-    // jf.measure_imu({corrected_accel}, accel.timestamp, true);
-  }
+  constexpr bool USE_IMU_2 = false;
+  if (USE_IMU_2) {
+    const auto& imu_2_model = imu_2_cal.imu_model;
+    for (const auto& accel : cal_meas.imu_cal.at(IMU_2).accel_meas) {
+      const jcc::Vec3 corrected_accel = imu_2_model.correct_measured_accel(accel.measurement.observed_acceleration);
+      jf.measure_imu({corrected_accel}, accel.timestamp, true);
+    }
 
-  for (const auto& gyro : cal_meas.imu_cal.at(IMU_2).gyro_meas) {
-    // jf.measure_gyro(gyro.measurement, gyro.timestamp, true);
+    for (const auto& gyro : cal_meas.imu_cal.at(IMU_2).gyro_meas) {
+      jf.measure_gyro(gyro.measurement, gyro.timestamp, true);
+    }
   }
 
   int k = 0;
@@ -238,14 +268,13 @@ void test_filter(const estimation::calibration::CalibrationMeasurements& cal_mea
       continue;
     }
     const auto state = jf.state().x;
-    // geo->add_axes({get_world_from_body(state)});
 
     const SE3 T_world_from_body = get_world_from_body(state);
     constexpr bool PRINT_STATES = false;
     if (PRINT_STATES) {
       std::cout << "States:       " << std::endl;
       std::cout << "\taccel_bias: " << state.accel_bias.transpose() << std::endl;
-      std::cout << "\tgyro_bias: " << state.gyro_bias.transpose() << std::endl;
+      std::cout << "\tgyro_bias:  " << state.gyro_bias.transpose() << std::endl;
       std::cout << "\teps_ddot:   " << state.eps_ddot.transpose() << std::endl;
       std::cout << "\teps_dot:    " << state.eps_dot.transpose() << std::endl;
       std::cout << "\tr:          " << T_world_from_body.so3().log().transpose() << std::endl;
@@ -269,7 +298,21 @@ void test_filter(const estimation::calibration::CalibrationMeasurements& cal_mea
     // Angular Velocity
     geo->add_line({jcc::Vec3::Zero(), -state.eps_dot.tail<3>(), jcc::Vec4(0.0, 1.0, 0.0, 1.0), 5.0});
 
-    jet_tree->set_world_from_root(SE3(T_world_from_body.so3() * jetmodel_from_body.inverse(), jet_origin));
+    auto tfn2 = jet_model.transform_network;
+    const auto maybe_nearest_fiducial =
+        find_nearest_fiducial_in_time(cal_meas.fiducial_meas, jf.state().time_of_validity);
+
+    // const SE3 visualized_world_from_vehicle = SE3(T_world_from_body.so3(), jet_origin);
+    const SE3 visualized_world_from_vehicle = T_world_from_body;
+
+    tfn2.update_edge("world", "vehicle", visualized_world_from_vehicle);
+    if (maybe_nearest_fiducial) {
+      tfn2.update_edge("fiducial", "camera", maybe_nearest_fiducial->T_fiducial_from_camera);
+    }
+
+    geometry::put_transform_network(*geo, tfn2, "world");
+    const SE3 vehicle_from_model = jcc::exp_z(-M_PI * 0.5);
+    jet_tree->set_world_from_root(visualized_world_from_vehicle * vehicle_from_model);
 
     geo->flip();
     view->spin_until_step();
@@ -311,32 +354,20 @@ void go() {
   jcc::Success() << "Calibrating..." << std::endl;
 
   //
-  // Calibrate the IMU intrinsics / Estrinsics
-  //
-
-  JetModel jet_model;
-  for (const auto& imu_measurements : cal_measurements.imu_cal) {
-    const auto one_imu = estimation::create_single_imu_model(cal_measurements, imu_measurements.second, imu_cal_cfg);
-    jet_model.imu_calibration_from_imu_id[imu_measurements.first] = one_imu;
-  }
-
-  //
   // Validate the fiducial reprojections
   //
 
   jcc::Success() << "[Camera] Validating fiducial measurements" << std::endl;
   ImageStream image_stream(path, range);
-  jcc::Success() << "[Camera] Parsing images..." << std::endl;
+  jcc::Success() << "[Camera] Re-running Fiducial Detection on images..." << std::endl;
 
   const CameraManager cam_mgr;
   const auto view = viewer::get_window3d("Calibration");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
   const auto ui2d = view->add_primitive<viewer::Ui2d>();
 
-  bool set = false;
-  geometry::Unit3 permanent_g_fiducial_frame;
-
-  std::vector<estimation::calibration::TimedMeasurement<ejf::FiducialMeasurement>> collected_fiducial_meas;
+  // Compute new fiducial measurements
+  std::vector<estimation::TimedMeasurement<ejf::FiducialMeasurement>> collected_fiducial_meas;
 
   int i = 0;
   while (true) {
@@ -346,13 +377,8 @@ void go() {
     if (!image) {
       break;
     }
-
     const auto calibration = cam_mgr.get_calibration(image->serial_number);
-    const auto proj = proj_coeffs_from_opencv(calibration);
-    const auto model = estimation::NonlinearCameraModel(proj);
-
-    const auto ids_corners = get_ids_and_corners(camera_frame);
-    const auto obj_pt_associations = obj_points_img_points_from_image(ids_corners);
+    const auto ids_corners = get_ids_and_corners(image->image);
     const auto fiducial_from_camera = estimate_board_bottom_left_from_camera(ids_corners, calibration);
 
     const auto t = image->time;
@@ -364,6 +390,9 @@ void go() {
 
     // TODO: NEXT, FILL THIS IN
     if (camera_cal_cfg.visualize_camera) {
+      const auto obj_pt_associations = obj_points_img_points_from_image(ids_corners);
+      const auto proj = proj_coeffs_from_opencv(calibration);
+      const auto model = estimation::NonlinearCameraModel(proj);
       const auto associations = object_image_assoc_from_board_point(obj_pt_associations);
       estimation::visualize_single_camera_frame(
           model, fiducial_from_camera, associations, *image, ui2d, geo, camera_cal_cfg);
@@ -371,11 +400,19 @@ void go() {
   }
 
   jcc::Success() << "[Filter] Testing filter..." << std::endl;
-  {
-    estimation::calibration::CalibrationMeasurements new_cal_measurements = cal_measurements;
-    new_cal_measurements.fiducial_meas = collected_fiducial_meas;
-    test_filter(new_cal_measurements, jet_model);
-  }
+  estimation::CalibrationMeasurements new_cal_measurements = cal_measurements;
+  { new_cal_measurements.fiducial_meas = collected_fiducial_meas; }
+
+  const auto jet_model = estimation::jet::create_static_jet_model(new_cal_measurements, imu_cal_cfg);
+
+  //
+  // Calibrate the IMU intrinsics / Estrinsics
+  //
+
+  emit_yaml_for_imu_calibrations(jet_model, path);
+
+  test_filter(new_cal_measurements, jet_model);
+
   jcc::Success() << "Done." << std::endl;
 }
 

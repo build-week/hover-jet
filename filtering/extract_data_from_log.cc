@@ -5,6 +5,7 @@
 #include "filtering/to_time_point.hh"
 #include "infrastructure/logging/log_reader.hh"
 #include "vision/fiducial_detection_message.hh"
+#include "filtering/convert_messages.hh"
 
 //%deps(log)
 #include "third_party/experiments/logging/log.hh"
@@ -14,9 +15,8 @@ namespace jet {
 namespace filtering {
 
 namespace {
-void add_imu(const ImuMessage& msg,
-             const TimeRange& range,
-             Out<estimation::calibration::CalibrationMeasurements> meas) {
+
+void add_imu(const ImuMessage& msg, const TimeRange& range, Out<estimation::CalibrationMeasurements> meas) {
   const auto time_of_validity = to_time_point(msg.timestamp);
 
   if ((time_of_validity < range.start) || (time_of_validity > range.end)) {
@@ -26,50 +26,30 @@ void add_imu(const ImuMessage& msg,
   const int imu_id = msg.imu_id_leading_byte;
   // Today, it is redundancy day today
   meas->imu_cal[imu_id].imu_id = imu_id;
-  {
-    const jcc::Vec3 accel_mpss(msg.accel_mpss_x, msg.accel_mpss_y, msg.accel_mpss_z);
-    ejf::AccelMeasurement accel_meas;
-    accel_meas.observed_acceleration = accel_mpss;
-    meas->imu_cal[imu_id].accel_meas.push_back({accel_meas, time_of_validity});
-  }
-  {
-    const jcc::Vec3 gyro_radps(msg.gyro_radps_x, msg.gyro_radps_y, msg.gyro_radps_z);
-    ejf::GyroMeasurement gyro_meas;
-    gyro_meas.observed_w = gyro_radps;
-    meas->imu_cal[imu_id].gyro_meas.push_back({gyro_meas, time_of_validity});
-  }
 
-  {
-    const jcc::Vec3 mag_utesla(msg.mag_utesla_x, msg.mag_utesla_y, msg.mag_utesla_z);
-    estimation::MagnetometerMeasurement mag_meas;
-    mag_meas.observed_bfield = mag_utesla;
-    meas->imu_cal[imu_id].mag_meas.push_back({mag_meas, time_of_validity});
-  }
+  meas->imu_cal[imu_id].accel_meas.push_back(to_accel_meas(msg));
+  meas->imu_cal[imu_id].gyro_meas.push_back(to_gyro_meas(msg));
+  meas->imu_cal[imu_id].mag_meas.push_back(to_mag_meas(msg));
 }
 
 void add_fiducial(const FiducialDetectionMessage& msg,
                   const TimeRange& range,
-                  Out<estimation::calibration::CalibrationMeasurements> meas) {
+                  Out<estimation::CalibrationMeasurements> meas) {
   const auto time_of_validity = to_time_point(msg.timestamp);
 
   if ((time_of_validity < range.start) || (time_of_validity > range.end)) {
     return;
   }
 
-  const ejf::FiducialMeasurement fiducial_meas{
-      .fiducial_id = 1,                                     //
-      .T_fiducial_from_camera = msg.fiducial_from_camera()  //
-  };
-
-  meas->fiducial_meas.push_back({fiducial_meas, time_of_validity});
+  meas->fiducial_meas.push_back(to_fiducial_meas(msg));
 }
 
 }  // namespace
 
-estimation::calibration::CalibrationMeasurements extract_data_from_log(const std::string& log_path,
-                                                                       const TimeRange& time_range,
-                                                                       const ExtractionConfiguration& cfg) {
-  estimation::calibration::CalibrationMeasurements meas;
+estimation::CalibrationMeasurements extract_data_from_log(const std::string& log_path,
+                                                          const TimeRange& time_range,
+                                                          const ExtractionConfiguration& cfg) {
+  estimation::CalibrationMeasurements meas;
 
   const std::vector<std::string> channel_names = {"imu", "fiducial_detection_channel", "camera_image_channel", "imu_1",
                                                   "imu_2"};

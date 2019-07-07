@@ -20,9 +20,9 @@ struct ExtractionConfiguration {
   bool use_fiducial_detections = true;
 };
 
-estimation::calibration::CalibrationMeasurements extract_data_from_log(const std::string& log_path,
-                                                                       const TimeRange& time_range,
-                                                                       const ExtractionConfiguration& cfg = {});
+estimation::CalibrationMeasurements extract_data_from_log(const std::string& log_path,
+                                                          const TimeRange& time_range,
+                                                          const ExtractionConfiguration& cfg = {});
 
 class ImageStream {
  public:

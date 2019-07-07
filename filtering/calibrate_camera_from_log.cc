@@ -81,7 +81,9 @@ void calibrate_camera(const std::string& log_path) {
       break;
     }
 
-    const auto obj_pt_associations = obj_points_img_points_from_image(image->image);
+
+    const auto ids_corners = get_ids_and_corners(image->image);
+    const auto obj_pt_associations = obj_points_img_points_from_image(ids_corners);
 
     serial_number = image->serial_number;
     cols = image->image.cols;
@@ -130,13 +132,14 @@ void calibrate_camera(const std::string& log_path) {
   jcc::Warning() << "Calibrating camera, this might take a while..." << std::endl;
   int flag = 0;
   const auto t0 = jcc::now();
-  cv::calibrateCamera(object_points, image_points, cv::Size(480, 270), K, D, rvecs, tvecs, flag);
+  cv::Size resolution(480, 270);
+  cv::calibrateCamera(object_points, image_points, resolution, K, D, rvecs, tvecs, flag);
   const auto t1 = jcc::now();
   jcc::Success() << "Done. Took: " << estimation::to_seconds(t1 - t0) << std::endl;
   jcc::Success() << "Generating yaml..." << std::endl;
 
-  YAML::Node node;                        // starts out as null
-  node["serial_number"] = serial_number;  // it now is a map node
+  YAML::Node node;
+  node["serial_number"] = serial_number;
 
   {
     std::stringstream ss;

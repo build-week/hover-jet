@@ -5,7 +5,6 @@
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
 
-// #include "visualization/test_stand_mocks.hh"
 #include "control/jet_vane_model.hh"
 #include "control/quadraframe_model.hh"
 #include "control/vanes_generated.hh"
