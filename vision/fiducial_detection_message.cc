@@ -10,9 +10,17 @@ SE3 FiducialDetectionMessage::fiducial_from_camera() const {
 std::optional<FiducialDetectionMessage> create_fiducial_detection_message(const cv::Mat& camera_frame,
                                                               const Calibration& camera_calibration,
                                                               const Timestamp& timestamp) {
+  
+  // cv::Mat bgr[3];   //destination array
+  // cv::split(camera_frame,bgr);//split source  
+  // auto green = bgr[1]; //green channel
+  // std::cout << "got the green channel" <<std::endl;
   const auto ids_corners = get_ids_and_corners(camera_frame);
+  
   const std::optional<SE3> board_from_camera =
       estimate_board_center_from_camera_from_image(ids_corners, camera_calibration);
+  // std::cout << "translation " << camera_frame.size() << " \n" << board_from_camera->translation() << std::endl;
+  // std::cout << "rotation " << camera_frame.size() << " \n" << board_from_camera->rotationMatrix() << std::endl;
   if (board_from_camera) {
     FiducialDetectionMessage detection_message;
     const jcc::Vec6 log_fiducial_from_camera = board_from_camera->log();

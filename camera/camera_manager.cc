@@ -83,7 +83,11 @@ Calibration CameraManager::get_calibration(const std::string& serial_number) con
     const std::string err = std::string("Could not find a camera serial number in: ") + config_search_location();
     throw std::runtime_error(err);
   }
-  return camera_calibration_from_serial_.at(serial_number);
+  const auto calibration_from_map = camera_calibration_from_serial_.at(serial_number);
+  Calibration result;
+  result.camera_matrix = calibration_from_map.camera_matrix.clone();
+  result.distortion_coefficients = calibration_from_map.distortion_coefficients.clone();
+  return result;
 }
 
 Camera CameraManager::get_camera(const std::string& serial_number) const {

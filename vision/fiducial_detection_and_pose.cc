@@ -39,11 +39,11 @@ std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(co
   for (int i = 0; i < boardPoints.rows; i++) {
     BoardPointImagePointAssociation association = {};
     boardPoints.at<float>(i, 0);
-    std::cout << "in detector " << imgPoints.at<float>(i, 0) << " " << imgPoints.at<float>(i, 1) << std::endl;
+    // std::cout << "in detector " << imgPoints.at<float>(i, 0) << " " << imgPoints.at<float>(i, 1) << std::endl;
     association.point_board_space = jcc::Vec2(boardPoints.at<float>(i, 0), boardPoints.at<float>(i, 1));
     association.point_image_space = jcc::Vec2(imgPoints.at<float>(i, 0), imgPoints.at<float>(i, 1));
-    std::cout << "in detector2" << association.point_image_space.vals[1] << " " << association.point_image_space.vals[0]
-              << std::endl;
+    // std::cout << "in detector2" << association.point_image_space.vals[1] << " " << association.point_image_space.vals[0]
+              // << std::endl;
     result.push_back(association);
   }
   return result;
