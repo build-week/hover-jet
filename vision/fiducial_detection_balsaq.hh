@@ -16,9 +16,9 @@ std::optional<FiducialDetectionMessage> create_detection_message(const cv::Mat& 
                                                                  const Calibration& camera_calibration,
                                                                  const Timestamp timestamp);
 
-class FidicualDetectionBq : public BalsaQ {
+class FiducialDetectionBq : public BalsaQ {
  public:
-  FidicualDetectionBq() = default;
+  FiducialDetectionBq() = default;
   void init(const Config& config) override;
   void loop() override;
   void shutdown() override;
