@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "infrastructure/config/config.hh"
+#include "infrastructure/time/time_utils.hh"
 //%deps(paho-mqttpp3)
 
 static bool shutdown = false;
@@ -56,8 +57,10 @@ void run_bq(const std::string& bq_typename, const std::optional<std::string>& co
   balsa_queue.base_init();
   balsa_queue.init(bq_config);
   while (!shutdown) {
+    jet::Timestamp loop_start_time = jet::time::get_current_time();
     balsa_queue.base_loop();
     balsa_queue.loop();
+    balsa_queue.emplace_loop_duration(jet::time::get_current_time() - loop_start_time);
     usleep(balsa_queue.loop_delay_microseconds);
   }
   balsa_queue.shutdown();
