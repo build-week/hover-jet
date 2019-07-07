@@ -12,12 +12,12 @@
 
 namespace jet {
 
-void FidicualDetectionBq::init(const Config& config) {
+void FiducialDetectionBq::init(const Config& config) {
   subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 }
 
-void FidicualDetectionBq::loop() {
+void FiducialDetectionBq::loop() {
   CameraImageMessage image_message;
 
   // Wait until we have the latest image_message
@@ -55,9 +55,9 @@ void FidicualDetectionBq::loop() {
   }
 }
 
-void FidicualDetectionBq::shutdown() {
+void FiducialDetectionBq::shutdown() {
   std::cout << "fiducal detection BQ shutting down." << std::endl;
 }
 
 }  // namespace jet
-BALSA_QUEUE_MAIN_FUNCTION(jet::FidicualDetectionBq)
+BALSA_QUEUE_MAIN_FUNCTION(jet::FiducialDetectionBq)
