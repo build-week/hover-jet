@@ -74,8 +74,8 @@ void IntegratedCameraVisionBq::loop() {
       estimate_board_center_from_camera_from_image(get_ids_and_corners(camera_frame_raw), camera_calibration_1);
 
     // get_ids_and_corners(camera_frame_resized);
-    const std::optional<SE3> board_from_camera_2 =
-      estimate_board_center_from_camera_from_image(get_ids_and_corners(camera_frame_resized), camera_calibration_2);
+    // const std::optional<SE3> board_from_camera_2 =
+    //   estimate_board_center_from_camera_from_image(get_ids_and_corners(camera_frame_resized), camera_calibration_2);
 
   std::cout << "translation difference L2" << 
     (board_from_camera_1->translation() - board_from_camera_2->translation()).norm()
