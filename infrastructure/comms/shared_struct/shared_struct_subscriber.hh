@@ -2,10 +2,9 @@
 #pragma once
 
 #include "infrastructure/comms/schemas/message.hh"
+#include "infrastructure/comms/shared_memory/shared_struct_memory_region.hh"
 #include "infrastructure/comms/subscriber.hh"
 #include "infrastructure/time/timestamp.hh"
-
-#include "fmutex.hh"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -17,12 +16,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstdio>
-#include <cstring>
 #include <iostream>
 
 //%deps(rt)
-
-#pragma once
 
 namespace jet {
 
@@ -35,12 +31,6 @@ class SharedStructSubscriber : public Subscriber {
   bool read_latest(Message& message, const Duration& timeout = 0);
 
  private:
-  struct SharedStructMemoryRegion {
-    Mutex region_futex;
-    uint64_t message_len{0};
-    char message[1000000 + 1024];
-  };
-
   SharedStructMemoryRegion* shmem_region_ptr_;
   int shmem_file_descriptor_;
   uint64_t most_recent_sequence_number_ = std::numeric_limits<uint64_t>::max();

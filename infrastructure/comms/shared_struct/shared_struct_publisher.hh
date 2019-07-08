@@ -3,8 +3,7 @@
 
 #include "infrastructure/comms/publisher.hh"
 #include "infrastructure/time/time_utils.hh"
-
-#include "fmutex.hh"
+#include "infrastructure/comms/shared_memory/shared_struct_memory_region.hh"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -31,12 +30,6 @@ class SharedStructPublisher : public Publisher {
   void publish_raw(const std::string& data);
 
  private:
-  struct SharedStructMemoryRegion {
-    Mutex region_futex;
-    uint64_t message_len{0};
-    char message[1000000 + 1024];
-  };
-
   SharedStructMemoryRegion* shmem_region_ptr_;
   int shmem_file_descriptor_;
 };
