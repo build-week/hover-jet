@@ -39,7 +39,7 @@ void ServoBq::loop() {
       uint servo_index = message.servo_indices.at(i);
       auto target_radian = message.target_radians.at(i);
       assert(servo_index < servos_.size());
-      servos_.at(servo_index).set_angle_radians(target_radian);
+      servos_.at(servo_index).set_vane_angle_radians(target_radian);
     }
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
