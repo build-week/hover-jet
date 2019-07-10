@@ -40,6 +40,7 @@ int keypress(int count, int key) {
   int num = key - '0';
   ServoDriver &servo = servos[(num - 1) / 2];
   Direction direction = num % 2 == 1 ? UP : DOWN;
+  // Increment the percentage set-point by 0.5%
   if (direction == DOWN) {
     servo.set_percentage(std::max(0.0, servo.get_percentage() - 0.005));
   } else {

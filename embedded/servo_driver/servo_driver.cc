@@ -35,15 +35,15 @@ ServoDriver::ServoDriver(const Config& config) {
   set_vane_angle_radians(0);
 }
 
-void ServoDriver::set_percentage(double unchecked_percentage, uint max_pwm_count, uint min_pwm_count) {
-  if (unchecked_percentage > 1 || unchecked_percentage < 0) {
+void ServoDriver::set_percentage(const double unchecked_percentage, const int max_pwm_count, const int min_pwm_count) {
+  if (unchecked_percentage > 1.0 || unchecked_percentage < 0.0) {
     std::cout << "Desired servo percentage out of range: " << unchecked_percentage
               << std::endl;
   }
   percentage_ = std::max(std::min(1.0, unchecked_percentage), 0.0);
 
-  const uint counts_range = max_pwm_count - min_pwm_count;
-  const uint counts = counts_range * percentage_ + min_pwm_count;
+  const int counts_range = max_pwm_count - min_pwm_count;
+  const int counts = counts_range * percentage_ + min_pwm_count;
   pwm_count_ = counts;
   pwm_driver_->set_pwm(servo_index_, 0, counts);
 }
@@ -52,7 +52,7 @@ double ServoDriver::get_percentage() const {
   return percentage_;
 }
 
-uint ServoDriver::get_pwm_count() const {
+int ServoDriver::get_pwm_count() const {
   return pwm_count_;
 }
 
@@ -60,8 +60,8 @@ int ServoDriver::get_servo_index() const {
   return servo_index_;
 }
 
-void ServoDriver::set_vane_angle_radians(double angle_radians) {
-  const double slope = 1.0 / (2*max_angle_radians_);
+void ServoDriver::set_vane_angle_radians(const double angle_radians) {
+  const double slope = 1.0 / (2.0*max_angle_radians_);
   const double percentage = slope * (angle_radians + max_angle_radians_);
   set_percentage(percentage, calibrated_max_pwm_count_, calibrated_min_pwm_count_);
 }
