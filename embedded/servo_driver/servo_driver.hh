@@ -17,12 +17,14 @@
 class ServoDriver {
  public:
   ServoDriver(const Config& config);
-  void set_percentage(double percentage, uint max_pwm_count = MAX_PWM_COUNTS, uint min_pwm_count = MIN_PWM_COUNTS);
+  void set_percentage(const double percentage, const int max_pwm_count = MAX_PWM_COUNTS, const int min_pwm_count = MIN_PWM_COUNTS);
   double get_percentage() const;
-  uint get_pwm_count() const;
+  int get_pwm_count() const;
   int get_servo_index() const;
-  void set_vane_angle_radians(double angle);
   void shutdown_pwm();
+
+  // Sets the jet-vane angle. Angles are symmetric around zero.
+  void set_vane_angle_radians(const double angle_radians);
 
  private:
 
@@ -35,11 +37,11 @@ class ServoDriver {
   std::shared_ptr<PwmDriver> pwm_driver_;
   std::string config_path_;
   // The count corresponding to max angle.
-  uint calibrated_max_pwm_count_;
+  int calibrated_max_pwm_count_;
   // The count corresponding to zero angle.
-  uint calibrated_min_pwm_count_;
+  int calibrated_min_pwm_count_;
   // Max angle in radians that the servo can achieve.
   double max_angle_radians_;
   double percentage_;
-  uint pwm_count_;
+  int pwm_count_;
 };
