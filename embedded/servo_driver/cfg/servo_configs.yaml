@@ -1,12 +1,12 @@
 0:
   index: 0
-  calibrated_max_pwm_count:  2740
-  calibrated_min_pwm_count:  1320
+  calibrated_max_pwm_count:  2713
+  calibrated_min_pwm_count:  1239
   max_angle_radians: 0.174533
 1:
   index: 1
-  calibrated_max_pwm_count:  2740
-  calibrated_min_pwm_count:  1320
+  calibrated_max_pwm_count:  2819
+  calibrated_min_pwm_count:  1275
   max_angle_radians: 0.174533
 2:
   index: 2
@@ -15,6 +15,6 @@
   max_angle_radians: 0.174533
 3:
   index: 3
-  calibrated_max_pwm_count:  2740
-  calibrated_min_pwm_count:  1320
+  calibrated_max_pwm_count:  2739
+  calibrated_min_pwm_count:  1257
   max_angle_radians: 0.174533
