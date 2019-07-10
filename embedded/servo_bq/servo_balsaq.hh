@@ -1,6 +1,5 @@
 #pragma once
 
-#include "embedded/servo_bq/set_servo_message.hh"
 #include "embedded/servo_driver/servo_driver.hh"
 #include "infrastructure/balsa_queue/balsa_queue.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
@@ -17,6 +16,7 @@ class ServoBq : public BalsaQ {
  private:
   std::vector<ServoDriver> servos_;
   SubscriberPtr subscriber_;
+  PublisherPtr publisher_;
   Timestamp last_msg_recvd_timestamp_;
 };
 
