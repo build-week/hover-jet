@@ -16,10 +16,10 @@
 namespace jet {
 
 void ServoBq::init(const Config& config) {
-  subscriber = make_subscriber("servo_command_channel");
+  subscriber_ = make_subscriber("servo_command_channel");
   for (auto& servo_config : config) {
     ServoDriver servo = ServoDriver(servo_config.second);
-    servos.push_back(servo);
+    servos_.push_back(servo);
   }
 }
 
@@ -28,7 +28,7 @@ void ServoBq::loop() {
 
   // subscribe_latest proxy
   bool got_msg = false;
-  while (subscriber->read(message, 1)) {
+  while (subscriber_->read(message, 1)) {
     got_msg = true;
   }
 
@@ -36,10 +36,10 @@ void ServoBq::loop() {
     gonogo().go();
     last_msg_recvd_timestamp_ = get_current_time();
     for (uint i = 0; i < message.servo_indices.size(); i++) {
-      auto servo_index = message.servo_indices.at(i);
+      uint servo_index = message.servo_indices.at(i);
       auto target_radian = message.target_radians.at(i);
-      assert(servo_index < servos.size());
-      servos.at(servo_index).set_angle_radians(target_radian);
+      assert(servo_index < servos_.size());
+      servos_.at(servo_index).set_angle_radians(target_radian);
     }
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
@@ -48,7 +48,7 @@ void ServoBq::loop() {
 }
 void ServoBq::shutdown() {
   std::cout << "Servo process shutting down." << std::endl;
-  servos.at(0).shutdown_pwm();
+  servos_.at(0).shutdown_pwm();
 }
 }  // namespace jet
 

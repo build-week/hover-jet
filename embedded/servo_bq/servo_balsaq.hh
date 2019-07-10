@@ -15,8 +15,8 @@ class ServoBq : public BalsaQ {
   void shutdown();
 
  private:
-  std::vector<ServoDriver> servos;
-  SubscriberPtr subscriber;
+  std::vector<ServoDriver> servos_;
+  SubscriberPtr subscriber_;
   Timestamp last_msg_recvd_timestamp_;
 };
 
