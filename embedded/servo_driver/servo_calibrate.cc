@@ -22,13 +22,13 @@ void clear_screen() {
 
 void print_help(const std::vector<ServoDriver> &servos) {
   std::cout << "Servo 0: Press '1' for up, '2' for down -- current percentage is "
-            << servos[0].get_percentage() << " count is: " << servos[0].get_pwm_count() << std::endl;
+            << servos[0].get_percentage() << " pwm count is: " << servos[0].get_pwm_count() << std::endl;
   std::cout << "Servo 1: Press '3' for up, '4' for down -- current percentage is "
-            << servos[1].get_percentage() << " count is: " << servos[1].get_pwm_count() << std::endl;
+            << servos[1].get_percentage() << " pwm count is: " << servos[1].get_pwm_count() << std::endl;
   std::cout << "Servo 2: Press '5' for up, '6' for down -- current percentage is "
-            << servos[2].get_percentage() << " count is: " << servos[2].get_pwm_count() << std::endl;
+            << servos[2].get_percentage() << " pwm count is: " << servos[2].get_pwm_count() << std::endl;
   std::cout << "Servo 3: Press '7' for up, '8' for down -- current percentage is "
-            << servos[3].get_percentage() << " count is: " << servos[3].get_pwm_count() << std::endl;
+            << servos[3].get_percentage() << " pwm count is: " << servos[3].get_pwm_count() << std::endl;
   std::cout << std::endl;
 
   std::cout << "Press Enter to start reading currents from the current sensor"
