@@ -21,7 +21,7 @@ class ServoDriver {
   double get_percentage() const;
   uint get_pwm_count() const;
   int get_servo_index() const;
-  void set_angle_radians(double angle);
+  void set_vane_angle_radians(double angle);
   void shutdown_pwm();
 
  private:
