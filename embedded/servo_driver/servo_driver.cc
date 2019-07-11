@@ -10,16 +10,6 @@
 #include <iostream>
 #include <sstream>
 
-namespace {
-// 850 to 2150 microseconds for the PWM width, specified by the servo
-constexpr int MIN_COUNTS = 1160;
-constexpr int MAX_COUNTS = 2935;
-constexpr int PWM_FREQUENCY = 330;
-float rad_to_deg(float radians) {
-  return radians * (180.0 / M_PI);
-}
-}  // namespace
-
 ServoDriver::ServoDriver(const Config& config) {
   int i2cHandle = i2c_open("/dev/i2c-1");  // TODO make configurable
   if (i2cHandle == -1) {
@@ -32,9 +22,9 @@ ServoDriver::ServoDriver(const Config& config) {
   pwm_driver_->enable_auto_increment(true);
 
   try {
-    max_angle_ = config["max_angle"].as<float>();
-    calibrated_center_ = config["calibrated_center"].as<float>();
-    calibrated_max_ = config["calibrated_max"].as<float>();
+    max_angle_radians_ = config["max_angle_radians"].as<double>();
+    calibrated_min_pwm_count_ = config["calibrated_min_pwm_count"].as<uint>();
+    calibrated_max_pwm_count_ = config["calibrated_max_pwm_count"].as<uint>();
     servo_index_ = config["index"].as<int>();
     assert(servo_index_ >= 0);
   } catch (YAML::BadFile e) {
@@ -42,36 +32,38 @@ ServoDriver::ServoDriver(const Config& config) {
     throw std::runtime_error(err);
   }
 
-  percentage_ = calibrated_center_;
-  set_percentage(percentage_);
+  set_vane_angle_radians(0);
 }
 
-void ServoDriver::set_percentage(float unchecked_percentage) {
-  if (unchecked_percentage > 100 || unchecked_percentage < 0) {
+void ServoDriver::set_percentage(const double unchecked_percentage, const int max_pwm_count, const int min_pwm_count) {
+  if (unchecked_percentage > 1.0 || unchecked_percentage < 0.0) {
     std::cout << "Desired servo percentage out of range: " << unchecked_percentage
               << std::endl;
   }
-  percentage_ = std::max(std::min(100.0f, unchecked_percentage), 0.0f);
+  percentage_ = std::max(std::min(1.0, unchecked_percentage), 0.0);
 
-  const float counts_range = MAX_COUNTS - MIN_COUNTS;
-  int counts = round(counts_range * percentage_ / 100 + MIN_COUNTS);
+  const int counts_range = max_pwm_count - min_pwm_count;
+  const int counts = counts_range * percentage_ + min_pwm_count;
+  pwm_count_ = counts;
   pwm_driver_->set_pwm(servo_index_, 0, counts);
 }
 
-float ServoDriver::get_percentage() const {
+double ServoDriver::get_percentage() const {
   return percentage_;
+}
+
+int ServoDriver::get_pwm_count() const {
+  return pwm_count_;
 }
 
 int ServoDriver::get_servo_index() const {
   return servo_index_;
 }
 
-void ServoDriver::set_angle_radians(
-    float angle_radians) {  // TODO noble to give units to angle
-  float angle_degrees = rad_to_deg(angle_radians);
-  float angleFraction = static_cast<float>(angle_degrees) / max_angle_;
-  float half_range = (calibrated_max_ - calibrated_center_);
-  set_percentage(calibrated_center_ + half_range * angleFraction);
+void ServoDriver::set_vane_angle_radians(const double angle_radians) {
+  const double slope = 1.0 / (2.0*max_angle_radians_);
+  const double percentage = slope * (angle_radians + max_angle_radians_);
+  set_percentage(percentage, calibrated_max_pwm_count_, calibrated_min_pwm_count_);
 }
 
 void ServoDriver::shutdown_pwm() {

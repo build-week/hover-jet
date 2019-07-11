@@ -1,20 +1,20 @@
 0:
   index: 0
-  calibrated_center: 50
-  calibrated_max: 71
-  max_angle: 20
+  calibrated_max_pwm_count:  2713
+  calibrated_min_pwm_count:  1239
+  max_angle_radians: 0.174533
 1:
   index: 1
-  calibrated_center: 50
-  calibrated_max: 71
-  max_angle: 20
+  calibrated_max_pwm_count:  2819
+  calibrated_min_pwm_count:  1275
+  max_angle_radians: 0.174533
 2:
   index: 2
-  calibrated_center: 50
-  calibrated_max: 71
-  max_angle: 20
+  calibrated_max_pwm_count:  2730
+  calibrated_min_pwm_count:  1328
+  max_angle_radians: 0.174533
 3:
   index: 3
-  calibrated_center: 50
-  calibrated_max: 71
-  max_angle: 20
+  calibrated_max_pwm_count:  2739
+  calibrated_min_pwm_count:  1257
+  max_angle_radians: 0.174533
