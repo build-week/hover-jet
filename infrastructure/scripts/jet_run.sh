@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set up proper error handling and disallow unset arguments
+set -o errexit -o errtrace -o pipefail -o nounset
+
 source jet_functions.sh
 
 function help () {
@@ -9,12 +12,14 @@ Usage: jet run COMMAND
 Starts a Docker container based on the jet image, then executes the specified command inside of it. If no command is specified, bash will be run.
 
 -h| --help           Show this message
+-b| --broker         Change the IP address and port of the broker
+-q| --qemu-arm       Run in an arm container on x86_64
 END
 }
 
 MQTT_ADDRESS=tcp://localhost:1883
 
-while [ -n "$1" ]; do
+while [[ $# -gt 0 ]]; do
     case "$1" in
         -h | --help)
             help
@@ -23,6 +28,10 @@ while [ -n "$1" ]; do
         -b | --broker)
                 MQTT_ADDRESS=$2
                 shift
+                shift
+                ;;
+        -q | --qemu-arm)
+                export ENABLE_QEMU_ARM=1
                 shift
                 ;;
         *)
@@ -41,6 +50,12 @@ fi
 
 FULL_IMAGE_NAME=$(get_image_name)
 
+QEMU_ARM_MOUNT=""
+if [[ "$ENABLE_QEMU_ARM" == 1 ]]; then
+  QEMU_ARM_MOUNT="-v $(get_qemu_arm_static_path):$(get_qemu_arm_static_path)"
+fi
+
+ATTACH_WEBCAM_DEVICE=""
 WEBCAM_DEFAULT_DEV_PATH=/dev/video0
 if [ -d "$WEBCAM_DEFAULT_DEV_PATH" ]; then
   ATTACH_WEBCAM_DEVICE=--device=/dev/video0:/dev/video0
@@ -55,6 +70,7 @@ CONTAINER_ID=$( \
     -v $WEBCAM_UUID_PATH:$WEBCAM_UUID_PATH \
     -v /logs:/logs \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
+    $QEMU_ARM_MOUNT \
     -e LOG_BASE_PATH=/logs/ \
     -e DISPLAY \
     -e NO_AT_BRIDGE=1 \

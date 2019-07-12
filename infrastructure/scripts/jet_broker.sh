@@ -1,10 +1,13 @@
 #!/bin/bash
 
+# Set up proper error handling and disallow unset arguments
+set -o errexit -o errtrace -o pipefail -o nounset
+
 source jet_functions.sh
 
 function help () {
 cat <<-END
-Usage: jet build
+Usage: jet broker
 
 Starts up a new IPC Broker container. If one is already running, does nothing.
 
@@ -19,7 +22,7 @@ FORCE_RESTART=0
 IPC_BROKER_IS_RUNNING=0
 START=1
 
-while test $# -gt 0; do
+while [[ $# -gt 0 ]]; do
         case "$1" in
                 -h|--help)
                         help
