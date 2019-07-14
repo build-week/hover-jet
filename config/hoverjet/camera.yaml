@@ -1,5 +1,5 @@
-width_pixels: 640
-height_pixels: 480
+width_pixels: 480
+height_pixels: 270
 # Bold, I know!
 frames_per_second: 20
 # Disable autofocus
