@@ -5,12 +5,10 @@
 #include "control/servo_interface.hh"
 #include "embedded/imu_driver/imu_message.hh"
 #include "embedded/servo_bq/set_servo_message.hh"
+#include "filtering/transform_network_from_yaml.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "vision/fiducial_detection_message.hh"
 #include "visualization/thrust_stand_visualizer.hh"
-
-#include <cstddef>
-#include <iostream>
 
 // %deps(simple_geometry)
 // %deps(window_3d)
@@ -20,8 +18,14 @@
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
 
+// %deps(put_transform_network)
+#include "third_party/experiments/geometry/visualization/put_transform_network.hh"
+
 //%deps(jet_model)
 #include "third_party/experiments/planning/jet/jet_model.hh"
+
+#include <cstddef>
+#include <iostream>
 
 namespace jet {
 namespace embedded {
@@ -43,6 +47,8 @@ void FilterVizBq::init(const Config& config) {
   const geometry::shapes::Plane ground{jcc::Vec3::UnitZ(), 0.0};
   background->add_plane({ground, 0.1});
   background->flip();
+
+  transform_network_ = transform_network_from_yaml(config["transforms"]);
 
   sensor_geo_ = view->add_primitive<viewer::SimpleGeometry>();
   pose_geo_ = view->add_primitive<viewer::SimpleGeometry>();
@@ -112,6 +118,7 @@ void FilterVizBq::draw_sensors() {
 
   if (!fiducial_history_.empty()) {
     const SE3 camera_from_fiducial = fiducial_history_.back().inverse();
+    transform_network_.update_edge("camera", "fiducial", camera_from_fiducial);
 
     const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
     const Pose pose = last_pose_message_.to_pose();
@@ -123,6 +130,12 @@ void FilterVizBq::draw_sensors() {
 
   if (!accel_history_.empty()) {
     sensor_geo_->add_line({jcc::Vec3::Zero(), accel_history_.back().accel_mpss});
+
+    if (transform_network_.edges_from_node_tag().count("world") != 0) {
+      const SE3 world_from_imu1 = transform_network_.find_source_from_destination("world", "imu_78");
+      sensor_geo_->add_line({world_from_imu1.translation(), world_from_imu1 * accel_history_.back().accel_mpss,
+                             jcc::Vec4(0.7, 0.2, 0.2, 1.0)});
+    }
   }
 
   sensor_geo_->add_sphere({jcc::Vec3::Zero(), 9.81});
@@ -139,17 +152,25 @@ void FilterVizBq::draw_pose() {
 
   if (got_pose_msg) {
     const Pose pose = pose_msg.to_pose();
-    const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
+
+    std::cout << "Pose Age: " << estimation::to_seconds(jcc::now() - to_time_point(pose_msg.timestamp)) << std::endl;
 
     pose_geo_->add_axes({pose.world_from_jet, 0.55, 3.0, true});
 
-    const SE3 world_from_jet(pose.world_from_jet.so3(), jet_origin);
-    pose_geo_->add_axes({world_from_jet, 0.55, 3.0, true});
+    // const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
+    // const SE3 world_from_jet(pose.world_from_jet.so3(), jet_origin);
+    // pose_geo_->add_axes({world_from_jet, 0.55, 3.0, true});
+
+    transform_network_.update_edge("world", "vehicle", pose.world_from_jet);
+
+    geometry::put_transform_network(*pose_geo_, transform_network_, "world");
 
     pose_geo_->flip();
 
-    const SE3 jetmodel_from_body = jcc::exp_x(0.0);
-    jet_tree_->set_world_from_root(world_from_jet * jetmodel_from_body.inverse());
+    // const SE3 body_from_model = jcc::exp_x(-M_PI * 0.5);
+    const SE3 body_from_model = jcc::exp_x(0.0);
+
+    jet_tree_->set_world_from_root(pose.world_from_jet * body_from_model);
   }
 }
 

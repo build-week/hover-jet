@@ -11,6 +11,9 @@
 //%deps(jet_filter)
 #include "third_party/experiments/estimation/jet/jet_filter.hh"
 
+//%deps(transform_network)
+#include "third_party/experiments/geometry/kinematics/transform_network.hh"
+
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/primitives/scene_tree.hh"
 
@@ -55,6 +58,8 @@ class FilterVizBq : public BalsaQ {
   std::deque<AccelStuff> accel_history_;
   std::deque<SE3> fiducial_history_;
   std::deque<jcc::Vec3> mag_utesla_;
+
+  geometry::TransformNetwork transform_network_;
 
   estimation::jet_filter::JetFilter jf_;
 };

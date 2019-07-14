@@ -96,9 +96,9 @@ const estimation::CreateSingleImuModelConfig imu_cal_cfg{
 };
 
 const estimation::CameraCalibrationConfig camera_cal_cfg{
-    .visualize_camera = false,             //
-    .visualize_camera_distortion = false,  //
-    .visualize_camera_frustum = false      //
+    .visualize_camera = true,             //
+    .visualize_camera_distortion = true,  //
+    .visualize_camera_frustum = true      //
 };
 
 bool visualize_filter = true;
@@ -319,17 +319,12 @@ void test_filter(const estimation::CalibrationMeasurements& cal_meas, const esti
   }
 }
 
-void go() {
+void calibrate_jet(const std::string path) {
   jcc::Success() << "Preparing to calibrate" << std::endl;
 
   //
   // Grab the calibration data from the log
   //
-
-  // const std::string path = "/jet/logs/calibration-log-jul4-2/";
-
-  // const std::string path = "/jet/logs/calibration-log-jul6-6";
-  const std::string path = "/jet/logs/calibration-log-jul6-7";
 
   const TimeRange range{};
   const ExtractionConfiguration default_cfg{};
@@ -419,6 +414,12 @@ void go() {
 }  // namespace filtering
 }  // namespace jet
 
-int main() {
-  jet::filtering::go();
+int main(int argc, char** argv) {
+  assert(argc > 1);
+  const std::string path(argv[1]);
+  // const std::string path = "/jet/logs/calibration-log-jul4-2/";
+  // const std::string path = "/jet/logs/calibration-log-jul6-6";
+  // const std::string path = "/jet/logs/calibration-log-jul6-7";
+
+  jet::filtering::calibrate_jet(path);
 }
