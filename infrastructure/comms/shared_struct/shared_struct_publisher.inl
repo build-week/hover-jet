@@ -1,21 +1,22 @@
 
 namespace jet {
 
+namespace {
+const int O_FLAGS = O_RDWR | O_CREAT;
+const off_t LENGTH = 921650 + 1024;
+}
+
 SharedStructPublisher::SharedStructPublisher(const std::string& object_name) : Publisher(object_name) {
-  int o_flags = O_RDWR | O_CREAT;
-  off_t length = 921650 + 1024;
-  int shmem_file_descriptor_ = shm_open(object_name.c_str(), o_flags, 0644 );
+  shmem_file_descriptor_ = shm_open(object_name.c_str(), O_FLAGS, 0644 );
   if (shmem_file_descriptor_ < 0) {
-    std::cerr << "Error opening shared memory region: " <<  errno << std::endl;
     throw std::runtime_error("Could not open shared memory region.");
   }
 
-  int result = ftruncate(shmem_file_descriptor_, length);
+  int result = ftruncate(shmem_file_descriptor_, LENGTH);
   if (result < 0) {
-    std::cerr << "ftruncate filed while opening shared memory region. errno: " <<  errno << std::endl;
     throw std::runtime_error("ftruncate filed while opening shared memory region.");
   }
-  shmem_region_ptr_ = (SharedStructMemoryRegion *) mmap(NULL, length, PROT_READ | PROT_WRITE, MAP_SHARED, shmem_file_descriptor_, 0);
+  shmem_region_ptr_ = (SharedStructMemoryRegion *) mmap(NULL, LENGTH, PROT_READ | PROT_WRITE, MAP_SHARED, shmem_file_descriptor_, 0);
   assert(shmem_region_ptr_);
 }
 

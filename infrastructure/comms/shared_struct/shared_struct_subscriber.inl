@@ -1,11 +1,13 @@
 
 namespace jet {
 
+namespace {
+const int O_FLAGS = O_RDWR;
+}
+
 SharedStructSubscriber::SharedStructSubscriber(const std::string& object_name) : Subscriber(object_name) {
-  int o_flags = O_RDWR;
-  int shmem_file_descriptor_ = shm_open(object_name.c_str(), o_flags, 0644);
+  shmem_file_descriptor_ = shm_open(object_name.c_str(), O_FLAGS, 0644);
   if (shmem_file_descriptor_ < 0) {
-    std::cerr << "Error opening shared memory region: " <<  errno << std::endl;
     throw std::runtime_error("Could not open shared memory region.");
   }
 
