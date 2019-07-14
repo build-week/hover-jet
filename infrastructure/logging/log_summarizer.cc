@@ -43,29 +43,23 @@ int main(int argc, char* argv[]) {
       channel_stats[i].num_messages_received++;
     }
     while(log_reader.read_next_message(channels[i], message)) {
-      // std::cout << "Timestamp " << message.header.timestamp_ns << std::endl;
       channel_stats[i].last_message_received = message.header.timestamp_ns;
       channel_stats[i].num_messages_received++;
     }
-  }
-
-  // Do last calculations
-  for (ChannelStats& stats : channel_stats) {
-    stats.frequency = static_cast<double>(stats.num_messages_received)/(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(stats.last_message_received - stats.first_message_received))).count();
+    channel_stats[i].frequency = static_cast<double>(channel_stats[i].num_messages_received)/(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(channel_stats[i].last_message_received - channel_stats[i].first_message_received))).count();
   }
 
   // Print out results;
   const std::string reset("\033[0m");
   const std::string red_bold("\033[31;1m");
-  std::cout << red_bold << std::setw(30) << "Channel" << std::setw(25) << "First Timestamp" << std::setw(25) << "Last Timestamp" << std::setw(15) << "Num Messages" << std::setw(15) << "Frequency" << std::endl;
+  std::cout << red_bold << std::setw(30) << "Channel" << std::setw(25) << "First Timestamp" << std::setw(25) << "Last Timestamp" << std::setw(15) << "Num Messages" << std::setw(15) << "Frequency (Hz)" << std::endl;
   std::cout << reset;
   for (std::size_t i = 0; i < channels.size(); ++i) {
     std::cout << std::setw(30) << channels[i] << 
                  std::setw(25) << std::fixed << std::setprecision(9) << channel_stats[i].first_message_received/static_cast<double>(1e9) << 
                  std::setw(25) << std::fixed << std::setprecision(9) << channel_stats[i].last_message_received/static_cast<double>(1e9) << 
                  std::setw(15) << channel_stats[i].num_messages_received << 
-                 std::setw(15) << std::fixed << std::setprecision(3) << channel_stats[i].frequency << std::endl; 
-                   
+                 std::setw(15) << std::fixed << std::setprecision(3) << channel_stats[i].frequency << std::endl;
   }
 
   
