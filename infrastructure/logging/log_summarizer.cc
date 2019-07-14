@@ -1,7 +1,8 @@
 //%bin(log_summarizer)
 
 //%deps(yaml-cpp)
-
+#include <iostream>
+#include <iomanip>
 #include "infrastructure/logging/log_reader.hh"
 #include "infrastructure/config/config.hh"
 #include "infrastructure/time/timestamp.hh"
@@ -53,14 +54,17 @@ int main(int argc, char* argv[]) {
     stats.frequency = static_cast<double>(stats.num_messages_received)/(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(stats.last_message_received - stats.first_message_received))).count();
   }
 
-  std::cout << "Channel\t\tFirst Timestamp\t\tLast Timestamp\t\tNum Messages\t\tFrequency" << std::endl;
-  // Print out results
+  // Print out results;
+  const std::string reset("\033[0m");
+  const std::string red_bold("\033[31;1m");
+  std::cout << red_bold << std::setw(30) << "Channel" << std::setw(25) << "First Timestamp" << std::setw(25) << "Last Timestamp" << std::setw(15) << "Num Messages" << std::setw(15) << "Frequency" << std::endl;
+  std::cout << reset;
   for (std::size_t i = 0; i < channels.size(); ++i) {
-    std::cout << channels[i] << "\t\t" << 
-                 channel_stats[i].first_message_received << "\t\t" << 
-                 channel_stats[i].last_message_received << "\t\t" << 
-                 channel_stats[i].num_messages_received << "\t\t" << 
-                 channel_stats[i].frequency << std::endl; 
+    std::cout << std::setw(30) << channels[i] << 
+                 std::setw(25) << std::fixed << std::setprecision(9) << channel_stats[i].first_message_received/static_cast<double>(1e9) << 
+                 std::setw(25) << std::fixed << std::setprecision(9) << channel_stats[i].last_message_received/static_cast<double>(1e9) << 
+                 std::setw(15) << channel_stats[i].num_messages_received << 
+                 std::setw(15) << std::fixed << std::setprecision(3) << channel_stats[i].frequency << std::endl; 
                    
   }
 
