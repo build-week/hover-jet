@@ -11,3 +11,5 @@ exposure: 3
 
 # Calling our shots: The camera we expect to be running
 serial_number: 5CFD076E
+
+use_shmem: true
