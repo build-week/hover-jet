@@ -35,34 +35,34 @@ int main(int argc, char* argv[]) {
   std::vector<ChannelStats> channel_stats(channels.size());
 
   // Go through all the messages
-  // for (std::size_t i = 0; i < channels.size(); ++i) {
-    jet::ImuMessage message;
-    if (log_reader.read_next_message("imu_2", message)) {
-      channel_stats[0].first_message_received = message.header.timestamp_ns;
-      channel_stats[0].num_messages_received++;
+  for (std::size_t i = 0; i < channels.size(); ++i) {
+    jet::Message message = {};
+    if (log_reader.read_next_message(channels[i], message)) {
+      channel_stats[i].first_message_received = message.header.timestamp_ns;
+      channel_stats[i].num_messages_received++;
     }
-    while(log_reader.read_next_message("imu_2", message)) {
-      std::cout << "imu_2 Timestamp " << message.header.timestamp_ns << std::endl;
-      channel_stats[0].last_message_received = message.header.timestamp_ns;
-      channel_stats[0].num_messages_received++;
+    while(log_reader.read_next_message(channels[i], message)) {
+      // std::cout << "Timestamp " << message.header.timestamp_ns << std::endl;
+      channel_stats[i].last_message_received = message.header.timestamp_ns;
+      channel_stats[i].num_messages_received++;
     }
-  // }
+  }
 
   // Do last calculations
-  // for (ChannelStats& stats : channel_stats) {
-  //   stats.frequency = static_cast<double>(stats.num_messages_received)/(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(stats.last_message_received - stats.first_message_received))).count();
-  // }
+  for (ChannelStats& stats : channel_stats) {
+    stats.frequency = static_cast<double>(stats.num_messages_received)/(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(stats.last_message_received - stats.first_message_received))).count();
+  }
 
-  // std::cout << "Channel\t\tFirst Timestamp\t\tLast Timestamp\t\tNum Messages\t\tFrequency" << std::endl;
-  // // Print out results
-  // for (std::size_t i = 0; i < channels.size(); ++i) {
-  //   std::cout << channels[i] << "\t\t" << 
-  //                channel_stats[i].first_message_received << "\t\t" << 
-  //                channel_stats[i].last_message_received << "\t\t" << 
-  //                channel_stats[i].num_messages_received << "\t\t" << 
-  //                channel_stats[i].frequency << std::endl; 
+  std::cout << "Channel\t\tFirst Timestamp\t\tLast Timestamp\t\tNum Messages\t\tFrequency" << std::endl;
+  // Print out results
+  for (std::size_t i = 0; i < channels.size(); ++i) {
+    std::cout << channels[i] << "\t\t" << 
+                 channel_stats[i].first_message_received << "\t\t" << 
+                 channel_stats[i].last_message_received << "\t\t" << 
+                 channel_stats[i].num_messages_received << "\t\t" << 
+                 channel_stats[i].frequency << std::endl; 
                    
-  // }
+  }
 
   
   return 0;
