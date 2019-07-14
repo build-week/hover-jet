@@ -22,8 +22,7 @@ void CameraViewerBq::loop() {
 
   // Wait until we have the latest image_message
   bool got_msg = false;
-  if (camera_subscriber_)
-  {
+  if (camera_subscriber_) {
     // Wait until we have the latest image_message
     while (camera_subscriber_->read(image_message, 1)) {
       got_msg = true;
@@ -45,14 +44,13 @@ void CameraViewerBq::loop() {
 
       for (auto& point_association : fiducial_message.board_points_image_points) {
         const auto image_point = point_association.point_image_space;
-        cv::circle(camera_frame, cv::Point(image_point.vals[0],
-          image_point.vals[1]), 10, cv::Scalar( 128, 128, 1 ));
+        cv::circle(camera_frame, cv::Point(image_point.vals[0], image_point.vals[1]), 10, cv::Scalar(128, 128, 1));
         std::cout << image_point.vals[0] << " " << image_point.vals[1] << std::endl;
       }
     }
 
-      cv::imshow("camera image", camera_frame);
-      cv::waitKey(1);
+    cv::imshow("camera image", camera_frame);
+    cv::waitKey(1);
   }
 }
 void CameraViewerBq::shutdown() {

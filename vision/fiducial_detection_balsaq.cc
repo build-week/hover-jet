@@ -30,8 +30,7 @@ void FiducialDetectionBq::loop() {
 
   // Wait until we have the latest image_message
   bool got_msg = false;
-  if (subscriber_)
-  {
+  if (subscriber_) {
     // Wait until we have the latest image_message
     while (subscriber_->read(image_message, 1)) {
       got_msg = true;
