@@ -1,5 +1,7 @@
 #pragma once
 
+#include "infrastructure/time/timestamp.hh"
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
