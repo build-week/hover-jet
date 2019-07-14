@@ -8,8 +8,6 @@
 #include "camera/camera_manager.hh"
 #include "camera/webcam_interface.hh"
 
-#include "infrastructure/comms/shared_struct/shared_struct_publisher.hh"
-
 //%deps(opencv)
 #include <opencv2/aruco.hpp>
 #include <opencv2/opencv.hpp>
@@ -46,9 +44,6 @@ class CameraBq : public BalsaQ {
   Camera camera_;
   CameraConfiguration camera_config_;
   CameraManager camera_manager_ = CameraManager();
-  std::unique_ptr<SharedStructPublisher> camera_shmem_publisher_;
-
-
 };
 
 }  // namespace jet

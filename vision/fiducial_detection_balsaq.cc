@@ -15,13 +15,7 @@ namespace jet {
 void FiducialDetectionBq::init(const Config& config) {
   // 20Hz Update Rate
   loop_delay_microseconds = 50000;
-  assert(config["use_shmem"]);
-  if (config["use_shmem"].as<bool>()) {
-    camera_shmem_subscriber_ = std::make_unique<SharedStructSubscriber>("camera_image_channel");
-  } else {
-    subscriber_ = make_subscriber("camera_image_channel");
-  }
-
+  subscriber_ = make_subscriber("camera_image_channel");
   publisher_ = make_publisher("fiducial_detection_channel");
 }
 
@@ -30,16 +24,8 @@ void FiducialDetectionBq::loop() {
 
   // Wait until we have the latest image_message
   bool got_msg = false;
-  if (subscriber_)
-  {
-    // Wait until we have the latest image_message
-    while (subscriber_->read(image_message, 1)) {
-      got_msg = true;
-    }
-  } else {
-    while (camera_shmem_subscriber_->read(image_message, 0)) {
-      got_msg = true;
-    }
+  while (subscriber_->read(image_message, 1)) {
+    got_msg = true;
   }
 
   if (got_msg) {

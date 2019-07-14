@@ -15,18 +15,12 @@ namespace jet {
 void CameraBq::init(const Config& config) {
   // 20Hz Update Rate
   loop_delay_microseconds = 50000;
-  assert(config["use_shmem"]);
   camera_ = camera_manager_.get_camera(config["serial_number"].as<std::string>());
   std::cout << "Camera BQ: camera serial " << config["serial_number"].as<std::string>() << std::endl;
   cap_ = cv::VideoCapture(camera_.v4l_path);
   camera_config_ = generate_capture_config(config);
   initialize_camera_hardware(camera_config_, cap_);
-
-  if (config["use_shmem"]) {
-    camera_shmem_publisher_ = std::make_unique<jet::SharedStructPublisher>("camera_image_channel");
-  } else {
-    publisher_ = make_publisher("camera_image_channel");
-  }
+  publisher_ = make_publisher("camera_image_channel");
 }
 
 void CameraBq::loop() {
@@ -42,13 +36,8 @@ void CameraBq::loop() {
     last_msg_recvd_timestamp_ = cap_time_vehicle;
     CameraImageMessage message = create_camera_image_message(camera_frame, camera_.serial_number, cap_time_vehicle);
 
-    if (publisher_) {
-      publisher_->publish(message);
-    }
-    if (camera_shmem_publisher_) {
-      camera_shmem_publisher_->publish(message);
-    }
-  } else {
+    publisher_->publish(message);
+    std::cout << "Camera BQ: publishes a camera frame " << message.width << " " << message.height << std::endl;
   }
   if (last_msg_recvd_timestamp_ < get_current_time() - Duration::from_seconds(1)) {
     gonogo().nogo("More than 1 second since last camera frame");

@@ -7,8 +7,6 @@
 #include "infrastructure/comms/mqtt_comms_factory.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 
-#include "infrastructure/comms/shared_struct/shared_struct_subscriber.hh"
-
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -36,11 +34,7 @@ void MessageLoggerBQ::init(const Config& config) {
   log_writer_ptr_ = std::make_unique<LogWriter>(log_path, channels_);
 
   for (const std::string& channel_name : channels_) {
-    if (channel_name == "camera_image_channel") {
-      subscribers_.emplace_back(channel_name, std::make_unique<SharedStructSubscriber>(channel_name));
-    } else {
-      subscribers_.emplace_back(channel_name, make_subscriber(channel_name));
-    }
+    subscribers_.emplace_back(channel_name, make_subscriber(channel_name));
   }
   gonogo().go();
 }

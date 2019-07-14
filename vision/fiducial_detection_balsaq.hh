@@ -9,7 +9,6 @@
 
 #include "camera/camera_manager.hh"
 #include "infrastructure/comms/mqtt_comms_factory.hh"
-#include "infrastructure/comms/shared_struct/shared_struct_subscriber.hh"
 
 namespace jet {
 
@@ -27,7 +26,6 @@ class FiducialDetectionBq : public BalsaQ {
  private:
   PublisherPtr publisher_;
   SubscriberPtr subscriber_;
-  std::unique_ptr<SharedStructSubscriber> camera_shmem_subscriber_;
   static constexpr bool OPEN_DEBUG_WINDOWS = false;
   CameraManager camera_manager_ = CameraManager();
   Timestamp last_msg_recvd_timestamp_;

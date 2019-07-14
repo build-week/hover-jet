@@ -6,14 +6,8 @@
 namespace jet {
 
 void CameraViewerBq::init(const Config& config) {
+  camera_subscriber_ = make_subscriber("camera_image_channel");
   fiducial_subscriber_ = make_subscriber("fiducial_detection_channel");
-  assert(config["use_shmem"]);
-
-  if (config["use_shmem"].as<bool>()) {
-    camera_shmem_subscriber_ = std::make_unique<SharedStructSubscriber>("camera_image_channel");
-  } else {
-    camera_subscriber_ = make_subscriber("camera_image_channel");
-  }
 }
 
 void CameraViewerBq::loop() {
@@ -22,16 +16,8 @@ void CameraViewerBq::loop() {
 
   // Wait until we have the latest image_message
   bool got_msg = false;
-  if (camera_subscriber_)
-  {
-    // Wait until we have the latest image_message
-    while (camera_subscriber_->read(image_message, 1)) {
-      got_msg = true;
-    }
-  } else {
-    while (camera_shmem_subscriber_->read(image_message, 0)) {
-      got_msg = true;
-    }
+  while (camera_subscriber_->read(image_message, 1)) {
+    got_msg = true;
   }
 
   if (got_msg) {
