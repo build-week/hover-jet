@@ -74,6 +74,10 @@ void FilterBq::loop() {
   FiducialDetectionMessage detection_msg;
   while (fiducial_sub_->read(detection_msg, 1)) {
     filter_manager_.measure_fiducial(to_fiducial_meas(detection_msg));
+
+    std::cout << "Arrival Difference: "
+              << estimation::to_seconds(to_time_point(detection_msg.timestamp) - to_time_point(detection_msg.header.timestamp_ns))
+              << std::endl;
   }
 
   const auto current_time = to_time_point(get_current_time());
