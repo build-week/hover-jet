@@ -134,7 +134,7 @@ void FilterVizBq::draw_sensors() {
     if (transform_network_.edges_from_node_tag().count("world") != 0) {
       const SE3 world_from_imu1 = transform_network_.find_source_from_destination("world", "imu_78");
       sensor_geo_->add_line({world_from_imu1.translation(), world_from_imu1 * accel_history_.back().accel_mpss,
-                             jcc::Vec4(0.7, 0.2, 0.2, 1.0)});
+                             jcc::Vec4(0.5, 0.5, 0.8, 1.0)});
     }
   }
 
@@ -167,8 +167,8 @@ void FilterVizBq::draw_pose() {
 
     pose_geo_->flip();
 
-    // const SE3 body_from_model = jcc::exp_x(-M_PI * 0.5);
-    const SE3 body_from_model = jcc::exp_x(0.0);
+    const SE3 body_from_model = jcc::exp_z(-M_PI * 0.5);
+    // const SE3 body_from_model = jcc::exp_z(0.0);
 
     jet_tree_->set_world_from_root(pose.world_from_jet * body_from_model);
   }

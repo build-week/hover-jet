@@ -18,6 +18,9 @@
 #include "third_party/experiments/estimation/visualization/visualize_calibration.hh"
 #include "third_party/experiments/estimation/visualization/visualize_camera_calibration.hh"
 
+//%deps(bootstrap_jet)
+#include "third_party/experiments/estimation/jet/bootstrap_jet.hh"
+
 //%deps(form_coordinate_frame)
 //%deps(put_transform_network)
 #include "third_party/experiments/geometry/spatial/form_coordinate_frame.hh"
@@ -35,11 +38,10 @@
 //%deps(log)
 #include "third_party/experiments/logging/log.hh"
 
-#include "filtering/extract_data_from_log.hh"
-
 #include "camera/camera_manager.hh"
 #include "vision/fiducial_detection_and_pose.hh"
 
+#include "filtering/extract_data_from_log.hh"
 #include "filtering/transform_network_from_yaml.hh"
 #include "filtering/yaml_matrix.hh"
 
@@ -71,6 +73,17 @@ estimation::ProjectionCoefficients proj_coeffs_from_opencv(const Calibration& ca
   model.rows = cal.rows;
   model.cols = cal.cols;
 
+  std::cout << "model.fx = " << cal.camera_matrix.at<double>(0, 0) << std::endl;
+  std::cout << "model.fy = " << cal.camera_matrix.at<double>(1, 1) << std::endl;
+  std::cout << "model.cx = " << cal.camera_matrix.at<double>(0, 2) << std::endl;
+  std::cout << "model.cy = " << cal.camera_matrix.at<double>(1, 2) << std::endl;
+  std::cout << "model.k1 = " << cal.distortion_coefficients.at<double>(0) << std::endl;
+  std::cout << "model.k3 = " << cal.distortion_coefficients.at<double>(4) << std::endl;
+  std::cout << "model.k2 = " << cal.distortion_coefficients.at<double>(1) << std::endl;
+  std::cout << "model.p1 = " << cal.distortion_coefficients.at<double>(2) << std::endl;
+  std::cout << "model.p2 = " << cal.distortion_coefficients.at<double>(3) << std::endl;
+  std::cout << "model.rows = " << cal.rows << std::endl;
+  std::cout << "model.cols = " << cal.cols << std::endl;
   return model;
 }
 
@@ -160,41 +173,6 @@ jcc::Optional<ejf::FiducialMeasurement> find_nearest_fiducial_in_time(
   return {};
 }
 
-SE3 compute_world_from_camera(const estimation::SingleImuCalibration& imu_cal) {
-  const geometry::Unit3 g_camera_frame = imu_cal.camera_from_gyro * imu_cal.g_estimate.direction;
-  const SO3 world_from_camera = geometry::spatial::form_coordinate_frame_from_zhat(g_camera_frame);
-  return SE3(world_from_camera, jcc::Vec3::Zero());
-}
-
-ejf::Parameters compute_filter_fixed_parameters(
-    const std::vector<estimation::TimedMeasurement<ejf::FiducialMeasurement>> fiducial_measurements,
-    const estimation::jet::JetModel& jet_model) {
-  const auto& imu_cal_1 = jet_model.imu_calibration_from_imu_id.at(IMU_1);
-  const auto& imu_cal_2 = jet_model.imu_calibration_from_imu_id.at(IMU_2);
-
-  const SO3 world_from_camera_1 = compute_world_from_camera(imu_cal_1).so3();
-  const SO3 world_from_camera_2 = compute_world_from_camera(imu_cal_2).so3();
-  jcc::Warning() << "[Filter Setup] IMU->IMU Alignment Error: "
-                 << (world_from_camera_1 * world_from_camera_2.inverse()).log().norm() << " Radians" << std::endl;
-
-  const auto maybe_nearest_fiducial = find_nearest_fiducial_in_time(fiducial_measurements, imu_cal_1.g_estimate.time);
-  assert(maybe_nearest_fiducial);
-  const auto fiducial_at_g_estimate = *maybe_nearest_fiducial;
-  const SO3 fiducial_from_camera = fiducial_at_g_estimate.T_fiducial_from_camera.so3();
-  const SO3 world_from_fiducial = world_from_camera_1 * fiducial_from_camera.inverse();
-
-  auto p = ejf::JetFilter::reasonable_parameters();
-  {
-    p.T_world_from_fiducial = SE3(world_from_fiducial, jcc::Vec3::Zero());
-
-    p.T_imu1_from_vehicle = jet_model.transform_network.find_source_from_destination("imu_78", "vehicle");
-    p.T_imu2_from_vehicle = jet_model.transform_network.find_source_from_destination("imu_36", "vehicle");
-    p.T_camera_from_vehicle = jet_model.transform_network.find_source_from_destination("camera", "vehicle");
-  }
-
-  return p;
-}
-
 void test_filter(const estimation::CalibrationMeasurements& cal_meas, const estimation::jet::JetModel& jet_model) {
   const auto view = viewer::get_window3d("Calibration");
   const auto geo = view->add_primitive<viewer::SimpleGeometry>();
@@ -220,17 +198,16 @@ void test_filter(const estimation::CalibrationMeasurements& cal_meas, const esti
   const auto t0 = cal_meas.first();
   // const auto t0 = imu_1_meas.accel_meas.front().timestamp;
 
-  const auto p = compute_filter_fixed_parameters(cal_meas.fiducial_meas, jet_model);
-
-  auto xp0 = ejf::JetFilter::reasonable_initial_state(t0);
+  auto tf_bootstrap = jet_model.transform_network;
   {
-    const SE3 world_from_vehicle =
-        compute_world_from_camera(jet_model.imu_calibration_from_imu_id.at(IMU_2)) * p.T_camera_from_vehicle;
-    xp0.x.R_world_from_body = world_from_vehicle.so3();
-    xp0.x.x_world = world_from_vehicle.translation();
+    const auto maybe_nearest_fiducial =
+        find_nearest_fiducial_in_time(cal_meas.fiducial_meas, imu_1_cal.g_estimate.time);
+    assert(maybe_nearest_fiducial);
+    tf_bootstrap.add_edge("fiducial", "camera", maybe_nearest_fiducial->T_fiducial_from_camera);
   }
+  const auto bootstrap_result = ejf::bootstrap_jet(imu_1_cal.g_estimate.direction, tf_bootstrap, t0);
 
-  ejf::JetFilter jf(xp0, p);
+  ejf::JetFilter jf(bootstrap_result.xp0, bootstrap_result.parameters);
 
   for (const auto& fiducial_meas : cal_meas.fiducial_meas) {
     jf.measure_fiducial(fiducial_meas.measurement, fiducial_meas.timestamp);
@@ -264,7 +241,7 @@ void test_filter(const estimation::CalibrationMeasurements& cal_meas, const esti
   int k = 0;
   while (jf.next_measurement()) {
     ++k;
-    if (k % 2 != 0) {
+    if (k % 1 != 0) {
       continue;
     }
     const auto state = jf.state().x;
@@ -298,13 +275,13 @@ void test_filter(const estimation::CalibrationMeasurements& cal_meas, const esti
     // Angular Velocity
     geo->add_line({jcc::Vec3::Zero(), -state.eps_dot.tail<3>(), jcc::Vec4(0.0, 1.0, 0.0, 1.0), 5.0});
 
-    auto tfn2 = jet_model.transform_network;
     const auto maybe_nearest_fiducial =
         find_nearest_fiducial_in_time(cal_meas.fiducial_meas, jf.state().time_of_validity);
 
     // const SE3 visualized_world_from_vehicle = SE3(T_world_from_body.so3(), jet_origin);
     const SE3 visualized_world_from_vehicle = T_world_from_body;
 
+    auto tfn2 = jet_model.transform_network;
     tfn2.update_edge("world", "vehicle", visualized_world_from_vehicle);
     if (maybe_nearest_fiducial) {
       tfn2.update_edge("fiducial", "camera", maybe_nearest_fiducial->T_fiducial_from_camera);
@@ -365,8 +342,10 @@ void calibrate_jet(const std::string path) {
   std::vector<estimation::TimedMeasurement<ejf::FiducialMeasurement>> collected_fiducial_meas;
 
   int i = 0;
+  estimation::TimePoint last_image_time;
   while (true) {
     const auto image = image_stream.next();
+    last_image_time = image->time;
 
     ++i;
     if (!image) {
@@ -393,6 +372,12 @@ void calibrate_jet(const std::string path) {
           model, fiducial_from_camera, associations, *image, ui2d, geo, camera_cal_cfg);
     }
   }
+
+  geo->clear();
+  ui2d->clear();
+
+  jcc::Warning() << "Gap between last image and last fiducial: "
+                 << estimation::to_seconds(last_image_time - cal_measurements.last());
 
   jcc::Success() << "[Filter] Testing filter..." << std::endl;
   estimation::CalibrationMeasurements new_cal_measurements = cal_measurements;

@@ -4,6 +4,12 @@ distortion_coefficients:
   - 0.009935840339065886
   - 0.008486955527599985
   - 0.1017895523815406
+# distortion_coefficients:
+#   - 0.0
+#   - 0.0
+#   - 0.0
+#   - 0.0
+#   - 0.0
 serial_number: 5CFD076E
 camera_matrix:
   - 279.7596429981606
