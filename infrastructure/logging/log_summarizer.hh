@@ -3,10 +3,17 @@
 #include <iostream>
 #include <iomanip>
 #include <iterator>
+#include "third_party/experiments/estimation/time_point.hh"
 #include "infrastructure/time/timestamp.hh"
 #include "infrastructure/logging/log_reader.hh"
 
 namespace jet {
+
+estimation::TimePoint to_time_point(const Timestamp& ts) {
+  const auto epoch_offset = std::chrono::nanoseconds(uint64_t(ts));
+  const estimation::TimePoint time_point = estimation::TimePoint{} + epoch_offset;
+  return time_point;
+}
   
 struct ChannelStats{
   jet::Timestamp first_message_received;
@@ -19,12 +26,12 @@ struct LogSummary {
   std::map<std::string, ChannelStats> channel_stats;
   
   LogSummary(const std::string log_path) {
-    jet::LogReader log_reader(log_path, {});
+    LogReader log_reader(log_path, {});
     const std::vector<std::string> channels = log_reader.get_available_channels();
 
     // Go through all the messages
     for (std::size_t i = 0; i < channels.size(); ++i) {
-      jet::Message message = {};
+      Message message = {};
       const std::string channel_name = channels[i];
       if (log_reader.read_next_message(channel_name, message)) {
         channel_stats[channel_name].first_message_received = message.header.timestamp_ns;
@@ -34,7 +41,9 @@ struct LogSummary {
         channel_stats[channel_name].last_message_received = message.header.timestamp_ns;
         channel_stats[channel_name].num_messages_received++;
       }
-      channel_stats[channel_name].frequency = static_cast<double>(channel_stats[channel_name].num_messages_received)/(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(channel_stats[channel_name].last_message_received - channel_stats[channel_name].first_message_received))).count();
+      const estimation::TimePoint start_time = to_time_point(channel_stats[channel_name].first_message_received);
+      const estimation::TimePoint end_time = to_time_point(channel_stats[channel_name].last_message_received);
+      channel_stats[channel_name].frequency = static_cast<double>(channel_stats[channel_name].num_messages_received)/estimation::to_seconds(end_time - start_time);
     }
   }
 
