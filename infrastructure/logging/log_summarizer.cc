@@ -2,7 +2,7 @@
 
 //%deps(yaml-cpp)
 #include <optional>
-#include "infrastructure/logging/log_summarizer.hh"
+#include "infrastructure/logging/log_summary.hh"
 #include "infrastructure/config/config.hh"
 
 std::optional<std::string> parse_commandline_arguments(int argc, char* argv[]) {
