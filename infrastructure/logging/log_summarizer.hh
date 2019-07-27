@@ -50,12 +50,14 @@ struct LogSummary {
   void print() {
     const std::string reset("\033[0m");
     const std::string red_bold("\033[31;1m");
-    std::cout << red_bold << std::setw(30) << "Channel" << std::setw(25) << "First Timestamp" << std::setw(25) << "Last Timestamp" << std::setw(15) << "Num Messages" << std::setw(15) << "Frequency (Hz)" << std::endl;
+    std::cout << red_bold << std::setw(30) << "Channel" << std::setw(25) << "First Timestamp" << std::setw(25) << "Last Timestamp" << std::setw(17) << "Duration (s)" << std::setw(15) << "Num Messages" << std::setw(15) << "Frequency (Hz)" << std::endl;
     std::cout << reset;
     for(auto it = channel_stats.begin(); it != channel_stats.end(); it++) {
+      const auto duration = (it->second.last_message_received - it->second.first_message_received)/static_cast<double>(1e9); 
       std::cout << std::setw(30) << it->first << 
                    std::setw(25) << std::fixed << std::setprecision(9) << it->second.first_message_received/static_cast<double>(1e9) << 
                    std::setw(25) << std::fixed << std::setprecision(9) << it->second.last_message_received/static_cast<double>(1e9) << 
+                   std::setw(17) << std::fixed << std::setprecision(3) << duration << 
                    std::setw(15) << it->second.num_messages_received << 
                    std::setw(15) << std::fixed << std::setprecision(3) << it->second.frequency << std::endl;
     }
