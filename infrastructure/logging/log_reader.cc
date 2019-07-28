@@ -109,7 +109,7 @@ bool LogReader::try_read_next_message_raw(ChannelState& channel, std::string& me
 
   message_data.resize(message_length, ' ');
   file.read(&message_data[0], message_length);
-  
+
   return file.good();
 }
 
@@ -127,7 +127,7 @@ bool LogReader::read_next_message_raw(const std::string& channel_name, std::stri
   if (!get_logfile(channel_it->second, channel_name)) {
     return false;
   }
-  // If we can't read from teh next logfile, then give up
+  // If we can't read from the next logfile, then give up
   return try_read_next_message_raw(channel_it->second, message_data);
 }
 
