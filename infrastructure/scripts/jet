@@ -1,10 +1,15 @@
 #!/bin/bash
 
+
+# Set up proper error handling and disallow unset arguments
+set -o errexit -o errtrace -o pipefail -o nounset
+
+
 function help () {
 cat <<-END
 Usage: jet COMMAND
 
-Builds a new jet Docker image for your host's architecture.
+Acts as a command line entry point to the project's scripts.
 
 -h| --help           Show this message
 
@@ -17,7 +22,7 @@ broker               Configure the IPC Broker on this host
 END
 }
 
-while [ -n "$1" ]; do
+while [[ $# -gt 0 ]]; do
     case "$1" in
         -h | --help)
             help

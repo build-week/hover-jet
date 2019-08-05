@@ -1,25 +1,30 @@
 #!/bin/bash
 
+# Set up proper error handling and disallow unset arguments
+set -o errexit -o errtrace -o pipefail -o nounset
+
 source jet_functions.sh
 
 function help () {
 cat <<-END
-Usage: jet build
+Usage: jet image
 
 Builds a new jet Docker image for your host's architecture.
 
 -h| --help           Show this message
-pull| --pull         Pull the most recent version of the hoverjet/jet Docker image
 -p| --push           Push this image to Docker Hub on build completion
+--pull               Pull the most recent version of the hoverjet/jet Docker image
 --latest             Tag the image as "latest" on build completion
 --no-cache           Run a clean build of the image, reperforming every cached step
 END
 }
 
+PULL=0
 PUSH=0
 LATEST=0
+NO_CACHE=""
 
-while test $# -gt 0; do
+while [[ $# -gt 0 ]]; do
         case "$1" in
                 -h|--help)
                         help
