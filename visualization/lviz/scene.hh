@@ -54,6 +54,8 @@ public:
 
   void add_point(ColoredPoint pt) { frames.back().points.push_back(pt); }
 
+  void set_frame_duration(float new_duration) { frames.back().display_duration = new_duration; }
+
   void add_line(std::pair<ColoredPoint, ColoredPoint> points) {
     frames.back().lines.push_back(points.first);
     frames.back().lines.push_back(points.second);
@@ -73,8 +75,10 @@ public:
         sizeof(ColoredPoint) * get_current_frame().lines.size());
 
     auto n_line_elements = get_current_frame().lines.size() * 7;
+
+    // TODO enable optional dashed lines
     // enter_stipple_state();
-    glLineWidth(2);
+    glLineWidth(3);
     glDrawArrays(GL_LINES, 0, n_line_elements);
     // exit_stipple_state();
 
