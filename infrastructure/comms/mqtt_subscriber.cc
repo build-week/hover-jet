@@ -58,7 +58,7 @@ void MqttSubscriber::connect() {
   //       from two threads
   // TODO(jake, ben): Figure that out
   if (connecting_) {
-    std::cerr << channel_name_ << ": Already connecting, not attempting" << std::endl;
+    // std::cerr << channel_name_ << ": Already connecting, not attempting" << std::endl;
     return;
   }
   connecting_ = true;
@@ -85,9 +85,9 @@ void MqttSubscriber::connect() {
 bool MqttSubscriber::get_mqtt_message(mqtt::const_message_ptr& mqtt_message_ptr, const Duration& timeout) {
   const bool is_connected = mqtt_client_->is_connected();
   if (!is_connected || connecting_) {
-    std::cerr << channel_name_
-              << ": Not connected. Skipping read. Reason: " << (connecting_ ? "Connecting" : "Not connected")
-              << std::endl;
+    // std::cerr << channel_name_
+    //           << ": Not connected. Skipping read. Reason: " << (connecting_ ? "Connecting" : "Not connected")
+    //           << std::endl;
     connect();
     return false;
   }

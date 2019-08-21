@@ -1,14 +1,14 @@
 fiducial_4x4:
   artag_squares:   4
   dict_num: 250
-  log_translation_tag_from_world: [0.182163, 0.129157, 0.898972]
-  log_rotation_tag_from_world: [-1.0712, 0.978419, 1.12526]
+  log_translation_tag_from_world: [-0.285517, -0.0842155, 1.2411]
+  log_rotation_tag_from_world: [0.495738, 1.39608, 0.0704547]
   artag_width_mm:  99.0 # measured by Matt  feb 10 2019
   artag_gap_mm:    50.0  # measured by Matt  feb 10 2019
 fiducial_5x5:
   artag_squares:   5
   dict_num: 250
-  log_translation_tag_from_world: [0.182163, 0.129157, 0.898972]
-  log_rotation_tag_from_world: [-1.0712, 0.978419, 1.12526]
+  log_translation_tag_from_world: [-0.285517, -0.0842155, 1.2411]
+  log_rotation_tag_from_world: [0.495738, 1.39608, 0.0704547]
   artag_width_mm:  100.0 # measured by Matt  feb 10 2019
   artag_gap_mm:    50.0  # measured by Matt  feb 10 2019

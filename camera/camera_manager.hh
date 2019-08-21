@@ -12,6 +12,11 @@ namespace jet {
 struct Calibration {
   cv::Mat camera_matrix;
   cv::Mat distortion_coefficients;
+
+  // The calibration is fixed for some resolution
+  // (The focal length is in units of pixels!)
+  int cols;
+  int rows;
 };
 
 struct Camera {

@@ -24,7 +24,8 @@ struct VaneConfiguration {
   SE3 T_vane_unit_from_vane_default = detail::compute_T_vane_unit_from_vane_default();
   double offset_vane_from_servo_rad = 0.0;
 
-  double gear_ratio_servo_from_vane = 5.33;
+  // double gear_ratio_servo_from_vane = 5.33;
+  double gear_ratio_servo_from_vane = 1.0;
   double max_servo_angle_rad = 1.116;
   double min_servo_angle_rad = -1.116;
 

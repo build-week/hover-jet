@@ -1,8 +1,9 @@
 #pragma once
 
 #include "control/jet_vane_model.hh"
-#include "control/vanes_generated.hh"
 #include "control/wrench.hh"
+#include "control/vanes_generated.hh"
+
 
 namespace jet {
 namespace control {

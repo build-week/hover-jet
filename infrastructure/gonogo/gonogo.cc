@@ -15,8 +15,8 @@ void GoNoGo::setName(std::string name) {
 }
 
 void GoNoGo::go(const std::string &status_message) {
-  // If it's changing state
-  if (!gonogomessage_.ready) {
+  // If it's changing state or changing message
+  if (!gonogomessage_.ready || status_message != gonogomessage_.status_message) {
     std::cout << gonogomessage_.bq_name << ": GO!"
               << ", msg=" << status_message << std::endl;
     gonogomessage_.ready = true;
@@ -28,8 +28,8 @@ void GoNoGo::go(const std::string &status_message) {
 }
 
 void GoNoGo::nogo(const std::string &status_message) {
-  // If it's changing state
-  if (gonogomessage_.ready){
+  // If it's changing state or changing message
+  if (gonogomessage_.ready || status_message != gonogomessage_.status_message) {
     std::cout << gonogomessage_.bq_name << ": NO GO!"
               << ", msg=" << status_message << std::endl;
     gonogomessage_.ready = false;

@@ -5,21 +5,27 @@
 #include "control/servo_interface.hh"
 #include "embedded/imu_driver/imu_message.hh"
 #include "embedded/servo_bq/set_servo_message.hh"
-#include "filtering/pose_message.hh"
+#include "filtering/transform_network_from_yaml.hh"
 #include "infrastructure/balsa_queue/bq_main_macro.hh"
 #include "vision/fiducial_detection_message.hh"
 #include "visualization/thrust_stand_visualizer.hh"
 
-#include <cstddef>
-#include <iostream>
-
 // %deps(simple_geometry)
 // %deps(window_3d)
-//%deps(fit_ellipse)
+// %deps(fit_ellipse)
 #include "third_party/experiments/estimation/time_point.hh"
 #include "third_party/experiments/geometry/shapes/fit_ellipse.hh"
 #include "third_party/experiments/viewer/primitives/simple_geometry.hh"
 #include "third_party/experiments/viewer/window_3d.hh"
+
+// %deps(put_transform_network)
+#include "third_party/experiments/geometry/visualization/put_transform_network.hh"
+
+//%deps(jet_model)
+#include "third_party/experiments/planning/jet/jet_model.hh"
+
+#include <cstddef>
+#include <iostream>
 
 namespace jet {
 namespace embedded {
@@ -42,14 +48,21 @@ void FilterVizBq::init(const Config& config) {
   background->add_plane({ground, 0.1});
   background->flip();
 
+  transform_network_ = transform_network_from_yaml(config["transforms"]);
+
   sensor_geo_ = view->add_primitive<viewer::SimpleGeometry>();
   pose_geo_ = view->add_primitive<viewer::SimpleGeometry>();
-  persistent_ = view->add_primitive<viewer::SimpleGeometry>();
   servo_geo_ = view->add_primitive<viewer::SimpleGeometry>();
+  jet_tree_ = view->add_primitive<viewer::SceneTree>();
+
+  const planning::jet::JetModel jet_3dmodel;
+  constexpr bool DRAW_VEHICLE = true;
+  if constexpr (DRAW_VEHICLE) {
+    jet_3dmodel.insert(*jet_tree_);
+  }
 
   std::cout << "Subscribing IMU" << std::endl;
-  imu_sub_ = make_subscriber("imu");
-
+  imu_sub_ = make_subscriber("imu_1");
   std::cout << "Subscribing Fiducial" << std::endl;
   fiducial_sub_ = make_subscriber("fiducial_detection_channel");
 
@@ -58,8 +71,6 @@ void FilterVizBq::init(const Config& config) {
 
   std::cout << "Subscribing servos" << std::endl;
   servo_sub_ = make_subscriber("servo_command_channel");
-
-  tag_from_world_ = get_fiducial_pose().tag_from_world;
   camera_from_body_ = get_camera_extrinsics().camera_from_frame;
 
   std::cout << "Filter Viz starting" << std::endl;
@@ -71,20 +82,8 @@ void FilterVizBq::draw_sensors() {
 
   ImuMessage imu_msg;
   FiducialDetectionMessage detection_msg;
-  if (fiducial_sub_->read(detection_msg, 1)) {
+  if (true && fiducial_sub_->read(detection_msg, 1)) {
     const SE3 fiducial_from_camera = detection_msg.fiducial_from_camera();
-    const SE3 fiducial_from_body = fiducial_from_camera * camera_from_body_;
-
-    // This is used to generate a config
-    const jcc::Vec3 log_translation_tag_from_world = fiducial_from_body.translation();
-    const jcc::Vec3 log_rotation_tag_from_world = fiducial_from_body.so3().log();
-    std::cout << "log_translation_tag_from_world: [" << log_translation_tag_from_world[0] << ", "
-              << log_translation_tag_from_world[1] << ", " << log_translation_tag_from_world[2] << "] " << std::endl;
-
-    std::cout << "log_rotation_tag_from_world: [" << log_rotation_tag_from_world[0] << ", "
-              << log_rotation_tag_from_world[1] << ", " << log_rotation_tag_from_world[2] << "] " << std::endl;
-
-    const auto fiducial_time_of_validity = to_time_point(detection_msg.timestamp);
 
     fiducial_history_.push_back(fiducial_from_camera);
   }
@@ -98,8 +97,15 @@ void FilterVizBq::draw_sensors() {
     mag_utesla_.push_back({mag_utesla});
   }
 
-  while (accel_history_.size() > 15u) {
+  while (accel_history_.size() > 25000u) {
     accel_history_.pop_front();
+  }
+
+  std::vector<jcc::Vec3> accels;
+  accels.reserve(accel_history_.size());
+  for (const auto& meas : accel_history_) {
+    accels.push_back(meas.accel_mpss);
+    sensor_geo_->add_point({meas.accel_mpss, jcc::Vec4(0.1, 0.7, 0.3, 0.9)});
   }
 
   while (fiducial_history_.size() > 10u) {
@@ -110,41 +116,26 @@ void FilterVizBq::draw_sensors() {
     mag_utesla_.pop_front();
   }
 
-  // Tag in world frame
-  sensor_geo_->add_sphere({tag_from_world_.inverse().translation(), 0.3});
-  sensor_geo_->add_axes({tag_from_world_.inverse()});
-
-  // Camera in body frame
-  // sensor_geo_->add_sphere({camera_from_body_.inverse().translation(), 0.3, jcc::Vec4(0.0, 1.0, 1.0, 1.0)});
-  // sensor_geo_->add_axes({camera_from_body_.inverse()});
-
   if (!fiducial_history_.empty()) {
-    const SE3 fiducial_from_camera = fiducial_history_.back();
+    const SE3 camera_from_fiducial = fiducial_history_.back().inverse();
+    transform_network_.update_edge("camera", "fiducial", camera_from_fiducial);
 
-    constexpr bool DRAW_FIDUCIAL_POSE = true;
-    constexpr bool DRAW_VEHICLE_POSE = false;
-    constexpr bool DRAW_FIDUCIAL_IN_BODY_FRAME = false;
+    const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
+    const Pose pose = last_pose_message_.to_pose();
+    const SE3 world_from_jet(pose.world_from_jet.so3(), jet_origin);
 
-    if (DRAW_FIDUCIAL_POSE) {  // Draw the fiducial axes in the camera frame
-      sensor_geo_->add_sphere({fiducial_from_camera.inverse().translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
-      sensor_geo_->add_axes({fiducial_from_camera.inverse(), 0.025, 3.0});
-    }
-
-    if (DRAW_VEHICLE_POSE) {  // Draw the vehicle axes in the world frame
-      const SE3 world_from_vehicle = tag_from_world_.inverse() * fiducial_from_camera * camera_from_body_;
-      sensor_geo_->add_sphere({world_from_vehicle.translation(), 0.2, jcc::Vec4(1.0, 0.0, 0.2, 0.8)});
-      sensor_geo_->add_axes({world_from_vehicle, 0.6, 3.0, true});
-    }
-
-    if (DRAW_FIDUCIAL_IN_BODY_FRAME) {  // Draw the body axes in the fiducial frame
-      const SE3 fiducial_from_body = fiducial_from_camera * camera_from_body_;
-      sensor_geo_->add_axes({fiducial_from_body.inverse()});
-      sensor_geo_->add_sphere({fiducial_from_body.inverse().translation(), 0.2, jcc::Vec4(0.0, 0.0, 1.0, 0.8)});
-    }
+    sensor_geo_->add_sphere({world_from_jet * camera_from_fiducial.translation(), 0.2, jcc::Vec4(1.0, 1.0, 0.2, 0.8)});
+    sensor_geo_->add_axes({world_from_jet * camera_from_fiducial, 0.025, 3.0});
   }
 
   if (!accel_history_.empty()) {
     sensor_geo_->add_line({jcc::Vec3::Zero(), accel_history_.back().accel_mpss});
+
+    if (transform_network_.edges_from_node_tag().count("world") != 0) {
+      const SE3 world_from_imu1 = transform_network_.find_source_from_destination("world", "imu_78");
+      sensor_geo_->add_line({world_from_imu1.translation(), world_from_imu1 * accel_history_.back().accel_mpss,
+                             jcc::Vec4(0.5, 0.5, 0.8, 1.0)});
+    }
   }
 
   sensor_geo_->add_sphere({jcc::Vec3::Zero(), 9.81});
@@ -155,13 +146,31 @@ void FilterVizBq::draw_pose() {
   PoseMessage pose_msg;
   bool got_pose_msg = false;
   while (pose_sub_->read(pose_msg, 1)) {
+    last_pose_message_ = pose_msg;
     got_pose_msg = true;
   }
 
   if (got_pose_msg) {
     const Pose pose = pose_msg.to_pose();
-    pose_geo_->add_axes({pose.world_from_jet, 0.055, 3.0, true});
+
+    std::cout << "Pose Age: " << estimation::to_seconds(jcc::now() - to_time_point(pose_msg.timestamp)) << std::endl;
+
+    pose_geo_->add_axes({pose.world_from_jet, 0.55, 3.0, true});
+
+    // const jcc::Vec3 jet_origin(1.0, 0.0, 0.0);
+    // const SE3 world_from_jet(pose.world_from_jet.so3(), jet_origin);
+    // pose_geo_->add_axes({world_from_jet, 0.55, 3.0, true});
+
+    transform_network_.update_edge("world", "vehicle", pose.world_from_jet);
+
+    geometry::put_transform_network(*pose_geo_, transform_network_, "world");
+
     pose_geo_->flip();
+
+    const SE3 body_from_model = jcc::exp_z(-M_PI * 0.5);
+    // const SE3 body_from_model = jcc::exp_z(0.0);
+
+    jet_tree_->set_world_from_root(pose.world_from_jet * body_from_model);
   }
 }
 

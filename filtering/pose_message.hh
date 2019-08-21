@@ -9,6 +9,13 @@
 
 namespace jet {
 
+//
+// Pose has the following contract:
+//   - Z points in the gravity direction
+//   - Derivatives and displacements will be smooth
+//   - Derivatives are *not* guaranteed to correspond
+//       to the forward difference of displacements
+//
 struct Pose {
   SE3 world_from_jet;
   jcc::Vec3 v_world_frame;

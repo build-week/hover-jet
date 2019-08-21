@@ -1,0 +1,9 @@
+k_proportional:
+  - 0.2
+  - 0.2
+  - 0.4
+
+k_derivative:
+  - 0.2
+  - 0.2
+  - 0.4

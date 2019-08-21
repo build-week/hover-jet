@@ -17,40 +17,37 @@ BoardIdsAndCorners get_ids_and_corners(const cv::Mat& input_image) {
   // CORNER_REFINE_SUBPIX, do subpixel refinement.
   // CORNER_REFINE_CONTOUR use contour-Points
   // CORNER_REFINE_APRILTAG use the AprilTag2 approach)
-  params->cornerRefinementWinSize = 5;
-  params->cornerRefinementMinAccuracy = .01;  // deafult .1
-  params->adaptiveThreshWinSizeMax = 8;       // default 23
+  // params->cornerRefinementWinSize = 5;
+  // params->cornerRefinementMinAccuracy = .01;  // deafult .1
+  // params->adaptiveThreshWinSizeMax = 8;       // default 23
+
   params->aprilTagQuadSigma = 0;              // default undocumented
 
   // TODO isaac make aruco_dictionary parameter of this method to allow for
   // multiple unique boards
   const auto t0 = time::get_current_time();
   cv::aruco::detectMarkers(input_image, get_aruco_dictionary(), corners, ids, params);
-  std::cout << "to do cv::aruco::detectMarkers " << (float)(time::get_current_time() - t0) / 1000000 << "ms" << std::endl;
   BoardIdsAndCorners result = {ids, corners};
   return result;
 }
 
 std::vector<BoardPointImagePointAssociation> obj_points_img_points_from_image(const BoardIdsAndCorners& ids_corners) {
-  cv::Mat boardPoints, imgPoints;
-  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), ids_corners.corners, ids_corners.ids, boardPoints,
-                                          imgPoints);
+  cv::Mat board_points, img_points;
+  cv::aruco::getBoardObjectAndImagePoints(get_aruco_board(), ids_corners.corners, ids_corners.ids, board_points,
+                                          img_points);
   std::vector<BoardPointImagePointAssociation> result;
-  for (int i = 0; i < boardPoints.rows; i++) {
+
+  for (int i = 0; i < board_points.rows; i++) {
     BoardPointImagePointAssociation association = {};
-    boardPoints.at<float>(i, 0);
-    std::cout << "in detector " << imgPoints.at<float>(i, 0) << " " << imgPoints.at<float>(i, 1) << std::endl;
-    association.point_board_space = jcc::Vec2(boardPoints.at<float>(i, 0), boardPoints.at<float>(i, 1));
-    association.point_image_space = jcc::Vec2(imgPoints.at<float>(i, 0), imgPoints.at<float>(i, 1));
-    std::cout << "in detector2" << association.point_image_space.vals[1] << " " << association.point_image_space.vals[0]
-              << std::endl;
+    association.point_board_space = jcc::Vec2(board_points.at<float>(i, 0), board_points.at<float>(i, 1));
+    association.point_image_space = jcc::Vec2(img_points.at<float>(i, 0), img_points.at<float>(i, 1));
     result.push_back(association);
   }
   return result;
 }
 
-std::optional<SE3> estimate_board_center_from_camera_from_image(const BoardIdsAndCorners& ids_corners,
-                                                                const Calibration& calibration) {
+std::optional<SE3> estimate_board_bottom_left_from_camera(const BoardIdsAndCorners& ids_corners,
+                                                          const Calibration& calibration) {
   const cv::Mat camera_matrix = calibration.camera_matrix;
   const cv::Mat distortion_coefficients = calibration.distortion_coefficients;
 

@@ -8,7 +8,7 @@
 namespace jet {
 
 
-struct fiducial_pose
+struct FiducialDescription
 {
     SE3 tag_from_world;
     int tag_size_squares;
@@ -16,13 +16,13 @@ struct fiducial_pose
     double arcode_gap_mm;
 };
 
-struct camera_extrinsics_struct
+struct CameraExtrinsics
 {
     SE3 camera_from_frame;
 };
 
-fiducial_pose get_fiducial_pose();
-camera_extrinsics_struct get_camera_extrinsics();
+FiducialDescription get_fiducial_pose();
+CameraExtrinsics get_camera_extrinsics();
 
 }  //  namespace jet
 
