@@ -20,6 +20,10 @@
 #include <GLFW/glfw3.h>
 #include <Eigen/Dense>
 
+Scene scene;
+Cursor cursor;
+std::mutex buffer_modification_mutex;
+std::vector<SceneUpdate> scene_element_buffer;
 
 Eigen::Vector2d get_mouse_loc(auto window) {
   double xpos, ypos;
@@ -39,9 +43,6 @@ void reset_viewport_size(auto window) {
 }
 
 
-Scene scene;
-Cursor cursor;
-std::mutex buffer_modification_mutex;
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
   if (button == GLFW_MOUSE_BUTTON_RIGHT) cursor.right_mouse_button_down = action == GLFW_PRESS;
@@ -77,7 +78,6 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   cursor.camera_distance_from_cursor = std::clamp(cursor.camera_distance_from_cursor, 1.0, 10000.0);
 }
 
-std::vector<SceneUpdate> scene_element_buffer;
 
 void run_stream_parser() {
   // vastly increases stream reading speed
@@ -168,7 +168,6 @@ int main() {
     GLuint image_from_world_idx = glGetUniformLocation(shader_program_id, "image_from_world");
     glUniformMatrix4fv(image_from_world_idx, 1, GL_FALSE, image_from_world.data());
 
-    // get width and height
     reset_viewport_size(window);
 
     // Keep running
