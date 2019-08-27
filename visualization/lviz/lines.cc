@@ -82,13 +82,14 @@ void run_stream_parser() {
   std::string line;
   while (true) {
     while (std::getline(std::cin, line)) {
+      // while(true){
       // if (line.length() > 0) {
-        auto new_element = scene_element_from_line(line);
-        if (new_element.has_value()) {
-          buffer_modification_mutex.lock();
-          scene_element_buffer.push_back(new_element.value());
-          buffer_modification_mutex.unlock();
-        }
+      auto new_element = scene_element_from_line(line);
+      if (new_element.has_value()) {
+        buffer_modification_mutex.lock();
+        scene_element_buffer.push_back(new_element.value());
+        buffer_modification_mutex.unlock();
+      }
       // }
     }
     // TODO replace with e.g. interrupt
@@ -130,7 +131,7 @@ int main() {
 
   std::thread parsing_thread(run_stream_parser);
 
-  auto frame_duration = std::chrono::milliseconds(500);
+  auto frame_duration = std::chrono::milliseconds(250);
   auto frame_time_remaining = frame_duration;
 
   while (!glfwWindowShouldClose(window)) {

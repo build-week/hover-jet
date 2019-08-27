@@ -134,7 +134,7 @@ namespace tinycolormap
             case ColormapType::Github:
                 return GetGithubColor(x);
             default:
-                break;
+                return GetViridisColor(x);
         }
     }
 
