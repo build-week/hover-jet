@@ -2,8 +2,8 @@
 
 #include "visualization/lviz/cursor.hh"
 #include "visualization/lviz/graphics_helpers.hh"
-#include "visualization/lviz/scene.hh"
 #include "visualization/lviz/parsing.hh"
+#include "visualization/lviz/scene.hh"
 
 #include <assert.h>
 #include <math.h>
@@ -42,8 +42,6 @@ void reset_viewport_size(auto window) {
   glViewport(0, 0, window_dimensions.first, window_dimensions.second);
 }
 
-
-
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
   if (button == GLFW_MOUSE_BUTTON_RIGHT) cursor.right_mouse_button_down = action == GLFW_PRESS;
   if (button == GLFW_MOUSE_BUTTON_LEFT) cursor.left_mouse_button_down = action == GLFW_PRESS;
@@ -64,7 +62,7 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
     // set camera to isometric view
     if (key == GLFW_KEY_I) {
-      cursor.set_camera_translation_from_cursor_normalized(Eigen::Vector3f(1,1,1).normalized());
+      cursor.set_camera_translation_from_cursor_normalized(Eigen::Vector3f(1, 1, 1).normalized());
       cursor.perspective_mode = false;
     }
 
@@ -78,26 +76,23 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   cursor.camera_distance_from_cursor = std::clamp(cursor.camera_distance_from_cursor, 1.0, 10000.0);
 }
 
-
 void run_stream_parser() {
   // vastly increases stream reading speed
   std::ios_base::sync_with_stdio(false);
-  std::regex("(point)\\s+4");
+  std::string line;
   while (true) {
-    std::string line;
-    std::getline(std::cin, line);
-    if (line.length() > 0) {
-      auto new_element = scene_element_from_line(line);
-      if (new_element.has_value()) {
-        buffer_modification_mutex.lock();
-        scene_element_buffer.push_back(new_element.value());
-        buffer_modification_mutex.unlock();
-      }
+    while (std::getline(std::cin, line)) {
+      // if (line.length() > 0) {
+        auto new_element = scene_element_from_line(line);
+        if (new_element.has_value()) {
+          buffer_modification_mutex.lock();
+          scene_element_buffer.push_back(new_element.value());
+          buffer_modification_mutex.unlock();
+        }
+      // }
     }
-    else{
-      // TODO replace with e.g. interrupt
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+    // TODO replace with e.g. interrupt
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 
@@ -107,14 +102,11 @@ void apply_scene_changes(Scene &scene) {
   for (auto element : scene_element_buffer) {
     if (std::holds_alternative<ColoredPoint>(element)) {
       scene.add_point(std::get<ColoredPoint>(element));
-    }
-    else if (std::holds_alternative<std::pair<ColoredPoint, ColoredPoint>>(element)) {
+    } else if (std::holds_alternative<std::pair<ColoredPoint, ColoredPoint>>(element)) {
       scene.add_line(std::get<std::pair<ColoredPoint, ColoredPoint>>(element));
-    }
-    else if (std::holds_alternative<NewScene>(element)) {
+    } else if (std::holds_alternative<NewScene>(element)) {
       scene.add_frame();
-    }
-    else if (std::holds_alternative<SetFrameTime>(element)) {
+    } else if (std::holds_alternative<SetFrameTime>(element)) {
       scene.set_frame_duration(std::get<SetFrameTime>(element).frame_duration);
     }
   }
@@ -158,11 +150,11 @@ int main() {
     cursor.update_cursor_state(mouse_move_image_space, cursor.right_mouse_button_down, cursor.left_mouse_button_down,
                                cursor.camera_distance_from_cursor);
 
-
     // TODO make function
     auto window_dimensions = get_window_dimensions(window);
     auto aspect_ratio = 1.0 * window_dimensions.first / window_dimensions.second;
-    Eigen::Matrix4f image_from_camera = get_image_from_view(aspect_ratio, .01, 10000, cursor.camera_distance_from_cursor, !cursor.perspective_mode);
+    Eigen::Matrix4f image_from_camera =
+        get_image_from_view(aspect_ratio, .01, 10000, cursor.camera_distance_from_cursor, !cursor.perspective_mode);
     Eigen::Matrix4f image_from_world = image_from_camera * cursor.camera_from_world(cursor.camera_distance_from_cursor);
 
     GLuint image_from_world_idx = glGetUniformLocation(shader_program_id, "image_from_world");

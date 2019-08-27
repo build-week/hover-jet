@@ -1,3 +1,4 @@
+#pragma once
 #include "visualization/lviz/graphics_helpers.hh"
 #include <GL/glew.h>
 
