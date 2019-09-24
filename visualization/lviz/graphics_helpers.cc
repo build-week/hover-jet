@@ -124,7 +124,7 @@ Eigen::Matrix4f get_image_from_view(float aspect_ratio, float near_distance, flo
 
 Eigen::Matrix4f get_camera_from_world(Eigen::Vector3f camera_loc, Eigen::Vector3f target) {
   const Eigen::Vector3f look_direction = (camera_loc - target).normalized();
-  const Eigen::Vector3f global_up(0, 1, 0);
+  const Eigen::Vector3f global_up(0, 0, 1);
   const Eigen::Vector3f right = global_up.cross(look_direction).normalized();
   const Eigen::Vector3f up = look_direction.cross(right).normalized();
 
