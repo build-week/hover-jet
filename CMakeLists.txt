@@ -10,6 +10,25 @@ FIND_PACKAGE(crossguid REQUIRED)
 # CMakeLists
 find_package(OpenCV REQUIRED)
 
+#########################
+# OpenGL
+#
+find_package(OpenGL REQUIRED)
+include_directories( ${OPENGL_INCLUDE_DIRS})
+
+#########################
+# GLFW
+#
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLFW REQUIRED glfw3)
+include_directories(${GLFW_INCLUDE_DIRS})
+
+#########################
+# GLEW
+#
+find_package(GLEW REQUIRED)
+
+
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 
 # Get yaml-cpp configured
