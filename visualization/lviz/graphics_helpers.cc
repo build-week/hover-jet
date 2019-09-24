@@ -80,6 +80,7 @@ GLFWwindow *get_window() {
   glewInit();
 
   glEnable(GL_MULTISAMPLE);
+  glLineWidth(.5);
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_ALWAYS);

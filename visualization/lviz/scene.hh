@@ -79,7 +79,7 @@ public:
 
     // TODO enable optional dashed lines
     // enter_stipple_state();
-    glLineWidth(3);
+    glLineWidth(1.5);
     glDrawArrays(GL_LINES, 0, n_line_elements);
     // exit_stipple_state();
 

@@ -73,7 +73,7 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   cursor.camera_distance_from_cursor += yoffset;
-  cursor.camera_distance_from_cursor = std::clamp(cursor.camera_distance_from_cursor, 1.0, 10000.0);
+  cursor.camera_distance_from_cursor = std::clamp(cursor.camera_distance_from_cursor, 0.1, 10000.0);
 }
 
 void run_stream_parser() {
@@ -111,7 +111,7 @@ void apply_scene_changes(Scene &scene) {
       scene.set_frame_duration(std::get<SetFrameTime>(element).frame_duration);
     }
   }
-  std::cout << scene_element_buffer.size() << std::endl;
+  // std::cout << scene_element_buffer.size() << std::endl;
   scene_element_buffer.clear();
   buffer_modification_mutex.unlock();
 }

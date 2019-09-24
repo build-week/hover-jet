@@ -1,3 +1,5 @@
+// #define NDEBUG
+
 #include <iostream>
 #include <regex>
 #include <variant>
@@ -106,13 +108,13 @@ std::optional<SceneUpdate> scene_element_from_line(const std::string &line) {
     if (VERBOSE_PARSING) {
       for (size_t i = 0; i < matches.size(); ++i) {
         std::cout << i << ": '" << matches[i].str() << "'\n";
-      }
+      } 
     }
     Eigen::Vector3f location(stof(matches[1]), stof(matches[2]), stof(matches[3]));
     const auto color = parse_color(matches[4]);
     const float scale = std::stof(matches[5]);
 
-    return std::make_optional(ColoredPoint{location.x(), location.z(), location.y(), color.r, color.g, color.b, scale});
+    return std::make_optional(ColoredPoint{location.x(), location.y(), location.z(), color.r, color.g, color.b, scale});
   } else if (std::regex_match(line, matches, LINE_REGEX)) {
     if (VERBOSE_PARSING) {
       for (size_t i = 0; i < matches.size(); ++i) {
@@ -128,8 +130,8 @@ std::optional<SceneUpdate> scene_element_from_line(const std::string &line) {
     line_endpoint_2 << stof(matches[5]), stof(matches[6]), stof(matches[7]);
     auto color_2 = parse_color(matches[8]);
     return std::make_optional(std::make_pair(
-        ColoredPoint{line_endpoint_1.x(), line_endpoint_1.z(), line_endpoint_1.y(), color_1.r, color_1.g, color_1.b, 1},
-        ColoredPoint{line_endpoint_2.x(), line_endpoint_2.z(), line_endpoint_2.y(), color_2.r, color_2.g, color_2.b,
+        ColoredPoint{line_endpoint_1.x(), line_endpoint_1.y(), line_endpoint_1.z(), color_1.r, color_1.g, color_1.b, 1},
+        ColoredPoint{line_endpoint_2.x(), line_endpoint_2.y(), line_endpoint_2.z(), color_2.r, color_2.g, color_2.b,
                      1}));
   } else if (std::regex_match(line, matches, NEW_FRAME_REGEX)) {
     return std::make_optional(NewScene{});
