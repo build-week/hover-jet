@@ -39,6 +39,10 @@ git pull --rebase origin master
 ./infrastructure/scripts/environment_bootstrap.sh
 ```
 
+### Using `direnv`
+
+1. Set up `direnv` ([install the binary/package](https://direnv.net/docs/installation.html) + [hook into your shell](https://direnv.net/docs/hook.html)).
+2. Run `direnv allow` inside your repo. `direnv` should complain about being blocked until you do this.
 
 # How to get the Docker image
 
