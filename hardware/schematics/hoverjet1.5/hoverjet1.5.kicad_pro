@@ -342,6 +342,14 @@
     [
       "5315802d-f249-47fc-99cd-e088ca2e0a81",
       "power_regulation"
+    ],
+    [
+      "b78ad8e9-8750-4f8e-baac-d4e56d92b231",
+      "OR 1"
+    ],
+    [
+      "24f654d5-68c6-47c0-a145-2950c7e4ba5f",
+      "OR 2"
     ]
   ],
   "text_variables": {}
