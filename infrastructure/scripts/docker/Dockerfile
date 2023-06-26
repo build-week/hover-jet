@@ -60,6 +60,7 @@ RUN apt install libfreetype6-dev -y
 RUN pip install matplotlib
 RUN pip install colorama
 RUN pip install 2to3
+# Convert pymake to Python3 before installing. Long term solution will be to update the third party package
 RUN git clone https://github.com/jpanikulam/experiments.git && \
     cd experiments/pymake/generate_cmake && \
     2to3 -w log.py graph.py parse.py file_system.py cmake.py bazel.py && \
