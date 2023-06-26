@@ -37,7 +37,7 @@ RUN apt install libserial-dev -y
 RUN apt update --fix-missing
 RUN cd /; apt install libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev -y
 RUN git clone https://github.com/opencv/opencv_contrib.git --depth=1
-RUN cd opencv_contrib; CONTRIB_PATH=$PWD; git reset --hard a17185c6dc7aa554591ad1be38923232472f8001; cd ..; git clone https://github.com/opencv/opencv.git --depth=1; cd opencv; git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..; make -j3; make install
+RUN cd opencv_contrib; CONTRIB_PATH=$PWD; git reset --hard a17185c6dc7aa554591ad1be38923232472f8001; cd ..; git clone https://github.com/opencv/opencv.git --depth=1; cd opencv; git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..; make -j7; make install
 RUN rm -rf opencv
 RUN rm -rf opencv_contrib
 RUN ldconfig -p
@@ -64,7 +64,7 @@ RUN git clone https://github.com/jpanikulam/experiments.git && \
     cd experiments/pymake/generate_cmake && \
     2to3 -w log.py graph.py parse.py file_system.py cmake.py bazel.py && \
     cd .. && \
-    python3 setup.py install
+    pip install .
 RUN apt install python-tk -y
 
 #
