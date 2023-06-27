@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <signal.h>
 #include <unistd.h>
 #include "infrastructure/comms/mqtt_comms_factory.hh"
