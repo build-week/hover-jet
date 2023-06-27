@@ -10,5 +10,8 @@ get_image_name() {
     if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "arm" ]]; then
         IMAGE_NAME="hoverjet/jet-arm"
     fi
+    if [[ $(echo $CPU_INFO | grep "Architecture:") =~ "aarch64" ]]; then
+        IMAGE_NAME="hoverjet/jet-aarch64"
+    fi
     echo "$IMAGE_NAME"
 }

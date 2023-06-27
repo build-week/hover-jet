@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:jammy
 
 #
 # Install devtools
@@ -11,10 +11,10 @@ RUN apt install build-essential -y
 RUN apt update
 
 RUN apt install git -y
-RUN apt install cmake gcc-7 g++-7 -y
+RUN apt install cmake gcc-11 g++-11 -y
 
 RUN apt install libgtest-dev -y
-RUN cd /usr/src/gtest; cmake CMakeLists.txt; make; cp *.a /usr/lib
+RUN cd /usr/src/gtest; cmake CMakeLists.txt; make; cp lib/*.a /usr/lib
 RUN apt install i2c-tools -y
 RUN apt install vim nano -y
 RUN apt install gdb -y
@@ -32,6 +32,17 @@ RUN apt install libreadline6-dev -y
 RUN apt install libserial-dev -y
 
 #
+# Opencv
+#
+RUN apt update --fix-missing
+RUN cd /; apt install libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev -y
+RUN git clone https://github.com/opencv/opencv_contrib.git --depth=1
+RUN cd opencv_contrib; CONTRIB_PATH=$PWD; git reset --hard a17185c6dc7aa554591ad1be38923232472f8001; cd ..; git clone https://github.com/opencv/opencv.git --depth=1; cd opencv; git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..; make -j7; make install
+RUN rm -rf opencv
+RUN rm -rf opencv_contrib
+RUN ldconfig -p
+
+#
 # Process management
 #
 RUN apt install supervisor -y
@@ -43,12 +54,18 @@ RUN mkdir /var/log/supervisord/
 # Python
 #
 
-RUN apt install pkg-config python-pip ipython -y
+RUN apt install pkg-config python3-pip -y
 RUN pip install --upgrade pip
 RUN apt install libfreetype6-dev -y
 RUN pip install matplotlib
 RUN pip install colorama
-RUN pip install generate-cmake
+RUN pip install 2to3
+# Convert pymake to Python3 before installing. Long term solution will be to update the third party package
+RUN git clone https://github.com/jpanikulam/experiments.git && \
+    cd experiments/pymake/generate_cmake && \
+    2to3 -w log.py graph.py parse.py file_system.py cmake.py bazel.py && \
+    cd .. && \
+    pip install .
 RUN apt install python-tk -y
 
 #
@@ -82,9 +99,9 @@ RUN apt install mosquitto mosquitto-clients -y
 #
 
 RUN apt install doxygen graphviz -y
-RUN git clone https://github.com/eclipse/paho.mqtt.c.git; cd paho.mqtt.c; git checkout v1.2.1; cmake -Bbuild -H. -DPAHO_WITH_SSL=ON; cmake --build build/ --target install; ldconfig
+RUN git clone https://github.com/eclipse/paho.mqtt.c.git; cd paho.mqtt.c; git checkout v1.3.8; cmake -Bbuild -H. -DPAHO_ENABLE_TESTING=OFF -DPAHO_BUILD_STATIC=ON -DPAHO_WITH_SSL=ON -DPAHO_HIGH_PERFORMANCE=ON; cmake --build build/ --target install; ldconfig
 RUN rm -r paho.mqtt.c
-RUN git clone https://github.com/eclipse/paho.mqtt.cpp; cd paho.mqtt.cpp; cmake -Bbuild -H. -DPAHO_BUILD_DOCUMENTATION=TRUE -DPAHO_BUILD_SAMPLES=TRUE; cmake --build build/ --target install
+RUN git clone https://github.com/eclipse/paho.mqtt.cpp; cd paho.mqtt.cpp; cmake -Bbuild -H. -DPAHO_BUILD_STATIC=ON -DPAHO_BUILD_DOCUMENTATION=TRUE -DPAHO_BUILD_SAMPLES=TRUE; cmake --build build/ --target install; ldconfig
 RUN rm -r paho.mqtt.cpp
 
 
@@ -119,15 +136,3 @@ RUN git clone https://github.com/martinling/libserialport.git; cd libserialport;
 RUN rm -r libserialport
 RUN ldconfig
 
-
-#
-# Opencv
-#
-
-RUN cd /; apt install libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev -y
-RUN git clone https://github.com/opencv/opencv_contrib.git --depth=1
-RUN cd opencv_contrib; CONTRIB_PATH=$PWD; git reset --hard a17185c6dc7aa554591ad1be38923232472f8001; cd ..; git clone https://github.com/opencv/opencv.git --depth=1; cd opencv; git reset --hard e2dbf054ac5c54bd328f648d9d6146c09dfd5484; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=$CONTRIB_PATH/modules ..; make -j3; make install
-RUN rm -rf opencv
-RUN rm -rf opencv_contrib
-
-RUN ldconfig -p
