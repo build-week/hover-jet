@@ -9,6 +9,7 @@ FIND_PACKAGE(crossguid REQUIRED)
 
 # CMakeLists
 find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/run)
 

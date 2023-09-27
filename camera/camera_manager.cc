@@ -3,6 +3,8 @@
 
 #include "camera/camera_manager.hh"
 
+#include <optional>
+
 namespace fs = std::experimental::filesystem;
 
 namespace jet {

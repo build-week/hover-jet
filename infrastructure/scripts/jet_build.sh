@@ -31,6 +31,7 @@ if [ $? -ne 0 ]; then
 fi
 
 FULL_IMAGE_NAME=$(get_image_name)
+FULL_IMAGE_NAME="docker.io/hoverjet/jet-aarch64:2023.09.26-21.05.34"
 J_NUM=`expr $(nproc) - 1`
 
 TARGETS="${@:1}"

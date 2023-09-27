@@ -5,6 +5,7 @@
 #include <unistd.h>                               // usleep
 #include <yaml-cpp/yaml.h>
 #include <algorithm>  // max, min
+#include <cassert>
 #include <cmath>      // M_PI
 #include <fstream>
 #include <iostream>

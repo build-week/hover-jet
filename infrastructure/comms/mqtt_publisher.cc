@@ -7,6 +7,7 @@
 #include <cstdlib>
 
 //%deps(paho-mqttpp3)
+//%deps(paho-mqtt3as)
 //%deps(crossguid)
 
 namespace jet {
