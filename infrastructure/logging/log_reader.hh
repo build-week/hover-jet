@@ -38,8 +38,10 @@ class LogReader {
 
  private:
   bool open_file(const std::string& file_path, std::ifstream& file);
+  bool try_read_next_message(ChannelState& channel, Message& message);
+  bool try_read_next_message_raw(ChannelState& channel, std::string& message_data);
+  bool get_logfile(ChannelState& channel, std::string channel_name);
   bool read_metadata(const std::string& log_path, std::vector<std::string>& channel_names);
-
   std::string log_path_;
   std::unordered_map<std::string, ChannelState> channels_;
   std::vector<std::string> channels_in_log_;
