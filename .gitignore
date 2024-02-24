@@ -43,6 +43,8 @@ hardware/schematics/hoverjet1.5/#*
 *.bck
 *.kicad_pcb-bak
 *.sch-bak
+*.kicad_sch-bak
+*kicad_sch.lck
 *~
 _autosave-*
 *.tmp
