@@ -33,3 +33,26 @@
 
 bin/
 tmp/
+
+# Ignore list for KiCAD Projects
+# Temporary files
+hardware/schematics/hoverjet1.5/hoverjet1.5-backups
+hardware/schematics/hoverjet1.5/#*
+*.000
+*.bak
+*.bck
+*.kicad_pcb-bak
+*.sch-bak
+*.kicad_sch-bak
+*kicad_sch.lck
+*~
+_autosave-*
+*.tmp
+*-save.pro
+*-save.kicad_pcb
+fp-info-cache
+# Netlist files (exported from Eeschema)
+*.net
+# Autorouter files (exported from Pcbnew)
+*.dsn
+*.ses
